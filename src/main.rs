@@ -5,9 +5,9 @@ use ext::*;
 use helpers::*;
 pub use release_system::ReleaseSystem;
 
-mod release_system;
 mod ext;
 mod helpers;
+mod release_system;
 
 #[derive(Clap)]
 pub struct CommonOptions {
@@ -65,7 +65,7 @@ macro_rules! ____subcommands {
 
             match opts.subcmd {
                 $(
-                SubCommand::$module(ref options) => 
+                SubCommand::$module(ref options) =>
                     commands::$module::main(options).await,
                 )*
             }
@@ -76,7 +76,7 @@ macro_rules! ____subcommands {
             pub(crate) mod $module;
             )*
         }
-        
+
         #[allow(non_camel_case_types)]
         #[derive(Clap)]
         enum SubCommand {
@@ -86,6 +86,4 @@ macro_rules! ____subcommands {
         }
     };
 }
-____subcommands![
-    actions,
-];
+____subcommands![actions,];

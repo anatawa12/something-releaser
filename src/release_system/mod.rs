@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 macro_rules! __release_system_enum {
     ($($name: ident -> $value: expr,)*) => {
-        
+
 pub enum ReleaseSystem {
     $($name,)*
 }

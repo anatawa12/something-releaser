@@ -64,6 +64,6 @@ pub struct Options {
     /// Branch name to be cloned and pushed.
     branch: Option<String>,
     /// The release system to upgrade version, update version info.
-    #[clap(long)]
+    #[clap(short = 'r', long)]
     release_system: Vec<ReleaseSystem>,
 }

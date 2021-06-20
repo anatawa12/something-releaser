@@ -10,9 +10,11 @@ pub async fn main(option: &Options) {
 
     let cwd = std::env::current_dir().expect("failed to get cwd");
 
+    println!("::group::cloning repository...");
     let repo = init_git_repo(&cwd).await;
     set_remote(&repo, origin, &option.repo).await;
     clone_remote(&repo, origin, option.branch.as_ref().map(String::as_str)).await;
+    println!("::endgroup::");
 }
 
 async fn init_git_repo(path: &Path) -> GitHelper {

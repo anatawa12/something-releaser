@@ -1,8 +1,13 @@
-mod release_system;
-
 use clap::{AppSettings, Clap};
+use log::{debug as verbose, error, info, trace, warn};
 
+use ext::*;
+use helpers::*;
 pub use release_system::ReleaseSystem;
+
+mod release_system;
+mod ext;
+mod helpers;
 
 #[derive(Clap)]
 pub struct CommonOptions {

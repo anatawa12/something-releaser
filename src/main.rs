@@ -57,7 +57,7 @@ async fn main() {
 }
 
 macro_rules! ____subcommands {
-    ($($module: ident),* $(,)?) => {
+    ($($module: ident);* $(;)?) => {
         async fn do_main() {
             let opts: RootOptions = RootOptions::parse();
 
@@ -81,9 +81,12 @@ macro_rules! ____subcommands {
         #[derive(Clap)]
         enum SubCommand {
             $(
-            $module(commands::$module::Options)
+            $module(commands::$module::Options),
             )*
         }
     };
 }
-____subcommands![actions,];
+____subcommands![
+    actions;
+    changelog;
+];

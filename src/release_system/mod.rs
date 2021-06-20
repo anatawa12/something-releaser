@@ -1,12 +1,11 @@
-use std::str::FromStr;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
+macro_rules! __release_system_enum {
+    ($($name: ident -> $value: expr,)*) => {
+        
 pub enum ReleaseSystem {
-}
-
-#[derive(Debug)]
-pub struct ReleaseSystemErr {
-    name: String,
+    $($name,)*
 }
 
 impl FromStr for ReleaseSystem {
@@ -14,9 +13,24 @@ impl FromStr for ReleaseSystem {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
+            $($value => Ok(ReleaseSystem::$name),)*
             unknown => Err(ReleaseSystemErr{ name: unknown.to_owned() })
         }
     }
+}
+    };
+}
+
+__release_system_enum! {
+    Gradle -> "gradle",
+    GradleIntellijPlugin -> "gradle-intellij-plugin",
+    GradleMaven -> "gradle-maven",
+    GradlePlugin -> "gradle-plugin",
+}
+
+#[derive(Debug)]
+pub struct ReleaseSystemErr {
+    name: String,
 }
 
 impl Display for ReleaseSystemErr {

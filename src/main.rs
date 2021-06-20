@@ -12,13 +12,13 @@ mod release_system;
 #[derive(Clap)]
 pub struct CommonOptions {
     /// Show only warning or errors
-    #[clap(short, long)]
+    #[clap(short, long, global = true)]
     quiet: bool,
     /// Show verbose log
-    #[clap(short, long)]
+    #[clap(short, long, global = true)]
     verbose: bool,
     /// Debug verbose log
-    #[clap(long)]
+    #[clap(long, global = true)]
     debug: bool,
 }
 

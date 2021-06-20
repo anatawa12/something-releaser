@@ -11,6 +11,10 @@ tokio = { version = "1.7.0", features = ["full"] }
 url = "2.2"
 log = "0.4"
 stderrlog = "0.5"
+chrono = "0.4"
+regex = "1"
+lazy-regex = "2"
+git2 = "0.13"
 
 [dependencies.clap]
 version = "= 3.0.0-beta.2"

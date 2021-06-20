@@ -58,7 +58,17 @@ async fn clone_remote(repo: &GitHelper, remote: &str, branch: Option<&str>) {
         .expect_fn(|| format!("checking out {}/{}", remote, &branch));
 }
 
+/// Run processes for GitHub actions
+/// 
+/// 1. clones repository
+/// 2. changes version name
+/// 3. generates CHANGELOG.md
+/// 4. commits and creates tag version and CHANGELOG.md changes
+/// 5. build & publish
+/// 6. changes & commits version name for next version (-SNAPSHOT suffixed)
+/// 7. pushes
 #[derive(Clap)]
+#[clap(verbatim_doc_comment)]
 pub struct Options {
     /// Repository to clone and upload.
     #[clap(long)]

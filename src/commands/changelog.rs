@@ -184,10 +184,9 @@ fn parse_release<'r>(
         .and_then(|x| x.message())
         .map(|x| x.trim().to_owned());
 
-    let date = commits
-        .first()
-        .map(|x| x.committer().when())
-        .and_then(|x| Utc.timestamp_opt(x.seconds(), 0).single());
+    let date = Utc
+        .timestamp_opt(new.1.committer().when().seconds(), 0)
+        .single();
 
     let is_empty_release = merges.is_empty() && fixes.is_empty();
 

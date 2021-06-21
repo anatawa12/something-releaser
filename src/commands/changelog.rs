@@ -89,6 +89,15 @@ impl ChangelogRepo {
     ) -> std::io::Result<()> {
         create_markdown_for_release(release, links, out)
     }
+
+    pub fn create_release_html<W: std::io::Write>(
+        &self,
+        release: &ReleaseInfo,
+        links: &dyn LinkCreator,
+        out: &mut W,
+    ) -> std::io::Result<()> {
+        create_html_for_release(release, links, out)
+    }
 }
 
 pub trait LinkCreator {
@@ -536,5 +545,67 @@ fn create_markdown_for_release<W: std::io::Write>(
             markdown_link!(links.commit_link(commit.id()), "`{}`", short),
         );
     }
+    Ok(())
+}
+
+macro_rules! html_link {
+    ($link: expr, $inner_format: expr $(,$elements: expr)* $(,)?) => {
+        if let Some(link) = $link {
+            format!(concat!("<a href=\"{}\">", $inner_format, "</a>") , encode_text(&link) $(,$elements)*)
+        } else {
+            format!($inner_format $(,$elements)*)
+        }
+    };
+}
+
+fn create_html_for_release<W: std::io::Write>(
+    release: &ReleaseInfo,
+    links: &dyn LinkCreator,
+    out: &mut W,
+) -> std::io::Result<()> {
+    macro_rules! writeln {
+        ($($arg:tt)*) => {
+            std::writeln!(out, $($arg)*)?
+        };
+    }
+    macro_rules! write {
+        ($($arg:tt)*) => {
+            std::write!(out, $($arg)*)?
+        };
+    }
+    if let Some(time) = release.date {
+        writeln!(
+            "<blockquote>{}</blockquote>",
+            time.date().format("%-d %B %Y")
+        );
+        writeln!();
+    }
+    writeln!("<ul>");
+    for merge in &release.merges {
+        writeln!(
+            "<li>{} {}</li>",
+            encode_text(&merge.message),
+            html_link!(links.merge_link(merge.id), "<code>#{}</code>", merge.id),
+        );
+    }
+    for fix in &release.fixes {
+        write!("<li>{}", encode_text(fix.commit.summary().unwrap()));
+        for id in &fix.ids {
+            write!(
+                " {}",
+                html_link!(links.issue_link(*id), "<code>#{}</code>", *id)
+            );
+        }
+        writeln!("</li>");
+    }
+    for commit in &release.commits {
+        let short = &commit.id().to_string()[0..7];
+        writeln!(
+            "<li>{} {}</li>",
+            encode_text(commit.summary().unwrap()),
+            html_link!(links.commit_link(commit.id()), "<code>{}</code>", short),
+        );
+    }
+    writeln!("</ul>");
     Ok(())
 }

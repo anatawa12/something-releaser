@@ -162,31 +162,24 @@ impl<'a> LinkCreator for GithubLinkCreator<'a> {
 // instead of git2::Reference use this to clone
 #[derive(Clone, Debug)]
 struct Tag {
-    name: String,
+    simple_name: String,
     target: Oid,
 }
 
 impl Tag {
     fn from_reference(reference: Reference) -> Option<Self> {
-        let result = Self {
-            name: reference.name()?.to_owned(),
+        Some(Self {
+            simple_name: result.name.strip_prefix("refs/tags/")?,
             target: reference.target()?,
-        };
-        //verify: ref is targeting tag
-        result.name.strip_prefix("refs/tags/")?;
-        Some(result)
+        })
     }
 
     fn target(&self) -> Oid {
         return self.target;
     }
 
-    fn name(&self) -> &str {
-        return &self.name;
-    }
-
     fn simple_name(&self) -> &str {
-        return &self.name.strip_prefix("refs/tags/").unwrap();
+        &self.simple_name
     }
 }
 
@@ -282,8 +275,8 @@ fn parse_release<'r>(
     if log::log_enabled!(log::Level::Trace) {
         trace!(
             "commits for {} (since {}, {}..{:?})",
-            new.0.name(),
-            prev.0.as_ref().map(|x| x.name()).unwrap_or("root"),
+            new.0.simple_name(),
+            prev.0.as_ref().map(|x| x.simple_name()).unwrap_or("root"),
             new.1.id(),
             prev.1.as_ref().map(|x| x.id()),
         );

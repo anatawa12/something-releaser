@@ -497,6 +497,10 @@ fn create_markdown<W: std::io::Write>(
                 release.tag.simple_name(),
             ),
         );
+        if let Some(time) = release.date {
+            writeln!("> {}", time.date().format("%-d %B %Y"));
+            writeln!();
+        }
         writeln!();
         create_markdown_for_release(&release, links, out)?;
         writeln!();
@@ -518,10 +522,6 @@ fn create_markdown_for_release<W: std::io::Write>(
         ($($arg:tt)*) => {
             std::write!(out, $($arg)*)?
         };
-    }
-    if let Some(time) = release.date {
-        writeln!("> {}", time.date().format("%-d %B %Y"));
-        writeln!();
     }
     for merge in &release.merges {
         writeln!(
@@ -572,13 +572,6 @@ fn create_html_for_release<W: std::io::Write>(
         ($($arg:tt)*) => {
             std::write!(out, $($arg)*)?
         };
-    }
-    if let Some(time) = release.date {
-        writeln!(
-            "<blockquote>{}</blockquote>",
-            time.date().format("%-d %B %Y")
-        );
-        writeln!();
     }
     writeln!("<ul>");
     for merge in &release.merges {

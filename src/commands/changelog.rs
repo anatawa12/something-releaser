@@ -1,13 +1,10 @@
 use std::cmp::Reverse;
-use std::collections::HashSet;
-use std::path::Path;
 
-use chrono::{Date, DateTime, TimeZone, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use clap::Clap;
-use git2::{Commit, Error, ObjectType, Oid, Reference, Repository, Time};
+use git2::{Commit, Oid, Reference, Repository};
 use html_escape::encode_text;
 use regex::{Captures, Regex};
-use url::Url;
 
 use crate::*;
 

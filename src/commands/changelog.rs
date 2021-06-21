@@ -22,6 +22,10 @@ pub struct Options {
 
 /// a command like auto-changelog
 pub async fn main(option: &Options) {
+    do_main(option, &mut std::io::stdout()).await.unwrap();
+}
+
+pub async fn do_main<W: std::io::Write>(option: &Options, output: &mut W) -> std::io::Result<()> {
     let cwd = std::env::current_dir().expect("failed to get cwd");
     let repo = Repository::open(&cwd).expect("failed to open cwd repository");
     info!("fetching tags...");
@@ -36,7 +40,7 @@ pub async fn main(option: &Options) {
     } else {
         Box::new(SimpleLinkCreator)
     };
-    create_markdown(releases, links.as_ref(), &mut std::io::stdout());
+    create_markdown(releases, links.as_ref(), output)
 }
 
 // instead of git2::Reference use this to clone

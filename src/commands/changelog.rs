@@ -223,19 +223,25 @@ fn prepare_commits<'r>(repo: &Repository, mut commits: Vec<Commit<'r>>) -> Vec<C
                 .unwrap_or_default()
         })
         .collect();
-    commits.sort_by_key(|commit| {
-        let commit_tree = commit.tree().ok();
-        let parent_tree = commit.parent(0).ok().and_then(|x| x.tree().ok());
-        let diff = repo
-            .diff_tree_to_tree(parent_tree.as_ref(), commit_tree.as_ref(), None)
-            .ok();
-        let change_sum = diff
-            .and_then(|diff| diff.stats().ok())
-            .map(|stats| stats.insertions() + stats.deletions())
-            .unwrap_or(0);
-        Reverse(change_sum)
-    });
-    commits
+    let mut commits_with_sorting = commits
+        .into_iter()
+        .map(|commit| {
+            let commit_tree = commit.tree().ok();
+            let parent_tree = commit.parent(0).ok().and_then(|x| x.tree().ok());
+            let diff = repo
+                .diff_tree_to_tree(parent_tree.as_ref(), commit_tree.as_ref(), None)
+                .ok();
+            let change_sum = diff
+                .and_then(|diff| diff.stats().ok())
+                .map(|stats| stats.insertions() + stats.deletions())
+                .unwrap_or(0);
+            (Reverse(change_sum), commit)
+        })
+        .collect::<Vec<_>>();
+
+    commits_with_sorting.sort_by_key(|x| x.0);
+
+    commits_with_sorting.into_iter().map(|x| x.1).collect()
 }
 
 fn get_commits(repo: &Repository, since: Option<Oid>, until: Oid) -> Vec<Commit> {

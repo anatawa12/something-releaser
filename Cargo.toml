@@ -15,6 +15,7 @@ chrono = "0.4"
 regex = "1"
 lazy-regex = "2"
 git2 = "0.13"
+html-escape = "0.2"
 
 [dependencies.clap]
 version = "= 3.0.0-beta.2"

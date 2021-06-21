@@ -5,6 +5,7 @@ use std::path::Path;
 use chrono::{Date, DateTime, TimeZone, Utc};
 use clap::Clap;
 use git2::{Commit, Error, ObjectType, Oid, Reference, Repository, Time};
+use html_escape::encode_text;
 use regex::{Captures, Regex};
 use url::Url;
 
@@ -421,10 +422,14 @@ fn create_markdown<W: std::io::Write>(
         }
         writeln!();
         for merge in release.merges {
-            writeln!("- {} {}", merge.message, links.merge(merge.id));
+            writeln!(
+                "- {} {}",
+                encode_text(&merge.message),
+                links.merge(merge.id)
+            );
         }
         for fix in release.fixes {
-            write!("- {}", fix.commit.summary().unwrap());
+            write!("- {}", encode_text(fix.commit.summary().unwrap()));
             for id in fix.ids {
                 write!(" {}", links.issue(id));
             }
@@ -433,7 +438,7 @@ fn create_markdown<W: std::io::Write>(
         for commit in release.commits {
             writeln!(
                 "- {} {}",
-                commit.summary().unwrap(),
+                encode_text(commit.summary().unwrap()),
                 links.commit(commit.id())
             );
         }

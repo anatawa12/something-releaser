@@ -1,4 +1,5 @@
 use std::cmp::Reverse;
+use std::path::Path;
 
 use chrono::{DateTime, TimeZone, Utc};
 use clap::Clap;
@@ -7,6 +8,8 @@ use html_escape::encode_text;
 use regex::{Captures, Regex};
 
 use crate::*;
+
+type GitResult<T> = Result<T, git2::Error>;
 
 /// generates changelog like auto-changelog
 #[derive(Clap)]
@@ -19,25 +22,132 @@ pub struct Options {
 
 /// a command like auto-changelog
 pub async fn main(option: &Options) {
-    do_main(option, &mut std::io::stdout()).await.unwrap();
-}
-
-pub async fn do_main<W: std::io::Write>(option: &Options, output: &mut W) -> std::io::Result<()> {
     let cwd = std::env::current_dir().expect("failed to get cwd");
-    let repo = Repository::open(&cwd).expect("failed to open cwd repository");
+    let repo = ChangelogRepo::open(&cwd).expect("failed to open cwd repository");
     info!("fetching tags...");
-    let tags = fetch_tags(&repo, |x| option.filter.is_match(x)).await;
-    info!("{} tags found", tags.len());
-    let releases = tags
-        .into_iter()
-        .map(|x| parse_release(&repo, x))
-        .collect::<Vec<_>>();
+    let releases = repo
+        .fetch_releases(|x| option.filter.is_match(x))
+        .expect("fetching release");
+    info!("{} tags found", releases.len());
+    let releases = repo
+        .parse_releases(releases.iter())
+        .expect("parsing release");
     let links: Box<dyn LinkCreator> = if let Some(url) = &option.github_repo_url {
-        Box::new(GithubLinkCreator(url))
+        Box::new(GithubLinkCreator::new(url))
     } else {
         Box::new(SimpleLinkCreator)
     };
-    create_markdown(releases, links.as_ref(), output)
+    repo.create_releases_markdown(releases, links.as_ref(), &mut std::io::stdout())
+        .expect("writing markdown");
+}
+
+pub struct ChangelogRepo {
+    repo: Repository,
+}
+
+pub struct ChangelogRelease<'r>(TagCommit<'r>, Option<TagCommit<'r>>);
+
+#[allow(dead_code)]
+impl ChangelogRepo {
+    pub fn open(repo: &Path) -> GitResult<Self> {
+        Ok(Self {
+            repo: Repository::open(repo)?,
+        })
+    }
+
+    pub fn fetch_releases<F: Fn(&str) -> bool>(
+        &self,
+        filter: F,
+    ) -> GitResult<Vec<ChangelogRelease<'_>>> {
+        fetch_tags(&self.repo, filter)
+    }
+
+    pub fn parse_releases<'a, 'r: 'a, I: IntoIterator<Item = &'a ChangelogRelease<'r>>>(
+        &'r self,
+        releases: I,
+    ) -> GitResult<Vec<ReleaseInfo<'r>>> {
+        return releases
+            .into_iter()
+            .map(|x| parse_release(&self.repo, x))
+            .try_collect();
+    }
+
+    pub fn create_releases_markdown<W: std::io::Write>(
+        &self,
+        releases: Vec<ReleaseInfo>,
+        links: &dyn LinkCreator,
+        out: &mut W,
+    ) -> std::io::Result<()> {
+        create_markdown(releases, links, out)
+    }
+
+    pub fn create_release_markdown<W: std::io::Write>(
+        &self,
+        release: &ReleaseInfo,
+        links: &dyn LinkCreator,
+        out: &mut W,
+    ) -> std::io::Result<()> {
+        create_markdown_for_release(release, links, out)
+    }
+}
+
+pub trait LinkCreator {
+    fn compare_link(&self, from: &str, to: &str) -> Option<String>;
+    fn issue_link(&self, id: u32) -> Option<String>;
+    fn merge_link(&self, id: u32) -> Option<String>;
+    fn commit_link(&self, id: Oid) -> Option<String>;
+}
+
+pub struct SimpleLinkCreator;
+
+impl LinkCreator for SimpleLinkCreator {
+    fn compare_link(&self, _from: &str, _to: &str) -> Option<String> {
+        None
+    }
+
+    fn issue_link(&self, _id: u32) -> Option<String> {
+        None
+    }
+
+    fn merge_link(&self, _id: u32) -> Option<String> {
+        None
+    }
+
+    fn commit_link(&self, _id: Oid) -> Option<String> {
+        None
+    }
+}
+
+// &str: base url
+pub struct GithubLinkCreator<'a>(&'a str);
+
+impl<'a> GithubLinkCreator<'a> {
+    pub fn new(repo_url: &'a str) -> Self {
+        Self(repo_url)
+    }
+}
+
+impl<'a> LinkCreator for GithubLinkCreator<'a> {
+    fn compare_link(&self, from: &str, to: &str) -> Option<String> {
+        Some(format!(
+            "{gh}/compare/{from}...{to}",
+            gh = self.0,
+            from = from,
+            to = to,
+        ))
+    }
+
+    fn issue_link(&self, id: u32) -> Option<String> {
+        Some(format!("{gh}/issues/{id}", id = id, gh = self.0))
+    }
+
+    fn merge_link(&self, id: u32) -> Option<String> {
+        Some(format!("{gh}/pull/{id}", id = id, gh = self.0))
+    }
+
+    fn commit_link(&self, id: Oid) -> Option<String> {
+        Some(format!("{gh}/commit/{id}", gh = self.0, id = id,))
+    }
 }
 
 // instead of git2::Reference use this to clone
@@ -73,11 +183,11 @@ impl Tag {
 
 type TagCommit<'a> = (Tag, Commit<'a>);
 
-async fn fetch_tags<F: Fn(&str) -> bool>(
+fn fetch_tags<F: Fn(&str) -> bool>(
     repo: &Repository,
     filter: F,
-) -> Vec<(TagCommit<'_>, Option<TagCommit<'_>>)> {
-    let tags = collect_tags(repo);
+) -> GitResult<Vec<ChangelogRelease<'_>>> {
+    let tags = collect_tags(repo)?;
     let tags_count = tags.len();
     trace!("tags found: {}", tags_count);
     let mut tags = tags
@@ -102,13 +212,13 @@ async fn fetch_tags<F: Fn(&str) -> bool>(
         Some(v) => v,
         None => {
             trace!("all tags omitted or no tags");
-            return vec![];
+            return Ok(vec![]);
         }
     };
 
     loop {
         let next = tags.next();
-        result.push((cur, next.clone()));
+        result.push(ChangelogRelease(cur, next.clone()));
         cur = match next {
             Some(v) => v,
             None => break,
@@ -117,10 +227,10 @@ async fn fetch_tags<F: Fn(&str) -> bool>(
 
     result.shrink_to_fit();
 
-    result
+    Ok(result)
 }
 
-fn collect_tags(repo: &Repository) -> Vec<String> {
+fn collect_tags(repo: &Repository) -> GitResult<Vec<String>> {
     let mut tags = vec![];
     repo.tag_foreach(|oid, name| {
         if let Ok(name) = std::str::from_utf8(name) {
@@ -133,15 +243,14 @@ fn collect_tags(repo: &Repository) -> Vec<String> {
             );
         }
         true
-    })
-    .expect("collecting tags with tag_foreach");
-    tags
+    })?;
+    Ok(tags)
 }
 
 //// get data about release
 
 #[derive(Debug)]
-struct ReleaseInfo<'r> {
+pub struct ReleaseInfo<'r> {
     merges: Vec<MergeInformation<'r>>,
     fixes: Vec<CommitFixInformation<'r>>,
     commits: Vec<Commit<'r>>,
@@ -153,10 +262,13 @@ struct ReleaseInfo<'r> {
 
 fn parse_release<'r>(
     repo: &'r Repository,
-    (new, prev): (TagCommit<'r>, Option<TagCommit<'r>>),
-) -> ReleaseInfo<'r> {
-    let prev = prev.map(|(t, c)| (Some(t), Some(c))).unwrap_or_default();
-    let commits = get_commits(repo, prev.1.as_ref().map(|x| x.id()), new.1.id());
+    ChangelogRelease(new, prev): &ChangelogRelease,
+) -> GitResult<ReleaseInfo<'r>> {
+    let prev = prev
+        .as_ref()
+        .map(|(t, c)| (Some(t), Some(c)))
+        .unwrap_or_default();
+    let commits = get_commits(repo, prev.1.as_ref().map(|x| x.id()), new.1.id())?;
 
     if log::log_enabled!(log::Level::Trace) {
         trace!(
@@ -191,19 +303,19 @@ fn parse_release<'r>(
 
     let is_empty_release = merges.is_empty() && fixes.is_empty();
 
-    ReleaseInfo {
+    Ok(ReleaseInfo {
         merges,
         fixes,
         summary,
         date,
-        tag: new.0,
-        prev: prev.0,
+        tag: new.0.clone(),
+        prev: prev.0.cloned(),
         commits: if is_empty_release {
             prepare_commits(repo, commits)
         } else {
             vec![]
         },
-    }
+    })
 }
 
 fn prepare_commits<'r>(repo: &Repository, mut commits: Vec<Commit<'r>>) -> Vec<Commit<'r>> {
@@ -244,20 +356,21 @@ fn prepare_commits<'r>(repo: &Repository, mut commits: Vec<Commit<'r>>) -> Vec<C
     commits_with_sorting.into_iter().map(|x| x.1).collect()
 }
 
-fn get_commits(repo: &Repository, since: Option<Oid>, until: Oid) -> Vec<Commit> {
-    let mut walk = repo.revwalk().expect("rev-walk init");
-    walk.push(until).expect("setting rev walk push commit");
+fn get_commits(repo: &Repository, since: Option<Oid>, until: Oid) -> GitResult<Vec<Commit>> {
+    let mut walk = repo.revwalk()?;
+    walk.push(until)?;
     if let Some(since) = since {
-        walk.hide(since).expect("setting rev walk hide commit");
+        walk.hide(since)?;
     }
-    walk.into_iter()
+    Ok(walk
+        .into_iter()
         .filter_map(|x| x.map_err(|e| verbose!("error walking: {}", e)).ok())
         .filter_map(|x| {
             repo.find_commit(x)
                 .map_err(|e| warn!("getting commit {}: {}", x, e))
                 .ok()
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>())
 }
 
 #[derive(Debug)]
@@ -330,65 +443,14 @@ fn try_parse_fix_single_capture(captures: &Captures) -> Option<u32> {
         .ok()
 }
 
-trait LinkCreator {
-    fn compare(&self, from: &str, to: &str) -> String;
-    fn issue(&self, id: u32) -> String;
-    fn merge(&self, id: u32) -> String;
-    fn commit(&self, id: Oid) -> String;
-}
-
-struct SimpleLinkCreator;
-
-impl LinkCreator for SimpleLinkCreator {
-    fn compare(&self, _from: &str, to: &str) -> String {
-        to.to_owned()
-    }
-
-    fn issue(&self, id: u32) -> String {
-        format!("`#{}`", id)
-    }
-
-    fn merge(&self, id: u32) -> String {
-        format!("`#{}`", id)
-    }
-
-    fn commit(&self, id: Oid) -> String {
-        let instr = id.to_string();
-        format!("`{}`", &instr[0..7])
-    }
-}
-
-// &str: base url
-struct GithubLinkCreator<'a>(&'a str);
-
-impl<'a> LinkCreator for GithubLinkCreator<'a> {
-    fn compare(&self, from: &str, to: &str) -> String {
-        format!(
-            "[{name}]({gh}/compare/{from}...{to})",
-            name = to,
-            gh = self.0,
-            from = from,
-            to = to,
-        )
-    }
-
-    fn issue(&self, id: u32) -> String {
-        format!("[`#{id}`]({gh}/issues/{id})", id = id, gh = self.0)
-    }
-
-    fn merge(&self, id: u32) -> String {
-        format!("[`#{id}`]({gh}/pull/{id})", id = id, gh = self.0)
-    }
-
-    fn commit(&self, id: Oid) -> String {
-        let short = &id.to_string()[0..7];
-        format!(
-            "[`{short}`]({gh}/commit/{id})",
-            gh = self.0,
-            id = id,
-            short = short,
-        )
-    }
+macro_rules! markdown_link {
+    ($link: expr, $inner_format: expr $(,$elements: expr)* $(,)?) => {
+        if let Some(link) = $link {
+            format!(concat!("[", $inner_format, "]({})") $(,$elements)* , link)
+        } else {
+            format!($inner_format $(,$elements)*)
+        }
+    };
 }
 
 fn create_markdown<W: std::io::Write>(
@@ -401,6 +463,7 @@ fn create_markdown<W: std::io::Write>(
             std::writeln!(out, $($arg)*)?
         };
     }
+    #[allow(unused_macros)]
     macro_rules! write {
         ($($arg:tt)*) => {
             std::write!(out, $($arg)*)?
@@ -414,41 +477,64 @@ fn create_markdown<W: std::io::Write>(
     writeln!("Generated by `something-releaser`.");
     writeln!();
     for release in releases {
-        if let Some(prev) = release.prev {
-            writeln!(
-                "#### {}",
-                links.compare(prev.simple_name(), release.tag.simple_name())
-            );
-        } else {
-            writeln!("#### {}", release.tag.simple_name());
+        writeln!(
+            "#### {}",
+            markdown_link!(
+                release
+                    .prev
+                    .as_ref()
+                    .and_then(|x| links.compare_link(x.simple_name(), release.tag.simple_name())),
+                "{}",
+                release.tag.simple_name(),
+            ),
+        );
+        writeln!();
+        create_markdown_for_release(&release, links, out)?;
+        writeln!();
+    }
+    Ok(())
+}
+
+fn create_markdown_for_release<W: std::io::Write>(
+    release: &ReleaseInfo,
+    links: &dyn LinkCreator,
+    out: &mut W,
+) -> std::io::Result<()> {
+    macro_rules! writeln {
+        ($($arg:tt)*) => {
+            std::writeln!(out, $($arg)*)?
+        };
+    }
+    macro_rules! write {
+        ($($arg:tt)*) => {
+            std::write!(out, $($arg)*)?
+        };
+    }
+    if let Some(time) = release.date {
+        writeln!("> {}", time.date().format("%-d %B %Y"));
+        writeln!();
+    }
+    for merge in &release.merges {
+        writeln!(
+            "- {} {}",
+            encode_text(&merge.message),
+            markdown_link!(links.merge_link(merge.id), "`#{}`", merge.id),
+        );
+    }
+    for fix in &release.fixes {
+        write!("- {}", encode_text(fix.commit.summary().unwrap()));
+        for id in &fix.ids {
+            write!(" {}", markdown_link!(links.issue_link(*id), "`#{}`", *id));
         }
         writeln!();
-        if let Some(time) = release.date {
-            writeln!("> {}", time.date().format("%-d %B %Y"));
-        }
-        writeln!();
-        for merge in release.merges {
-            writeln!(
-                "- {} {}",
-                encode_text(&merge.message),
-                links.merge(merge.id)
-            );
-        }
-        for fix in release.fixes {
-            write!("- {}", encode_text(fix.commit.summary().unwrap()));
-            for id in fix.ids {
-                write!(" {}", links.issue(id));
-            }
-            writeln!();
-        }
-        for commit in release.commits {
-            writeln!(
-                "- {} {}",
-                encode_text(commit.summary().unwrap()),
-                links.commit(commit.id())
-            );
-        }
-        println!()
+    }
+    for commit in &release.commits {
+        let short = &commit.id().to_string()[0..7];
+        writeln!(
+            "- {} {}",
+            encode_text(commit.summary().unwrap()),
+            markdown_link!(links.commit_link(commit.id()), "`{}`", short),
+        );
     }
     Ok(())
 }

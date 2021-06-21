@@ -76,6 +76,7 @@ impl GitHelper {
         run_err(
             Command::new("git")
                 .arg("fetch")
+                .arg("--tags")
                 .arg(remote)
                 .stdin(Stdio::null())
                 .current_dir(&self.cwd),

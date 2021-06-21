@@ -15,6 +15,8 @@ use crate::*;
 pub struct Options {
     #[clap(long, default_value = ".*")]
     filter: Regex,
+    #[clap(long)]
+    github_repo_url: Option<String>,
 }
 
 /// a command like auto-changelog
@@ -28,7 +30,12 @@ pub async fn main(option: &Options) {
         .into_iter()
         .map(|x| parse_release(&repo, x))
         .collect::<Vec<_>>();
-    create_markdown(releases, &SimpleLinkCreator, &mut std::io::stdout());
+    let links: Box<dyn LinkCreator> = if let Some(url) = &option.github_repo_url {
+        Box::new(GithubLinkCreator(url))
+    } else {
+        Box::new(SimpleLinkCreator)
+    };
+    create_markdown(releases, links.as_ref(), &mut std::io::stdout());
 }
 
 // instead of git2::Reference use this to clone
@@ -341,6 +348,39 @@ impl LinkCreator for SimpleLinkCreator {
     fn commit(&self, id: Oid) -> String {
         let instr = id.to_string();
         format!("`{}`", &instr[0..7])
+    }
+}
+
+// &str: base url
+struct GithubLinkCreator<'a>(&'a str);
+
+impl<'a> LinkCreator for GithubLinkCreator<'a> {
+    fn compare(&self, from: &str, to: &str) -> String {
+        format!(
+            "[{name}]({gh}/compare/{from}...{to})",
+            name = to,
+            gh = self.0,
+            from = from,
+            to = to,
+        )
+    }
+
+    fn issue(&self, id: u32) -> String {
+        format!("[`#{id}`]({gh}/issues/{id})", id = id, gh = self.0)
+    }
+
+    fn merge(&self, id: u32) -> String {
+        format!("[`#{id}`]({gh}/pull/{id})", id = id, gh = self.0)
+    }
+
+    fn commit(&self, id: Oid) -> String {
+        let short = &id.to_string()[0..7];
+        format!(
+            "[`{short}`]({gh}/commit/{id})",
+            gh = self.0,
+            id = id,
+            short = short,
+        )
     }
 }
 

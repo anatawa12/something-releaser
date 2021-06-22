@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use clap::{AppSettings, Clap};
 use itertools::Itertools;
 use log::{debug as verbose, error, info, trace, warn};

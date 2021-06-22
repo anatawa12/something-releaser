@@ -1,9 +1,12 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use crate::*;
+
 macro_rules! __release_system_enum {
     ($($name: ident -> $value: expr,)*) => {
 
+#[derive(Copy, Clone)]
 pub enum ReleaseSystem {
     $($name,)*
 }
@@ -37,4 +40,114 @@ impl Display for ReleaseSystemErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "unknown release system error: {}", &self.name)
     }
+}
+
+macro_rules! types_enum {
+    ($trait_name: ident { $($name: ident),* $(,)? }) => {
+        #[derive(Copy, Clone, Eq, PartialEq, std::hash::Hash)]
+        pub(super) enum Types {
+            $($name,)*
+        }
+
+        impl Types {
+            pub(in super::super) fn get_instance(self) -> &'static dyn $trait_name {
+                match self {
+                    $(Types::$name -> &$name,)*
+                }
+            }
+        }
+    };
+}
+
+mod builder;
+mod publisher;
+mod version_changer;
+
+macro_rules! fns_returns_static_slice {
+    (
+        $type_name: ident {
+            $(
+            $fun_name:ident -> [$enum_type_name: ty] {
+                $($enum_val_name: ident : [$($val_name: expr),* $(,)?]),*
+                $(,)?
+            }
+            )*
+        }
+    ) => {
+        impl $type_name {
+            $(
+            fn $fun_name(self) -> &'static [$enum_type_name] {
+                match self {
+                    $(
+                    ReleaseSystem::$enum_val_name => &[
+                        $(
+                        $enum_type_name::&$val_name,
+                        )*
+                    ],
+                    )*
+                }
+            }
+            )*
+        }
+    }
+}
+
+fns_returns_static_slice! {
+    ReleaseSystem {
+        version_changers -> [version_changer::Types] {
+            Gradle: [],
+            GradleIntellijPlugin: [],
+            GradleMaven: [],
+            GradlePlugin: [],
+        }
+        builders -> [builder::Types] {
+            Gradle: [],
+            GradleIntellijPlugin: [],
+            GradleMaven: [],
+            GradlePlugin: [],
+        }
+        publishers -> [publisher::Types] {
+            Gradle: [],
+            GradleIntellijPlugin: [],
+            GradleMaven: [],
+            GradlePlugin: [],
+        }
+    }
+}
+
+pub fn crate_releaser_action(systems: &[ReleaseSystem]) -> ReleaserAction<'static> {
+    let mut version_changers = Vec::<version_changer::Types>::new();
+    let mut builders = Vec::<builder::Types>::new();
+    let mut publishers = Vec::<publisher::Types>::new();
+
+    for system in systems {
+        version_changers.extend_from_slice(system.version_changers());
+        builders.extend_from_slice(system.builders());
+        publishers.extend_from_slice(system.publishers());
+    }
+
+    ReleaserAction {
+        version_changers: version_changers
+            .into_iter()
+            .unique()
+            .map(|x| x.get_instance())
+            .collect(),
+        builders: builders
+            .into_iter()
+            .unique()
+            .map(|x| x.get_instance())
+            .collect(),
+        publishers: publishers
+            .into_iter()
+            .unique()
+            .map(|x| x.get_instance())
+            .collect(),
+    }
+}
+
+#[derive(Clone)]
+pub struct ReleaserAction<'r> {
+    version_changers: Vec<&'r dyn version_changer::VersionChanger>,
+    builders: Vec<&'r dyn builder::Builder>,
+    publishers: Vec<&'r dyn publisher::Publisher>,
 }

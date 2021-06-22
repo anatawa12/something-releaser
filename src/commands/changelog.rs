@@ -169,7 +169,7 @@ struct Tag {
 impl Tag {
     fn from_reference(reference: Reference) -> Option<Self> {
         Some(Self {
-            simple_name: result.name.strip_prefix("refs/tags/")?,
+            simple_name: reference.name()?.strip_prefix("refs/tags/")?.to_string(),
             target: reference.target()?,
         })
     }

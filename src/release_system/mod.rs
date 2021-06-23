@@ -1,6 +1,10 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+pub use builder::Builder;
+pub use publisher::Publisher;
+pub use version_changer::VersionChanger;
+
 use crate::*;
 
 macro_rules! __release_system_enum {
@@ -147,7 +151,7 @@ pub fn crate_releaser_action(systems: &[ReleaseSystem]) -> ReleaserAction<'stati
 
 #[derive(Clone)]
 pub struct ReleaserAction<'r> {
-    version_changers: Vec<&'r dyn version_changer::VersionChanger>,
-    builders: Vec<&'r dyn builder::Builder>,
-    publishers: Vec<&'r dyn publisher::Publisher>,
+    pub version_changers: Vec<&'r dyn VersionChanger>,
+    pub builders: Vec<&'r dyn Builder>,
+    pub publishers: Vec<&'r dyn Publisher>,
 }

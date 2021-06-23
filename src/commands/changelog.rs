@@ -6,6 +6,7 @@ use clap::Clap;
 use git2::{Commit, Oid, Reference, Repository};
 use html_escape::encode_text;
 use regex::{Captures, Regex};
+use tokio::io::AsyncWriteExt;
 
 use crate::*;
 
@@ -37,7 +38,8 @@ pub async fn main(option: &Options) {
     } else {
         Box::new(SimpleLinkCreator)
     };
-    repo.create_releases_markdown(releases, links.as_ref(), &mut std::io::stdout())
+    repo.create_releases_markdown(releases, links.as_ref(), &mut tokio::io::stdout())
+        .await
         .expect("writing markdown");
 }
 
@@ -72,31 +74,31 @@ impl ChangelogRepo {
             .try_collect();
     }
 
-    pub fn create_releases_markdown<W: std::io::Write>(
+    pub async fn create_releases_markdown<W: tokio::io::AsyncWrite + Unpin>(
         &self,
-        releases: Vec<ReleaseInfo>,
+        releases: Vec<ReleaseInfo<'_>>,
         links: &dyn LinkCreator,
         out: &mut W,
     ) -> std::io::Result<()> {
-        create_markdown(releases, links, out)
+        create_markdown(releases, links, out).await
     }
 
-    pub fn create_release_markdown<W: std::io::Write>(
+    pub async fn create_release_markdown<W: tokio::io::AsyncWrite + Unpin>(
         &self,
-        release: &ReleaseInfo,
+        release: &ReleaseInfo<'_>,
         links: &dyn LinkCreator,
         out: &mut W,
     ) -> std::io::Result<()> {
-        create_markdown_for_release(release, links, out)
+        create_markdown_for_release(release, links, out).await
     }
 
-    pub fn create_release_html<W: std::io::Write>(
+    pub async fn create_release_html<W: tokio::io::AsyncWrite + Unpin>(
         &self,
-        release: &ReleaseInfo,
+        release: &ReleaseInfo<'_>,
         links: &dyn LinkCreator,
         out: &mut W,
     ) -> std::io::Result<()> {
-        create_html_for_release(release, links, out)
+        create_html_for_release(release, links, out).await
     }
 }
 
@@ -455,20 +457,23 @@ macro_rules! markdown_link {
     };
 }
 
-fn create_markdown<W: std::io::Write>(
-    releases: Vec<ReleaseInfo>,
+async fn create_markdown<W: tokio::io::AsyncWrite + Unpin>(
+    releases: Vec<ReleaseInfo<'_>>,
     links: &dyn LinkCreator,
     out: &mut W,
 ) -> std::io::Result<()> {
     macro_rules! writeln {
+        () => {
+            out.write("\n".as_bytes()).await?
+        };
         ($($arg:tt)*) => {
-            std::writeln!(out, $($arg)*)?
+            out.write(std::format!("{}\n", std::format_args!($($arg)*)).as_bytes()).await?
         };
     }
     #[allow(unused_macros)]
     macro_rules! write {
         ($($arg:tt)*) => {
-            std::write!(out, $($arg)*)?
+            out.write(std::format!($($arg)*).as_bytes()).await?
         };
     }
     writeln!("### Changelog");
@@ -495,25 +500,28 @@ fn create_markdown<W: std::io::Write>(
             writeln!();
         }
         writeln!();
-        create_markdown_for_release(&release, links, out)?;
+        create_markdown_for_release(&release, links, out).await?;
         writeln!();
     }
     Ok(())
 }
 
-fn create_markdown_for_release<W: std::io::Write>(
-    release: &ReleaseInfo,
+async fn create_markdown_for_release<W: tokio::io::AsyncWrite + Unpin>(
+    release: &ReleaseInfo<'_>,
     links: &dyn LinkCreator,
     out: &mut W,
 ) -> std::io::Result<()> {
     macro_rules! writeln {
+        () => {
+            out.write("\n".as_bytes()).await?
+        };
         ($($arg:tt)*) => {
-            std::writeln!(out, $($arg)*)?
+            out.write(std::format!("{}\n", std::format_args!($($arg)*)).as_bytes()).await?
         };
     }
     macro_rules! write {
         ($($arg:tt)*) => {
-            std::write!(out, $($arg)*)?
+            out.write(std::format!($($arg)*).as_bytes()).await?
         };
     }
     for merge in &release.merges {
@@ -544,26 +552,26 @@ fn create_markdown_for_release<W: std::io::Write>(
 macro_rules! html_link {
     ($link: expr, $inner_format: expr $(,$elements: expr)* $(,)?) => {
         if let Some(link) = $link {
-            format!(concat!("<a href=\"{}\">", $inner_format, "</a>") , encode_text(&link) $(,$elements)*)
+            format!("<a href=\"{}\">{}</a>", encode_text(&link), format_args!($inner_format $(,$elements)*))
         } else {
             format!($inner_format $(,$elements)*)
         }
     };
 }
 
-fn create_html_for_release<W: std::io::Write>(
-    release: &ReleaseInfo,
+async fn create_html_for_release<W: tokio::io::AsyncWrite + Unpin>(
+    release: &ReleaseInfo<'_>,
     links: &dyn LinkCreator,
     out: &mut W,
 ) -> std::io::Result<()> {
     macro_rules! writeln {
         ($($arg:tt)*) => {
-            std::writeln!(out, $($arg)*)?
+            out.write(std::format!("{}\n", std::format_args!($($arg)*)).as_bytes()).await?
         };
     }
     macro_rules! write {
         ($($arg:tt)*) => {
-            std::write!(out, $($arg)*)?
+            out.write(std::format!($($arg)*).as_bytes()).await?
         };
     }
     writeln!("<ul>");

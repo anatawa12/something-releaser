@@ -4,6 +4,7 @@ use std::str::FromStr;
 pub use builder::Builder;
 pub use publisher::Publisher;
 pub use version_changer::VersionChanger;
+pub use version_name::VersionName;
 
 use crate::*;
 
@@ -66,6 +67,7 @@ macro_rules! types_enum {
 mod builder;
 mod publisher;
 mod version_changer;
+mod version_name;
 
 macro_rules! fns_returns_static_slice {
     (

@@ -38,11 +38,18 @@ pub async fn main(option: &Options) {
     println!("::endgroup::");
 
     println!("::group::changelog");
-    create_changelog(&cwd, &option.repo.to_string()).await;
+    let (release_note_html, release_note_markdown) =
+        create_changelog(&cwd, &option.repo.to_string()).await;
     repo.add_files([cwd.join("CHANGELOG.md")].iter())
         .await
         .expect("add changelog");
     println!("::endgroup::");
+
+    let info = VersionInfo {
+        version,
+        release_note_html,
+        release_note_markdown,
+    };
 
     println!("::group::changelog amend commit & re-tag");
     repo.commit_amend().await.expect("commit --amend");
@@ -51,11 +58,11 @@ pub async fn main(option: &Options) {
     println!("::endgroup::");
 
     println!("::group::build");
-    build_project(&cwd, &action.builders).await;
+    build_project(&cwd, &action.builders, &info).await;
     println!("::endgroup::");
 
     println!("::group::publish");
-    publish_project(&cwd, &action.publishers, option.dry_run).await;
+    publish_project(&cwd, &action.publishers, &info, option.dry_run).await;
     println!("::endgroup::");
 
     let new_version = version.make_next_patch().of_snapshot();
@@ -167,7 +174,17 @@ async fn change_version(
     return (versions.into_iter().next().unwrap(), files_to_add);
 }
 
-async fn create_changelog(cwd: &Path, repo_url: &str) {
+macro_rules! create_release_note_string {
+    ($name: ident, $write: stmt;) => {{
+        let mut $name = Vec::<u8>::new();
+        {
+            $write
+        }
+        String::from_utf8($name).expect("invalid utf8 sequence")
+    }};
+}
+
+async fn create_changelog(cwd: &Path, repo_url: &str) -> (String, String) {
     let repo = ChangelogRepo::open(cwd).expect("opening repo failed");
     let releases = repo
         .fetch_releases(|x| lazy_regex::regex_is_match!(r#"^[\d.]+$"#, x))
@@ -176,27 +193,44 @@ async fn create_changelog(cwd: &Path, repo_url: &str) {
     let file = tokio::fs::File::create(cwd)
         .await
         .expect("create CHANGELOG");
-    repo.create_release_html(
-        &releases[0],
+    repo.create_releases_markdown(
+        &releases,
         &GithubLinkCreator::new(repo_url),
         &mut tokio::io::BufWriter::new(file),
     )
     .await
-    .unwrap()
+    .unwrap();
+
+    let release_note_html = create_release_note_string!(buf, 
+        repo.create_release_html(&releases[0], &GithubLinkCreator::new(repo_url), &mut buf)
+            .await
+            .unwrap(););
+    let release_note_markdown = create_release_note_string!(buf,
+        repo.create_release_html(&releases[0], &GithubLinkCreator::new(repo_url), &mut buf)
+            .await
+            .unwrap(););
+    return (release_note_html, release_note_markdown);
 }
 
-async fn build_project(project: &Path, builders: &[&dyn Builder]) {
+async fn build_project(project: &Path, builders: &[&dyn Builder], version_info: &VersionInfo) {
     for builder in builders {
         println!("::group::running builder {}", builder.name());
-        builder.build_project(&project).await;
+        builder.build_project(&project, version_info).await;
         println!("::endgroup::");
     }
 }
 
-async fn publish_project(project: &Path, builders: &[&dyn Publisher], dry_run: bool) {
+async fn publish_project(
+    project: &Path,
+    builders: &[&dyn Publisher],
+    version_info: &VersionInfo,
+    dry_run: bool,
+) {
     for builder in builders {
         println!("::group::running publisher {}", builder.name());
-        builder.publish_project(&project, dry_run).await;
+        builder
+            .publish_project(&project, version_info, dry_run)
+            .await;
         println!("::endgroup::");
     }
 }

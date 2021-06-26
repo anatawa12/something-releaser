@@ -58,7 +58,7 @@ macro_rules! types_enum {
         impl Types {
             pub(in super::super) fn get_instance(self) -> &'static dyn $trait_name {
                 match self {
-                    $(Types::$name -> &$name,)*
+                    $(Types::$name => &$name,)*
                 }
             }
         }
@@ -76,7 +76,7 @@ macro_rules! fns_returns_static_slice {
         $type_name: ident {
             $(
             $fun_name:ident -> [$enum_type_name: ty] {
-                $($enum_val_name: ident : [$($val_name: expr),* $(,)?]),*
+                $($enum_val_name: ident : [$($val_name: ident),* $(,)?]),*
                 $(,)?
             }
             )*
@@ -89,7 +89,7 @@ macro_rules! fns_returns_static_slice {
                     $(
                     ReleaseSystem::$enum_val_name => &[
                         $(
-                        $enum_type_name::&$val_name,
+                        <$enum_type_name>::$val_name,
                         )*
                     ],
                     )*
@@ -103,10 +103,18 @@ macro_rules! fns_returns_static_slice {
 fns_returns_static_slice! {
     ReleaseSystem {
         version_changers -> [version_changer::Types] {
-            Gradle: [],
-            GradleIntellijPlugin: [],
-            GradleMaven: [],
-            GradlePlugin: [],
+            Gradle: [
+                GradlePropertiesVersionChanger,
+            ],
+            GradleIntellijPlugin: [
+                GradlePropertiesVersionChanger,
+            ],
+            GradleMaven: [
+                GradlePropertiesVersionChanger,
+            ],
+            GradlePlugin: [
+                GradlePropertiesVersionChanger,
+            ],
         }
         builders -> [builder::Types] {
             Gradle: [],

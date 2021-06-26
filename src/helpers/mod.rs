@@ -2,8 +2,10 @@ use tokio::io;
 use tokio::process::Command;
 
 pub use git::GitHelper;
+pub use properties::PropertiesFile;
 
 mod git;
+mod properties;
 
 // helper utils
 

@@ -2,10 +2,11 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 
 use clap::Clap;
+use tokio::io::AsyncWriteExt;
 use url::Url;
 
-use crate::release_system::*;
 use crate::*;
+use crate::release_system::*;
 
 use super::changelog::{ChangelogRepo, GithubLinkCreator};
 
@@ -67,7 +68,7 @@ pub async fn main(option: &Options) {
 
     let new_version = version.make_next_patch().of_snapshot();
     println!("::group::changing version for next: {}", new_version);
-    let changed_files = change_version_for_next(&action.version_changers, version, &cwd).await;
+    let changed_files = change_version_for_next(&action.version_changers, new_version, &cwd).await;
     repo.add_files(changed_files.iter())
         .await
         .expect("add version files");
@@ -187,19 +188,22 @@ macro_rules! create_release_note_string {
 async fn create_changelog(cwd: &Path, repo_url: &str) -> (String, String) {
     let repo = ChangelogRepo::open(cwd).expect("opening repo failed");
     let releases = repo
-        .fetch_releases(|x| lazy_regex::regex_is_match!(r#"^[\d.]+$"#, x))
+        .fetch_releases(|x| lazy_regex::regex_is_match!(r#"^v?[\d.]+$"#, x))
         .expect("fetching releases");
     let releases = repo.parse_releases(&releases).expect("parsing releases");
-    let file = tokio::fs::File::create(cwd)
+    let file = tokio::fs::File::create(cwd.join("CHANGELOG.md"))
         .await
         .expect("create CHANGELOG");
+    let mut file = tokio::io::BufWriter::new(file);
     repo.create_releases_markdown(
         &releases,
         &GithubLinkCreator::new(repo_url),
-        &mut tokio::io::BufWriter::new(file),
+        &mut file,
     )
-    .await
-    .unwrap();
+        .await
+        .unwrap();
+    file.flush().await.expect("write changelog");
+    drop(file);
 
     let release_note_html = create_release_note_string!(buf, 
         repo.create_release_html(&releases[0], &GithubLinkCreator::new(repo_url), &mut buf)

@@ -32,14 +32,9 @@ impl Builder for GradleBuilder {
             .expect("creating release note init script");
         let mut init_script = BufWriter::new(init_script);
         let buf = format!(
-            r#"
-beforeProject {{ proj ->
-    proj.ext.set("com.anatawa12.releaser.release-note.html", '{}')
-    proj.ext.set("com.anatawa12.releaser.release-note.markdown", '{}')
-}}
-"#,
-            version_info.release_note_html.escape_groovy(),
-            version_info.release_note_markdown.escape_groovy(),
+            proc_macros::load_format_file!("templates/release_notes.init.gradle", "<<", ">>"),
+            html = version_info.release_note_html.escape_groovy(),
+            markdown = version_info.release_note_markdown.escape_groovy(),
         );
         init_script
             .write_all(buf.as_bytes())

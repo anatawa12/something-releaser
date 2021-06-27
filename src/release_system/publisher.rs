@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use rand::Rng;
+use tempfile::NamedTempFile;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
@@ -16,6 +17,22 @@ pub trait Publisher {
         dry_run: bool,
     ) -> ();
     fn name(&self) -> &'static str;
+}
+
+async fn create_temp_init_script(body: &str, prefix: &str) -> NamedTempFile {
+    let init_script = tempfile::Builder::new()
+        .prefix(prefix)
+        .suffix(".init.gradle")
+        .tempfile()
+        .expect("failed to create a temporal init script file.");
+    let mut file = File::create(init_script.path())
+        .await
+        .expect("failed to open init script file");
+    file.write_all(body.as_bytes())
+        .await
+        .expect("failed to write init script");
+    drop(file);
+    return init_script;
 }
 
 pub(super) struct GradleMavenPublisher;
@@ -57,49 +74,11 @@ impl Publisher for GradleMavenPublisher {
         }
 
         let body = format!(
-            r#"
-afterProject {{ proj ->
-    if (proj.plugins.findPlugin("org.gradle.maven-publish") == null) return;
-
-    proj.apply {{
-        plugin("signing")
-    }}
-
-    proj.signing {{
-        useInMemoryPgpKeys(property("{rand0}pgp_key{rand1}"), property("{rand0}pgp_pass{rand1}"))
-        proj.publishing.publications.forEach {{ publication ->
-            sign(publication)
-        }}
-    }}
-
-    proj.publishing.repositories {{
-        maven {{
-            name = "mavenCentral"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-
-            credentials {{
-                username = property("{rand0}user{rand1}")
-                password = property("{rand0}pass{rand1}")
-            }}
-        }}
-    }}
-}}
-"#,
+            proc_macros::load_format_file!("templates/gradle-maven.init.gradle", "<<", ">>"),
             rand0 = rand0,
             rand1 = rand1,
         );
-        let init_script = tempfile::Builder::new()
-            .prefix("maven-publish")
-            .suffix(".init.gradle")
-            .tempfile()
-            .expect("failed to create a init script file.");
-        let mut file = File::create(init_script.path())
-            .await
-            .expect("failed to open init script file");
-        file.write_all(body.as_bytes())
-            .await
-            .expect("failed to write init script");
-        drop(file);
+        let init_script = create_temp_init_script(&body, "maven-publish").await;
         trace!("init script created at {}", init_script.path().display());
         GradleWrapperHelper::new(project)
             .add_init_script(init_script.path())

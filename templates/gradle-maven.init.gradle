@@ -1,0 +1,26 @@
+afterProject { proj ->
+    if (proj.plugins.findPlugin("org.gradle.maven-publish") == null) return
+
+    proj.apply {
+        plugin("signing")
+    }
+
+    proj.signing {
+        useInMemoryPgpKeys(property("<<rand0>>pgp_key<<rand1>>"), property("<<rand0>>pgp_pass<<rand1>>"))
+        proj.publishing.publications.forEach { publication ->
+            sign(publication)
+        }
+    }
+
+    proj.publishing.repositories {
+        maven {
+            name = "mavenCentral"
+            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+            credentials {
+                username = property("<<rand0>>user<<rand1>>")
+                password = property("<<rand0>>pass<<rand1>>")
+            }
+        }
+    }
+}

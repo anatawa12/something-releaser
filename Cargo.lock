@@ -773,6 +773,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "proc_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1008,6 +1017,7 @@ dependencies = [
  "itertools",
  "lazy-regex",
  "log",
+ "proc_macros",
  "rand",
  "regex",
  "reqwest",

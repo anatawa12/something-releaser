@@ -1,0 +1,4 @@
+beforeProject { proj ->
+    proj.ext.set("com.anatawa12.releaser.release-note.html", '<<html>>')
+    proj.ext.set("com.anatawa12.releaser.release-note.markdown", '<<markdown>>')
+}

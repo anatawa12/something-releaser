@@ -21,6 +21,8 @@ html-escape = "0.2"
 itertools = "0.10"
 async-trait = "0.1"
 home = "0.5.3"
+tempfile = "3"
+reqwest = "0.11"
 
 [dependencies.clap]
 version = "= 3.0.0-beta.2"

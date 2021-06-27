@@ -1008,6 +1008,7 @@ dependencies = [
  "itertools",
  "lazy-regex",
  "log",
+ "rand",
  "regex",
  "reqwest",
  "stderrlog",

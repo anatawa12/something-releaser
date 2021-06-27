@@ -30,6 +30,13 @@ impl GradleWrapperHelper {
         self
     }
 
+    pub fn add_property(&mut self, key: impl AsRef<str>, value: impl AsRef<str>) -> &mut Self {
+        self.options.push("--project-prop".into());
+        self.options
+            .push(format!("{}={}", key.as_ref(), value.as_ref()).into());
+        self
+    }
+
     pub async fn run_tasks(
         &self,
         tasks: impl IntoIterator<Item = impl AsRef<OsStr>>,

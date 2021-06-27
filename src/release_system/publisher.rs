@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use rand::Rng;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
@@ -33,6 +34,8 @@ impl Publisher for GradleMavenPublisher {
             .expect("invalid GRADLE_MAVEN_AUTH: no ':' in string");
         let pgp_key = std::env::var("GPG_PRIVATE_KEY").expect("no GPG_PRIVATE_KEY env var");
         let pgp_pass = std::env::var("GPG_PRIVATE_PASS").expect("no GPG_PRIVATE_PASS env var");
+        let random = rand::thread_rng().gen_ascii_rand(20);
+        let (rand0, rand1) = random.split_at(rand::thread_rng().gen_range(0..random.len()));
 
         // verify user and pass
         {
@@ -63,7 +66,7 @@ afterProject {{ proj ->
     }}
 
     proj.signing {{
-        useInMemoryPgpKeys("{pgp_key}", "{pgp_pass}")
+        useInMemoryPgpKeys(property("{rand0}pgp_key{rand1}"), property("{rand0}pgp_pass{rand1}"))
         proj.publishing.publications.forEach {{ publication ->
             sign(publication)
         }}
@@ -75,17 +78,15 @@ afterProject {{ proj ->
             url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
 
             credentials {{
-                username = "{user}"
-                password = "{pass}"
+                username = property("{rand0}user{rand1}")
+                password = property("{rand0}pass{rand1}")
             }}
         }}
     }}
 }}
 "#,
-            pgp_key = pgp_key.escape_groovy(),
-            pgp_pass = pgp_pass.escape_groovy(),
-            user = user.escape_groovy(),
-            pass = pass.escape_groovy(),
+            rand0 = rand0,
+            rand1 = rand1,
         );
         let init_script = tempfile::Builder::new()
             .prefix("maven-publish")
@@ -102,6 +103,10 @@ afterProject {{ proj ->
         trace!("init script created at {}", init_script.path().display());
         GradleWrapperHelper::new(project)
             .add_init_script(init_script.path())
+            .add_property(format!("{}pgp_key{}", rand0, rand1), pgp_key)
+            .add_property(format!("{}pgp_pass{}", rand0, rand1), pgp_pass)
+            .add_property(format!("{}user{}", rand0, rand1), user)
+            .add_property(format!("{}pass{}", rand0, rand1), pass)
             .run_tasks(&["publish"])
             .await
             .expect("./gradlew publish");
@@ -127,37 +132,14 @@ impl Publisher for GradlePluginPortalPublisher {
             .split_once(":")
             .expect("invalid GRADLE_PUBLISH_AUTH: no ':' in string");
 
-        let body = format!(
-            r#"
-afterProject {{ proj ->
-    proj.ext.set("gradle.publish.key", '{key}')
-    proj.ext.set("gradle.publish.secret", '{secret}')
-}}
-"#,
-            key = publish_key.escape_groovy(),
-            secret = publish_secret.escape_groovy(),
-        );
-        let init_script = tempfile::Builder::new()
-            .prefix("gradle-publish")
-            .suffix(".init.gradle")
-            .tempfile()
-            .expect("failed to create a init script file.");
-        let mut file = File::create(init_script.path())
-            .await
-            .expect("failed to open init script file");
-        file.write_all(body.as_bytes())
-            .await
-            .expect("failed to write init script");
-        drop(file);
-        trace!("init script created at {}", init_script.path().display());
-
         if dry_run {
             warn!("dry run! no publishPlugins task invocation");
             return;
         }
 
         GradleWrapperHelper::new(project)
-            .add_init_script(init_script.path())
+            .add_property("gradle.publish.key", publish_key)
+            .add_property("gradle.publish.secret", publish_secret)
             .run_tasks(&["publishPlugins"])
             .await
             .expect("./gradlew publishPlugins");

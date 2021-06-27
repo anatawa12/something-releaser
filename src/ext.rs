@@ -1,5 +1,8 @@
 use std::fmt::{Debug, Display};
 
+use rand::prelude::SliceRandom;
+use rand::RngCore;
+
 pub(crate) trait ResultExt<T, R> {
     fn expect_fn<S: Display, F: FnOnce() -> S>(self, func: F) -> T;
 }
@@ -44,5 +47,25 @@ impl StrExt for str {
 impl StrExt for String {
     fn escape_groovy(&self) -> String {
         self.as_str().escape_groovy()
+    }
+}
+
+pub(crate) trait RngExt {
+    fn gen_ascii_rand(&mut self, len: usize) -> String;
+}
+
+const BASE_STR: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+impl<T: RngCore> RngExt for T {
+    fn gen_ascii_rand(&mut self, len: usize) -> String {
+        unsafe {
+            String::from_utf8_unchecked(
+                BASE_STR
+                    .as_bytes()
+                    .choose_multiple(self, len)
+                    .cloned()
+                    .collect(),
+            )
+        }
     }
 }

@@ -21,8 +21,10 @@ pub async fn main(option: &Options) {
 
     println!("::group::cloning repository...");
     let repo = init_git_repo(&cwd).await;
-    set_remote(&repo, origin, &option.repo).await;
-    clone_remote(&repo, origin, option.branch.as_ref().map(String::as_str)).await;
+    if !option.no_clone {
+        set_remote(&repo, origin, &option.repo).await;
+        clone_remote(&repo, origin, option.branch.as_ref().map(String::as_str)).await;
+    }
     println!("::endgroup::");
 
     println!("::group::changing version...");
@@ -280,4 +282,7 @@ pub struct Options {
     /// if this was specified, dry-runs publishing and pushing
     #[clap(long)]
     dry_run: bool,
+    /// if this was specified, use existing repository.
+    #[clap(long)]
+    no_clone: bool,
 }

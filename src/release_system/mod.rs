@@ -136,7 +136,9 @@ fns_returns_static_slice! {
             GradleMaven: [
                 GradleMavenPublisher
             ],
-            GradlePlugin: [],
+            GradlePlugin: [
+                GradlePluginPortalPublisher,
+            ],
         }
     }
 }

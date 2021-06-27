@@ -112,6 +112,63 @@ afterProject {{ proj ->
     }
 }
 
+pub(super) struct GradlePluginPortalPublisher;
+
+#[async_trait()]
+impl Publisher for GradlePluginPortalPublisher {
+    async fn publish_project(
+        &self,
+        project: &Path,
+        _version_info: &VersionInfo,
+        dry_run: bool,
+    ) -> () {
+        let auth = std::env::var("GRADLE_PUBLISH_AUTH").expect("no GRADLE_PUBLISH_AUTH env var");
+        let (publish_key, publish_secret) = auth
+            .split_once(":")
+            .expect("invalid GRADLE_PUBLISH_AUTH: no ':' in string");
+
+        let body = format!(
+            r#"
+afterProject {{ proj ->
+    proj.ext.set("gradle.publish.key", '{key}')
+    proj.ext.set("gradle.publish.secret", '{secret}')
+}}
+"#,
+            key = publish_key.escape_groovy(),
+            secret = publish_secret.escape_groovy(),
+        );
+        let init_script = tempfile::Builder::new()
+            .prefix("gradle-publish")
+            .suffix(".init.gradle")
+            .tempfile()
+            .expect("failed to create a init script file.");
+        let mut file = File::create(init_script.path())
+            .await
+            .expect("failed to open init script file");
+        file.write_all(body.as_bytes())
+            .await
+            .expect("failed to write init script");
+        drop(file);
+        trace!("init script created at {}", init_script.path().display());
+
+        if dry_run {
+            warn!("dry run! no publishPlugins task invocation");
+            return;
+        }
+
+        GradleWrapperHelper::new(project)
+            .add_init_script(init_script.path())
+            .run_tasks(&["publishPlugins"])
+            .await
+            .expect("./gradlew publishPlugins");
+    }
+
+    fn name(&self) -> &'static str {
+        "gradle plugin portal publisher"
+    }
+}
+
 types_enum!(Publisher {
     GradleMavenPublisher,
+    GradlePluginPortalPublisher,
 });

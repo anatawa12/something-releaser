@@ -335,6 +335,7 @@ fn prepare_commits<'r>(repo: &Repository, mut commits: Vec<Commit<'r>>) -> Vec<C
             commit
                 .summary()
                 .map(|x| {
+                    let x = x.trim_start_matches("prepare for next version: ");
                     let is_valid = !lazy_regex::regex_is_match!(
                         r#"^v?\d+\.\d+\.\d+(-[a-zA-Z0-9-.]+)?(\+[0-9a-zA-Z0-9.-]+)?"#,
                         x

@@ -33,9 +33,9 @@ impl Builder for GradleBuilder {
         let mut init_script = BufWriter::new(init_script);
         let buf = format!(
             r#"
-beforeProject {{
-    ext.set("com.anatawa12.releaser.release-note.html", '{}')
-    ext.set("com.anatawa12.releaser.release-note.markdown", '{}')
+beforeProject {{ proj ->
+    proj.ext.set("com.anatawa12.releaser.release-note.html", '{}')
+    proj.ext.set("com.anatawa12.releaser.release-note.markdown", '{}')
 }}
 "#,
             version_info.release_note_html.escape_groovy(),

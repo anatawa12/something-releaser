@@ -46,6 +46,7 @@ async fn replace_file(
     verbose!("buffered");
     let mut properties = OpenOptions::new()
         .write(true)
+        .truncate(true)
         .open(&properties_path)
         .await?;
     properties.write_all(&buf).await?;

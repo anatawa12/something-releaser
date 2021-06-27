@@ -26,6 +26,7 @@ impl Builder for GradleBuilder {
         let init_script = OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(&init_script)
             .await
             .expect("creating release note init script");

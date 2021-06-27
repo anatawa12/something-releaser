@@ -132,7 +132,9 @@ fns_returns_static_slice! {
         }
         publishers -> [publisher::Types] {
             Gradle: [],
-            GradleIntellijPlugin: [],
+            GradleIntellijPlugin: [
+                GradleIntellijPublisher,
+            ],
             GradleMaven: [
                 GradleMavenPublisher
             ],

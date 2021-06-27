@@ -129,7 +129,49 @@ impl Publisher for GradlePluginPortalPublisher {
     }
 }
 
+pub(super) struct GradleIntellijPublisher;
+
+#[async_trait()]
+impl Publisher for GradleIntellijPublisher {
+    async fn publish_project(
+        &self,
+        project: &Path,
+        _version_info: &VersionInfo,
+        dry_run: bool,
+    ) -> () {
+        let token =
+            std::env::var("GRADLE_INTELLIJ_TOKEN").expect("no GRADLE_INTELLIJ_TOKEN env var");
+        let random = rand::thread_rng().gen_ascii_rand(20);
+        let (rand0, rand1) = random.split_at(rand::thread_rng().gen_range(0..random.len()));
+
+        if dry_run {
+            warn!("dry run! no publishPlugin task invocation");
+            return;
+        }
+
+        let body = format!(
+            proc_macros::load_format_file!("templates/intellij-publish.init.gradle", "<<", ">>"),
+            rand0 = rand0,
+            rand1 = rand1,
+        );
+        let init_script = create_temp_init_script(&body, "intellij-publish").await;
+        trace!("init script created at {}", init_script.path().display());
+
+        GradleWrapperHelper::new(project)
+            .add_init_script(init_script.path())
+            .add_property(format!("{}token{}", rand0, rand1), token)
+            .run_tasks(&["publishPlugin"])
+            .await
+            .expect("./gradlew publishPlugin");
+    }
+
+    fn name(&self) -> &'static str {
+        "gradle maven publisher"
+    }
+}
+
 types_enum!(Publisher {
     GradleMavenPublisher,
     GradlePluginPortalPublisher,
+    GradleIntellijPublisher,
 });

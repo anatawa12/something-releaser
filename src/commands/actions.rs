@@ -32,12 +32,12 @@ pub async fn main(option: &Options) {
     repo.add_files(changed_files.iter())
         .await
         .expect("add version files");
-    let version_name = version.to_string();
+    let version_tag_name = format!("v{}", version);
     println!("::endgroup::");
 
     println!("::group::version commit & tag");
-    repo.commit(&version_name).await.expect("commit");
-    repo.add_tag(&version_name, "HEAD").await.expect("tag");
+    repo.commit(&version_tag_name).await.expect("commit");
+    repo.add_tag(&version_tag_name, "HEAD").await.expect("tag");
     println!("::endgroup::");
 
     println!("::group::changelog");
@@ -56,8 +56,8 @@ pub async fn main(option: &Options) {
 
     println!("::group::changelog amend commit & re-tag");
     repo.commit_amend().await.expect("commit --amend");
-    repo.remove_tag(&version_name).await.expect("remove tag");
-    repo.add_tag(&version_name, "HEAD").await.expect("tag");
+    repo.remove_tag(&version_tag_name).await.expect("remove tag");
+    repo.add_tag(&version_tag_name, "HEAD").await.expect("tag");
     println!("::endgroup::");
 
     println!("::group::build");

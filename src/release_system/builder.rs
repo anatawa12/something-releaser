@@ -38,8 +38,8 @@ beforeProject {{
     ext.set("com.anatawa12.releaser.release-note.markdown", '{}')
 }}
 "#,
-            escape(&version_info.release_note_html),
-            escape(&version_info.release_note_markdown)
+            version_info.release_note_html.escape_groovy(),
+            version_info.release_note_markdown.escape_groovy(),
         );
         init_script
             .write_all(buf.as_bytes())
@@ -60,28 +60,6 @@ beforeProject {{
     fn name(&self) -> &'static str {
         "gradle with wrapper"
     }
-}
-
-fn escape(str: &str) -> String {
-    let mut builder = Vec::<u8>::with_capacity(str.len());
-    for x in str.bytes() {
-        if x == b'\r' {
-            builder.extend_from_slice(b"\\r")
-        } else if x == b'\n' {
-            builder.extend_from_slice(b"\\n")
-        } else if x == b'\\' {
-            builder.extend_from_slice(b"\\\\")
-        } else if x == b'$' {
-            builder.extend_from_slice(b"\\$")
-        } else if x == b'\'' {
-            builder.extend_from_slice(b"\\\'")
-        } else if x == b'\"' {
-            builder.extend_from_slice(b"\\\"")
-        } else {
-            builder.push(x)
-        }
-    }
-    unsafe { String::from_utf8_unchecked(builder) }
 }
 
 types_enum!(Builder { GradleBuilder });

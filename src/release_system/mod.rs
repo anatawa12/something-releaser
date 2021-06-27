@@ -117,10 +117,18 @@ fns_returns_static_slice! {
             ],
         }
         builders -> [builder::Types] {
-            Gradle: [],
-            GradleIntellijPlugin: [],
-            GradleMaven: [],
-            GradlePlugin: [],
+            Gradle: [
+                GradleBuilder,
+            ],
+            GradleIntellijPlugin: [
+                GradleBuilder,
+            ],
+            GradleMaven: [
+                GradleBuilder,
+            ],
+            GradlePlugin: [
+                GradleBuilder,
+            ],
         }
         publishers -> [publisher::Types] {
             Gradle: [],

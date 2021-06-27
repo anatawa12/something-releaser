@@ -2,9 +2,12 @@ use tokio::io;
 use tokio::process::Command;
 
 pub use git::GitHelper;
+pub use gradle_wrapper::GradleWrapperHelper;
 pub use properties::PropertiesFile;
 
 mod git;
+#[path = "gradle-wrapper.rs"]
+mod gradle_wrapper;
 mod properties;
 
 // helper utils

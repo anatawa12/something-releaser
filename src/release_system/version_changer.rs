@@ -78,7 +78,7 @@ impl VersionChanger for GradlePropertiesVersionChanger {
                 warn!(
                     "current version is not a snapshot version, this will use next patch version!"
                 );
-                version.make_next_patch()
+                version.make_next_version()
             }
         })
         .await?;

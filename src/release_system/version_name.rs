@@ -46,10 +46,22 @@ impl VersionName {
         }
     }
 
-    pub fn make_next_patch(self) -> Self {
-        Self {
-            patch: self.patch + 1,
-            ..self
+    pub fn make_next_version(self) -> Self {
+        if self.patch != u8::MAX {
+            Self {
+                patch: self.patch + 1,
+                ..self
+            }
+        } else if self.minor != u8::MAX {
+            Self {
+                minor: self.minor + 1,
+                ..self
+            }
+        } else {
+            Self {
+                major: self.major + 1,
+                ..self
+            }
         }
     }
 

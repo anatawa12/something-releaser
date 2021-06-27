@@ -68,7 +68,7 @@ pub async fn main(option: &Options) {
     publish_project(&cwd, &action.publishers, &info, option.dry_run).await;
     println!("::endgroup::");
 
-    let new_version = version.make_next_patch().of_snapshot();
+    let new_version = version.make_next_version().of_snapshot();
     println!("::group::changing version for next: {}", new_version);
     let changed_files = change_version_for_next(&action.version_changers, new_version, &cwd).await;
     repo.add_files(changed_files.iter())

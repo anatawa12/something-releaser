@@ -91,4 +91,5 @@ macro_rules! ____subcommands {
 ____subcommands![
     actions;
     changelog;
+    update_version;
 ];

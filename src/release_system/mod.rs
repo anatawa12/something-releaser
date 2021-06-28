@@ -181,3 +181,16 @@ pub struct ReleaserAction<'r> {
     pub builders: Vec<&'r dyn Builder>,
     pub publishers: Vec<&'r dyn Publisher>,
 }
+
+impl<'r> ReleaserAction<'r> {
+    pub fn verify_exit(&self) {
+        let mut errors = false;
+        if self.version_changers.is_empty() {
+            error!("no version changing release system specified!");
+            errors = true;
+        }
+        if errors {
+            std::process::exit(-1);
+        }
+    }
+}

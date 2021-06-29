@@ -24,6 +24,8 @@ home = "0.5.3"
 tempfile = "3"
 reqwest = "0.11"
 rand = "0.8"
+libz-sys = { version = "1", default-features = false, features = ["static"] }
+openssl-sys = { version = "0", default-features = false, features = ["vendored"] }
 
 [dependencies.clap]
 version = "= 3.0.0-beta.2"

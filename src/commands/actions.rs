@@ -5,7 +5,6 @@ use git2::Repository;
 use url::Url;
 
 use crate::release_system::*;
-use crate::*;
 
 use super::update_version::run as update_version;
 use super::update_version_next::run as update_version_next;
@@ -17,7 +16,6 @@ pub async fn main(option: &Options) {
 
     let cwd = std::env::current_dir().expect("failed to get cwd");
     let repo = Repository::open(&cwd).expect("failed to open git repository");
-    let mut origin = repo.find_remote("origin").expect("getting origin");
 
     println!("::group::changing version...");
     let info = update_version(
@@ -42,17 +40,6 @@ pub async fn main(option: &Options) {
     println!("::group::changing version for next: {}", new_version);
     update_version_next(&cwd, &repo, new_version, &action).await;
     println!("::endgroup::");
-
-    if option.dry_run {
-        info!("dry run specified! no push")
-    } else {
-        println!("::group::push");
-        origin
-            .push(&[format!("v{}", info.version)], None)
-            .expect("pushing");
-        origin.push::<&str>(&[], None).expect("pushing");
-        println!("::endgroup::");
-    }
 }
 
 async fn build_project(project: &Path, builders: &[&dyn Builder], version_info: &VersionInfo) {

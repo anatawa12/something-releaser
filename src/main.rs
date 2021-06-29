@@ -95,4 +95,5 @@ ____subcommands![
     update_version;
     update_version_next;
     build;
+    publish;
 ];

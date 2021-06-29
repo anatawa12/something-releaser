@@ -7,6 +7,7 @@ use url::Url;
 use crate::release_system::*;
 
 use super::build::run as build_project;
+use super::publish::run as publish_project;
 use super::update_version::run as update_version;
 use super::update_version_next::run as update_version_next;
 
@@ -34,7 +35,7 @@ pub async fn main(option: &Options) {
     println!("::endgroup::");
 
     println!("::group::publish");
-    publish_project(&cwd, &action.publishers, &info, option.dry_run).await;
+    publish_project(&cwd, &action.publishers, &info, option.dry_run, true).await;
     println!("::endgroup::");
 
     let new_version = info.version.make_next_version();
@@ -47,21 +48,6 @@ pub async fn main(option: &Options) {
     )
     .await;
     println!("::endgroup::");
-}
-
-async fn publish_project(
-    project: &Path,
-    builders: &[&dyn Publisher],
-    version_info: &VersionInfo,
-    dry_run: bool,
-) {
-    for builder in builders {
-        println!("::group::running publisher {}", builder.name());
-        builder
-            .publish_project(&project, version_info, dry_run)
-            .await;
-        println!("::endgroup::");
-    }
 }
 
 /// Run processes for GitHub actions

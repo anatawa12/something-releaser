@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use clap::Clap;
+use git2::Repository;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::spawn;
@@ -17,7 +18,7 @@ pub async fn main(option: &Options) {
     action.verify_exit();
 
     let cwd = std::env::current_dir().expect("failed to get cwd");
-    let repo = GitHelper::new(&cwd);
+    let repo = Repository::open(&cwd).expect("failed to open cwd git repo");
 
     let info = run(
         &cwd,
@@ -62,32 +63,39 @@ pub async fn main(option: &Options) {
 
 pub async fn run(
     target_dir: &Path,
-    repo: &GitHelper,
+    repo: &Repository,
     action: &ReleaserAction<'_>,
     changelog: &Path,
     repo_url: &str,
 ) -> VersionInfo {
+    let mut index = repo.index().expect("get index");
+
     // 1. change version name
     let (version, changed_files) = change_version(&action.version_changers, &target_dir).await;
-    repo.add_files(changed_files.iter())
-        .await
-        .expect("add version files");
+    repo.add_files(&mut index, changed_files.iter());
     let version_tag_name = format!("v{}", version);
 
     // 2. commit newer version
-    repo.commit(&version_tag_name).await.expect("commit");
-    repo.add_tag(&version_tag_name, "HEAD").await.expect("tag");
+    repo.commit_head(&mut index, &version_tag_name, false);
+    repo.reference(
+        &format!("refs/tags/{}", version_tag_name),
+        repo.head().expect("HEAD").target().unwrap(),
+        false,
+        &format!("crate tag {}", version_tag_name),
+    ).expect_fn(|| format!("creating {}", version_tag_name));
 
     // 3. create changelog
     let (release_note_html, release_note_markdown) =
         create_changelog(target_dir, changelog, repo_url).await;
-    repo.add_files([target_dir.join(changelog)].iter())
-        .await
-        .expect("add changelog");
+    repo.add_files(&mut index, [target_dir.join(changelog)].iter());
 
-    repo.commit_amend().await.expect("commit --amend");
-    repo.remove_tag(&version_tag_name).await.expect("remove tag");
-    repo.add_tag(&version_tag_name, "HEAD").await.expect("tag");
+    repo.commit_head(&mut index, "", true);
+    repo.reference(
+        &format!("refs/tags/{}", version_tag_name),
+        repo.head().expect("HEAD").target().unwrap(),
+        true,
+        &format!("crate tag {}", version_tag_name),
+    ).expect_fn(|| format!("creating {}", version_tag_name));
 
     VersionInfo {
         version,

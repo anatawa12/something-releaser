@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use clap::Clap;
+use git2::Repository;
 use url::Url;
 
 use crate::release_system::*;
@@ -14,7 +15,9 @@ pub async fn main(option: &Options) {
     action.verify_exit();
 
     let cwd = std::env::current_dir().expect("failed to get cwd");
-    let repo = GitHelper::new(&cwd);
+    let repo = Repository::open(&cwd).expect("failed to open git repository");
+    let mut index = repo.index().expect("getting index");
+    let mut origin = repo.find_remote("origin").expect("getting origin");
 
     println!("::group::changing version...");
     let info = update_version(
@@ -38,25 +41,19 @@ pub async fn main(option: &Options) {
     let new_version = info.version.make_next_version().of_snapshot();
     println!("::group::changing version for next: {}", new_version);
     let changed_files = change_version_for_next(&action.version_changers, new_version, &cwd).await;
-    repo.add_files(changed_files.iter())
-        .await
-        .expect("add version files");
-    println!("::endgroup::");
-
-    println!("::group::next version commit");
-    repo.commit(&format!(
-        "prepare for next version: {}",
-        new_version.un_snapshot()
-    ))
-    .await
-    .expect("next version commit");
+    repo.add_files(&mut index, changed_files.iter());
+    let message = format!("prepare for next version: {}", new_version.un_snapshot());
+    repo.commit_head(&mut index, &message, false);
     println!("::endgroup::");
 
     if option.dry_run {
         info!("dry run specified! no push")
     } else {
         println!("::group::push");
-        repo.push("origin").await.expect("push");
+        origin
+            .push(&[format!("v{}", info.version)], None)
+            .expect("pushing");
+        origin.push::<&str>(&[], None).expect("pushing");
         println!("::endgroup::");
     }
 }

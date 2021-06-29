@@ -18,12 +18,12 @@ pub enum ReleaseSystem {
 }
 
 impl FromStr for ReleaseSystem {
-    type Err = ReleaseSystemErr;
+    type Err = UnknownTypeErr;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             $($value => Ok(ReleaseSystem::$name),)*
-            unknown => Err(ReleaseSystemErr{ name: unknown.to_owned() })
+            unknown => Err(UnknownTypeErr{ name: unknown.to_owned() })
         }
     }
 }
@@ -38,18 +38,18 @@ __release_system_enum! {
 }
 
 #[derive(Debug)]
-pub struct ReleaseSystemErr {
+pub struct UnknownTypeErr {
     name: String,
 }
 
-impl Display for ReleaseSystemErr {
+impl Display for UnknownTypeErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "unknown release system error: {}", &self.name)
+        write!(f, "unknown type error: {}", &self.name)
     }
 }
 
 macro_rules! types_enum {
-    ($trait_name: ident { $($name: ident),* $(,)? }) => {
+    ($trait_name: ident { $($name: ident: $str: expr),* $(,)? }) => {
         #[derive(Copy, Clone, Eq, PartialEq, std::hash::Hash)]
         pub(super) enum Types {
             $($name,)*
@@ -59,6 +59,24 @@ macro_rules! types_enum {
             pub(in super::super) fn get_instance(self) -> &'static dyn $trait_name {
                 match self {
                     $(Types::$name => &$name,)*
+                }
+            }
+
+            #[allow(dead_code)]
+            pub(in super::super) fn name(self) -> &'static str {
+                match self {
+                    $(Types::$name => $str,)*
+                }
+            }
+        }
+
+        impl ::std::str::FromStr for Types {
+            type Err = super::UnknownTypeErr;
+
+            fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
+                match s {
+                    $($str => Ok(Types::$name),)*
+                    unknown => Err(super::UnknownTypeErr{ name: unknown.to_owned() })
                 }
             }
         }

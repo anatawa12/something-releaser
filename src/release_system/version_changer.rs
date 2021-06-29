@@ -98,5 +98,5 @@ impl VersionChanger for GradlePropertiesVersionChanger {
 }
 
 types_enum!(VersionChanger {
-    GradlePropertiesVersionChanger,
+    GradlePropertiesVersionChanger: "gradle-properties",
 });

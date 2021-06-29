@@ -57,4 +57,6 @@ impl Builder for GradleBuilder {
     }
 }
 
-types_enum!(Builder { GradleBuilder });
+types_enum!(Builder {
+    GradleBuilder: "gradle",
+});

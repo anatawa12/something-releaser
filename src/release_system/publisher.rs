@@ -171,7 +171,7 @@ impl Publisher for GradleIntellijPublisher {
 }
 
 types_enum!(Publisher {
-    GradleMavenPublisher,
-    GradlePluginPortalPublisher,
-    GradleIntellijPublisher,
+    GradleMavenPublisher: "gradle-maven",
+    GradlePluginPortalPublisher: "gradle-plugin-portal",
+    GradleIntellijPublisher: "gradle-intellij-publisher",
 });

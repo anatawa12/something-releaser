@@ -21,7 +21,7 @@ pub async fn main(option: &Options) {
     let info = update_version(
         &cwd,
         &repo,
-        &action,
+        &action.version_changers.as_slice(),
         Path::new("CHANGELOG.md"),
         &option.repo.to_string(),
     )
@@ -38,7 +38,13 @@ pub async fn main(option: &Options) {
 
     let new_version = info.version.make_next_version();
     println!("::group::changing version for next: {}", new_version);
-    update_version_next(&cwd, &repo, new_version, &action).await;
+    update_version_next(
+        &cwd,
+        &repo,
+        new_version,
+        &action.version_changers.as_slice(),
+    )
+    .await;
     println!("::endgroup::");
 }
 

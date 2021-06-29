@@ -7,30 +7,28 @@ use crate::release_system::*;
 use crate::*;
 
 pub async fn main(option: &Options) {
-    let action = crate_releaser_action(&option.release_system);
-
-    action.verify_exit();
-
     let cwd = std::env::current_dir().expect("failed to get cwd");
     let repo = Repository::open(&cwd).expect("failed to open cwd git repo");
 
-    run(&cwd, &repo, option.new_version, &action).await;
+    run(
+        &cwd,
+        &repo,
+        option.new_version,
+        &option.version_changers.as_slice(),
+    )
+    .await;
 }
 
 pub async fn run(
     target_dir: &Path,
     repo: &Repository,
     new_version: VersionName,
-    action: &ReleaserAction<'_>,
+    version_changers: &[&dyn VersionChanger],
 ) {
     let mut index = repo.index().expect("get index");
 
-    let changed_files = change_version_for_next(
-        &action.version_changers,
-        new_version.of_snapshot(),
-        &target_dir,
-    )
-    .await;
+    let changed_files =
+        change_version_for_next(version_changers, new_version.of_snapshot(), &target_dir).await;
     repo.add_files(&mut index, changed_files.iter());
     let message = format!("prepare for next version: {}", new_version);
     repo.commit_head(&mut index, &message, false);
@@ -58,7 +56,7 @@ async fn change_version_for_next(
 pub struct Options {
     /// The name of next version.
     new_version: VersionName,
-    /// The release system to upgrade version, update version info.
-    #[clap(short = 'r', long)]
-    release_system: Vec<ReleaseSystem>,
+    /// The version changer
+    #[clap(short = 'c', long, required = true)]
+    version_changers: Vec<&'static dyn VersionChanger>,
 }

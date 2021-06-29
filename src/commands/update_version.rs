@@ -13,17 +13,13 @@ use crate::release_system::*;
 use super::changelog::{ChangelogRepo, GithubLinkCreator};
 
 pub async fn main(option: &Options) {
-    let action = crate_releaser_action(&option.release_system);
-
-    action.verify_exit();
-
     let cwd = std::env::current_dir().expect("failed to get cwd");
     let repo = Repository::open(&cwd).expect("failed to open cwd git repo");
 
     let info = run(
         &cwd,
         &repo,
-        &action,
+        option.version_changers.as_slice(),
         &option.changelog,
         &option.repo.to_string(),
     ).await;
@@ -64,14 +60,14 @@ pub async fn main(option: &Options) {
 pub async fn run(
     target_dir: &Path,
     repo: &Repository,
-    action: &ReleaserAction<'_>,
+    version_changers: &[&dyn VersionChanger],
     changelog: &Path,
     repo_url: &str,
 ) -> VersionInfo {
     let mut index = repo.index().expect("get index");
 
     // 1. change version name
-    let (version, changed_files) = change_version(&action.version_changers, &target_dir).await;
+    let (version, changed_files) = change_version(version_changers, &target_dir).await;
     repo.add_files(&mut index, changed_files.iter());
     let version_tag_name = format!("v{}", version);
 
@@ -197,9 +193,9 @@ pub struct Options {
     /// Repository to clone and upload.
     #[clap(long)]
     repo: Url,
-    /// The release system to upgrade version, update version info.
-    #[clap(short = 'r', long)]
-    release_system: Vec<ReleaseSystem>,
+    /// The version changer
+    #[clap(short = 'c', long, required = true)]
+    version_changers: Vec<&'static dyn VersionChanger>,
     /// The path of CHANGELOG.md markdown file
     #[clap(long, default_value = "CHANGELOG.md")]
     changelog: PathBuf,

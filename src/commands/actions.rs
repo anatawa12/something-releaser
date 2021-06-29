@@ -6,6 +6,7 @@ use url::Url;
 
 use crate::release_system::*;
 
+use super::build::run as build_project;
 use super::update_version::run as update_version;
 use super::update_version_next::run as update_version_next;
 
@@ -29,7 +30,7 @@ pub async fn main(option: &Options) {
     println!("::endgroup::");
 
     println!("::group::build");
-    build_project(&cwd, &action.builders, &info).await;
+    build_project(&cwd, &action.builders, &info, true).await;
     println!("::endgroup::");
 
     println!("::group::publish");
@@ -46,14 +47,6 @@ pub async fn main(option: &Options) {
     )
     .await;
     println!("::endgroup::");
-}
-
-async fn build_project(project: &Path, builders: &[&dyn Builder], version_info: &VersionInfo) {
-    for builder in builders {
-        println!("::group::running builder {}", builder.name());
-        builder.build_project(&project, version_info).await;
-        println!("::endgroup::");
-    }
 }
 
 async fn publish_project(

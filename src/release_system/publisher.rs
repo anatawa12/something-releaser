@@ -74,7 +74,7 @@ impl Publisher for GradleMavenPublisher {
         }
 
         let body = format!(
-            proc_macros::load_format_file!("templates/gradle-maven.init.gradle", "<<", ">>"),
+            include_out_str!("templates/gradle-maven.init.gradle"),
             rand0 = rand0,
             rand1 = rand1,
         );
@@ -150,7 +150,7 @@ impl Publisher for GradleIntellijPublisher {
         }
 
         let body = format!(
-            proc_macros::load_format_file!("templates/intellij-publish.init.gradle", "<<", ">>"),
+            include_out_str!("templates/intellij-publish.init.gradle"),
             rand0 = rand0,
             rand1 = rand1,
         );

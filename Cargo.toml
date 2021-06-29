@@ -32,6 +32,3 @@ version = "= 3.0.0-beta.2"
 features = [
     "color",
 ]
-
-[dependencies.proc_macros]
-path = "proc_macros"

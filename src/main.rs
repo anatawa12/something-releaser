@@ -7,6 +7,7 @@ use ext::*;
 use helpers::*;
 pub use release_system::ReleaseSystem;
 
+include!("macros.rs");
 mod ext;
 mod helpers;
 mod release_system;

@@ -80,6 +80,14 @@ macro_rules! types_enum {
                 }
             }
         }
+
+        impl ::std::str::FromStr for &'static dyn $trait_name {
+            type Err = super::UnknownTypeErr;
+
+            fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
+                Types::from_str(s).map(|x| x.get_instance())
+            }
+        }
     };
 }
 

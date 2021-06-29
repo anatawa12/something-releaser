@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use clap::Clap;
 use git2::Repository;
@@ -8,6 +8,7 @@ use crate::release_system::*;
 use crate::*;
 
 use super::update_version::run as update_version;
+use super::update_version_next::run as update_version_next;
 
 pub async fn main(option: &Options) {
     let action = crate_releaser_action(&option.release_system);
@@ -16,7 +17,6 @@ pub async fn main(option: &Options) {
 
     let cwd = std::env::current_dir().expect("failed to get cwd");
     let repo = Repository::open(&cwd).expect("failed to open git repository");
-    let mut index = repo.index().expect("getting index");
     let mut origin = repo.find_remote("origin").expect("getting origin");
 
     println!("::group::changing version...");
@@ -38,12 +38,9 @@ pub async fn main(option: &Options) {
     publish_project(&cwd, &action.publishers, &info, option.dry_run).await;
     println!("::endgroup::");
 
-    let new_version = info.version.make_next_version().of_snapshot();
+    let new_version = info.version.make_next_version();
     println!("::group::changing version for next: {}", new_version);
-    let changed_files = change_version_for_next(&action.version_changers, new_version, &cwd).await;
-    repo.add_files(&mut index, changed_files.iter());
-    let message = format!("prepare for next version: {}", new_version.un_snapshot());
-    repo.commit_head(&mut index, &message, false);
+    update_version_next(&cwd, &repo, new_version, &action).await;
     println!("::endgroup::");
 
     if option.dry_run {
@@ -79,24 +76,6 @@ async fn publish_project(
             .await;
         println!("::endgroup::");
     }
-}
-
-async fn change_version_for_next(
-    changers: &[&dyn VersionChanger],
-    version: VersionName,
-    path: &Path,
-) -> Vec<PathBuf> {
-    let mut files_to_add = vec![];
-    for x in changers {
-        println!("::group::running changer {}", x.name());
-        let paths = x
-            .update_version_for_next(path, version)
-            .await
-            .expect_fn(|| format!("running {}", x.name()));
-        files_to_add.extend_from_slice(&paths);
-        println!("::endgroup::");
-    }
-    return files_to_add;
 }
 
 /// Run processes for GitHub actions

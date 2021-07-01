@@ -2,7 +2,7 @@ use std::any::TypeId;
 use std::collections::HashMap;
 use std::process::Command;
 
-pub trait CommandBuilder {
+pub trait CommandBuilder: Send {
     fn create_command_to_exec(self) -> Command;
 }
 

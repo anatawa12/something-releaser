@@ -61,7 +61,7 @@ pub struct Options {
     #[clap(short = 'b', long)]
     publishers: Vec<&'static dyn Publisher>,
     /// The version name
-    #[clap(short = 'v', long)]
+    #[clap(long)]
     version: VersionName,
     /// The path to release note HTML
     #[clap(short = 'h', long)]

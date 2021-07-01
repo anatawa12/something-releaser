@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use std::process::Command;
 
 pub trait CommandBuilder: Send {
-    fn create_command_to_exec(&self) -> Command;
+    fn create_command_to_exec(&self, dry_run: bool) -> Command;
+    fn name(&self) -> &'static str;
 }
 
 pub struct CommandBuilderMap {
@@ -42,7 +43,10 @@ fn api_test() {
     #[derive(Default)]
     struct CommandBuilder1 {}
     impl CommandBuilder for CommandBuilder1 {
-        fn create_command_to_exec(&self) -> Command {
+        fn create_command_to_exec(&self, _: bool) -> Command {
+            panic!()
+        }
+        fn name(&self) -> &'static str {
             panic!()
         }
     }
@@ -59,7 +63,10 @@ fn unsafe_mut_cast_safety() {
         test: String,
     }
     impl CommandBuilder for CommandBuilder1 {
-        fn create_command_to_exec(&self) -> Command {
+        fn create_command_to_exec(&self, _: bool) -> Command {
+            panic!()
+        }
+        fn name(&self) -> &'static str {
             panic!()
         }
     }

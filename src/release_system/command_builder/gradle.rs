@@ -40,8 +40,11 @@ impl GradleBuilder {
 }
 
 impl CommandBuilder for GradleBuilder {
-    fn create_command_to_exec(&self) -> Command {
+    fn create_command_to_exec(&self, dry_run: bool) -> Command {
         let mut command = Command::new("./gradlew");
+        if dry_run {
+            command.arg("--dry-run");
+        }
         for (key, value) in &self.props {
             command.arg(format!("-P{}={}", key, value));
         }
@@ -53,5 +56,9 @@ impl CommandBuilder for GradleBuilder {
             command.arg(task);
         }
         command
+    }
+
+    fn name(&self) -> &'static str {
+        "gradle"
     }
 }

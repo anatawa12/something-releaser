@@ -1,10 +1,9 @@
-use std::path::Path;
-
 use rand::Rng;
 use tempfile::NamedTempFile;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
+use crate::release_system::command_builder::{CommandBuilderMap, GradleBuilder};
 use crate::release_system::VersionInfo;
 use crate::*;
 
@@ -12,9 +11,8 @@ use crate::*;
 pub trait Publisher {
     async fn publish_project(
         &self,
-        project: &Path,
+        builders: &mut CommandBuilderMap,
         version_info: &VersionInfo,
-        dry_run: bool,
     ) -> ();
     fn name(&self) -> &'static str;
 }
@@ -41,9 +39,8 @@ pub(super) struct GradleMavenPublisher;
 impl Publisher for GradleMavenPublisher {
     async fn publish_project(
         &self,
-        project: &Path,
+        builders: &mut CommandBuilderMap,
         _version_info: &VersionInfo,
-        dry_run: bool,
     ) -> () {
         let auth = std::env::var("GRADLE_MAVEN_AUTH").expect("no GRADLE_MAVEN_AUTH env var");
         let (user, pass) = auth
@@ -68,11 +65,6 @@ impl Publisher for GradleMavenPublisher {
                 .expect("invalid response! make sure tokens are valid");
         }
 
-        if dry_run {
-            warn!("dry run! no publish task invocation");
-            return;
-        }
-
         let body = format!(
             include_out_str!("templates/gradle-maven.init.gradle"),
             rand0 = rand0,
@@ -80,15 +72,14 @@ impl Publisher for GradleMavenPublisher {
         );
         let init_script = create_temp_init_script(&body, "maven-publish").await;
         trace!("init script created at {}", init_script.path().display());
-        GradleWrapperHelper::new(project)
+        builders
+            .find_mut::<GradleBuilder>()
             .add_init_script(init_script.path())
             .add_property(format!("{}pgp_key{}", rand0, rand1), pgp_key)
             .add_property(format!("{}pgp_pass{}", rand0, rand1), pgp_pass)
             .add_property(format!("{}user{}", rand0, rand1), user)
             .add_property(format!("{}pass{}", rand0, rand1), pass)
-            .run_tasks(&["publish"])
-            .await
-            .expect("./gradlew publish");
+            .run_tasks(&["publish"]);
     }
 
     fn name(&self) -> &'static str {
@@ -102,26 +93,19 @@ pub(super) struct GradlePluginPortalPublisher;
 impl Publisher for GradlePluginPortalPublisher {
     async fn publish_project(
         &self,
-        project: &Path,
+        builders: &mut CommandBuilderMap,
         _version_info: &VersionInfo,
-        dry_run: bool,
     ) -> () {
         let auth = std::env::var("GRADLE_PUBLISH_AUTH").expect("no GRADLE_PUBLISH_AUTH env var");
         let (publish_key, publish_secret) = auth
             .split_once(":")
             .expect("invalid GRADLE_PUBLISH_AUTH: no ':' in string");
 
-        if dry_run {
-            warn!("dry run! no publishPlugins task invocation");
-            return;
-        }
-
-        GradleWrapperHelper::new(project)
+        builders
+            .find_mut::<GradleBuilder>()
             .add_property("gradle.publish.key", publish_key)
             .add_property("gradle.publish.secret", publish_secret)
-            .run_tasks(&["publishPlugins"])
-            .await
-            .expect("./gradlew publishPlugins");
+            .run_tasks(&["publishPlugins"]);
     }
 
     fn name(&self) -> &'static str {
@@ -135,19 +119,13 @@ pub(super) struct GradleIntellijPublisher;
 impl Publisher for GradleIntellijPublisher {
     async fn publish_project(
         &self,
-        project: &Path,
+        builders: &mut CommandBuilderMap,
         _version_info: &VersionInfo,
-        dry_run: bool,
     ) -> () {
         let token =
             std::env::var("GRADLE_INTELLIJ_TOKEN").expect("no GRADLE_INTELLIJ_TOKEN env var");
         let random = rand::thread_rng().gen_ascii_rand(20);
         let (rand0, rand1) = random.split_at(rand::thread_rng().gen_range(0..random.len()));
-
-        if dry_run {
-            warn!("dry run! no publishPlugin task invocation");
-            return;
-        }
 
         let body = format!(
             include_out_str!("templates/intellij-publish.init.gradle"),
@@ -157,12 +135,11 @@ impl Publisher for GradleIntellijPublisher {
         let init_script = create_temp_init_script(&body, "intellij-publish").await;
         trace!("init script created at {}", init_script.path().display());
 
-        GradleWrapperHelper::new(project)
+        builders
+            .find_mut::<GradleBuilder>()
             .add_init_script(init_script.path())
             .add_property(format!("{}token{}", rand0, rand1), token)
-            .run_tasks(&["publishPlugin"])
-            .await
-            .expect("./gradlew publishPlugin");
+            .run_tasks(&["publishPlugin"]);
     }
 
     fn name(&self) -> &'static str {

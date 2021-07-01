@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 
 use clap::Clap;
 
+use crate::ext::ResultExt;
+use crate::release_system::command_builder::CommandBuilderMap;
 use crate::release_system::*;
 
 pub async fn main(option: &Options) {
@@ -26,13 +28,24 @@ pub async fn run(
     dry_run: bool,
     print_group: bool,
 ) {
+    let mut builders = CommandBuilderMap::new();
     for publisher in publishers {
+        publisher.publish_project(&mut builders, version_info).await;
+    }
+    for x in builders.into_values() {
+        let name = x.name();
         if print_group {
-            println!("::group::running publisher {}", publisher.name());
+            println!("::group::running command {}", x.name());
         }
-        publisher
-            .publish_project(&project, version_info, dry_run)
-            .await;
+        let out = x
+            .create_command_to_exec(dry_run)
+            .spawn()
+            .expect_fn(|| format!("running {}", name))
+            .wait_with_output()
+            .expect_fn(|| format!("running {}", name));
+        if out.status.success() {
+            panic!("running {}", name)
+        }
         if print_group {
             println!("::endgroup::");
         }

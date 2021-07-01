@@ -11,6 +11,7 @@ include!("macros.rs");
 mod ext;
 mod helpers;
 mod release_system;
+mod logger;
 
 #[derive(Clap)]
 pub struct CommonOptions {
@@ -26,23 +27,7 @@ pub struct CommonOptions {
 }
 
 fn parse_common_options(options: &CommonOptions) {
-    use stderrlog::*;
-    let verbosity = if options.quiet {
-        1 // warn
-    } else if options.debug {
-        4 // trace
-    } else if options.verbose {
-        3 // debug
-    } else {
-        2 // info
-    };
-
-    stderrlog::new()
-        .module(module_path!())
-        .verbosity(verbosity)
-        .timestamp(Timestamp::Off)
-        .init()
-        .unwrap()
+    logger::init_with_options(options, module_path!());
 }
 
 #[derive(Clap)]

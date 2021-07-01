@@ -11,8 +11,7 @@ license = "Apache-2.0 OR MIT"
 [dependencies]
 tokio = { version = "1.7.0", features = ["full"] }
 url = "2.2"
-log = "0.4"
-stderrlog = "0.5"
+log = { version =  "0.4", features = ["std"] }
 chrono = "0.4"
 regex = "1"
 lazy-regex = "2"

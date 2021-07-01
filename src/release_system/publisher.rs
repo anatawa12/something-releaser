@@ -80,6 +80,7 @@ impl Publisher for GradleMavenPublisher {
             .add_property(format!("{}user{}", rand0, rand1), user)
             .add_property(format!("{}pass{}", rand0, rand1), pass)
             .run_tasks(&["publish"]);
+        builders.delay_drop(init_script);
     }
 
     fn name(&self) -> &'static str {
@@ -140,6 +141,7 @@ impl Publisher for GradleIntellijPublisher {
             .add_init_script(init_script.path())
             .add_property(format!("{}token{}", rand0, rand1), token)
             .run_tasks(&["publishPlugin"]);
+        builders.delay_drop(init_script);
     }
 
     fn name(&self) -> &'static str {

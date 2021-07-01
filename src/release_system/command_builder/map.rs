@@ -1,4 +1,4 @@
-use std::any::TypeId;
+use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::process::Command;
 
@@ -9,12 +9,14 @@ pub trait CommandBuilder: Send {
 
 pub struct CommandBuilderMap {
     inner: HashMap<TypeId, Box<dyn CommandBuilder>>,
+    delayed_drop: Vec<Box<dyn Any + Send>>,
 }
 
 impl CommandBuilderMap {
     pub fn new() -> Self {
         Self {
             inner: HashMap::new(),
+            delayed_drop: Vec::new(),
         }
     }
 
@@ -23,6 +25,10 @@ impl CommandBuilderMap {
             self.inner.insert(TypeId::of::<T>(), Box::new(T::default()));
         }
         unsafe { unsafe_mut_cast::<_, T>(self.inner.get_mut(&TypeId::of::<T>()).unwrap().as_mut()) }
+    }
+
+    pub fn delay_drop<T: 'static + Send>(&mut self, value: T) {
+        self.delayed_drop.push(Box::new(value));
     }
 
     pub fn values(&self) -> impl Iterator<Item = &Box<dyn CommandBuilder>> {

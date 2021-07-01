@@ -32,7 +32,7 @@ pub async fn run(
     for publisher in publishers {
         publisher.publish_project(&mut builders, version_info).await;
     }
-    for x in builders.into_values() {
+    for x in builders.values() {
         let name = x.name();
         if print_group {
             println!("::group::running command {}", x.name());

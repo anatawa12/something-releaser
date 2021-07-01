@@ -134,3 +134,28 @@ impl RepositoryExt for Repository {
         }
     }
 }
+
+pub trait IntoString {
+    fn into_string(self) -> String;
+}
+
+impl IntoString for String {
+    fn into_string(self) -> String {
+        self
+    }
+}
+
+impl IntoString for &str {
+    fn into_string(self) -> String {
+        self.to_owned()
+    }
+}
+
+impl<'a, T: ?Sized> IntoString for &&'a T
+where
+    &'a T: IntoString,
+{
+    fn into_string(self) -> String {
+        (*self).into_string()
+    }
+}

@@ -9,7 +9,7 @@ pub use version_name::VersionName;
 
 use crate::*;
 
-mod command_builder;
+pub mod command_builder;
 
 macro_rules! __release_system_enum {
     ($($name: ident -> $value: expr,)*) => {

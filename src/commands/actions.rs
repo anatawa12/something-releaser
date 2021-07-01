@@ -6,7 +6,6 @@ use url::Url;
 
 use crate::release_system::*;
 
-use super::build::run as build_project;
 use super::publish::run as publish_project;
 use super::update_version::run as update_version;
 use super::update_version_next::run as update_version_next;
@@ -28,10 +27,6 @@ pub async fn main(option: &Options) {
         &option.repo.to_string(),
     )
     .await;
-    println!("::endgroup::");
-
-    println!("::group::build");
-    build_project(&cwd, &action.builders, &info, true).await;
     println!("::endgroup::");
 
     println!("::group::publish");

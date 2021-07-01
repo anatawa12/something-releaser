@@ -39,6 +39,7 @@ pub async fn run(
         }
         let out = x
             .create_command_to_exec(dry_run)
+            .current_dir(project)
             .spawn()
             .expect_fn(|| format!("running {}", name))
             .wait_with_output()

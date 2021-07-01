@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-pub use builder::Builder;
+//pub use builder::Builder;
 pub use publisher::Publisher;
 pub use version_changer::VersionChanger;
 pub use version_info::VersionInfo;
@@ -93,7 +93,6 @@ macro_rules! types_enum {
     };
 }
 
-mod builder;
 mod publisher;
 mod version_changer;
 mod version_info;
@@ -144,20 +143,6 @@ fns_returns_static_slice! {
                 GradlePropertiesVersionChanger,
             ],
         }
-        builders -> [builder::Types] {
-            Gradle: [
-                GradleBuilder,
-            ],
-            GradleIntellijPlugin: [
-                GradleBuilder,
-            ],
-            GradleMaven: [
-                GradleBuilder,
-            ],
-            GradlePlugin: [
-                GradleBuilder,
-            ],
-        }
         publishers -> [publisher::Types] {
             Gradle: [],
             GradleIntellijPlugin: [
@@ -175,22 +160,15 @@ fns_returns_static_slice! {
 
 pub fn crate_releaser_action(systems: &[ReleaseSystem]) -> ReleaserAction<'static> {
     let mut version_changers = Vec::<version_changer::Types>::new();
-    let mut builders = Vec::<builder::Types>::new();
     let mut publishers = Vec::<publisher::Types>::new();
 
     for system in systems {
         version_changers.extend_from_slice(system.version_changers());
-        builders.extend_from_slice(system.builders());
         publishers.extend_from_slice(system.publishers());
     }
 
     ReleaserAction {
         version_changers: version_changers
-            .into_iter()
-            .unique()
-            .map(|x| x.get_instance())
-            .collect(),
-        builders: builders
             .into_iter()
             .unique()
             .map(|x| x.get_instance())
@@ -206,7 +184,6 @@ pub fn crate_releaser_action(systems: &[ReleaseSystem]) -> ReleaserAction<'stati
 #[derive(Clone)]
 pub struct ReleaserAction<'r> {
     pub version_changers: Vec<&'r dyn VersionChanger>,
-    pub builders: Vec<&'r dyn Builder>,
     pub publishers: Vec<&'r dyn Publisher>,
 }
 

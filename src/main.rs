@@ -94,6 +94,5 @@ ____subcommands![
     changelog;
     update_version;
     update_version_next;
-    build;
     publish;
 ];

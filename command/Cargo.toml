@@ -25,6 +25,7 @@ reqwest = "0.11"
 rand = "0.8"
 libz-sys = { version = "1", default-features = false, features = ["static"] }
 openssl-sys = { version = "0", default-features = false, features = ["vendored"] }
+actions-core = "0.0.2"
 
 [dependencies.clap]
 version = "= 3.0.0-beta.2"

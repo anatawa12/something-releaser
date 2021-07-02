@@ -1,6 +1,7 @@
 use log::*;
 use std::io::Write;
 use crate::CommonOptions;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Copy, Clone)]
 pub(crate) enum LogLevel {
@@ -26,7 +27,7 @@ pub(crate) struct SimpleCommandLogger {
     module: String,
 }
 
-pub(crate) fn init_with_options(options: &CommonOptions, module: impl Into<String>) {
+pub(crate) fn init_command_logger_with_options(options: &CommonOptions, module: impl Into<String>) {
     let log_level = if options.quiet {
         LogLevel::Warn
     } else if options.debug {
@@ -69,6 +70,65 @@ impl log::Log for SimpleCommandLogger {
             Level::Info => eprintln!("{}", record.args()),
             Level::Debug => eprintln!("VERBOSE {}: {}", record.target(), record.args()),
             Level::Trace => eprintln!("TRACE   {}: {}", record.target(), record.args()),
+        }
+    }
+
+    fn flush(&self) {
+        std::io::stderr().flush().unwrap()
+    }
+}
+
+pub(crate) struct ActionsLogger {
+    module: String,
+    debug: bool,
+}
+
+impl ActionsLogger {
+    fn max_level(&self) -> LevelFilter {
+        if self.debug {
+            LevelFilter::Trace
+        } else {
+            LevelFilter::Info
+        }
+    }
+}
+
+static ACTIONS_ENV: AtomicBool = AtomicBool::new(false);
+
+pub(crate) fn init_actions(module: impl Into<String>) {
+    ACTIONS_ENV.store(true, Ordering::SeqCst);
+    assert!(is_actions_env());
+
+    let logger = ActionsLogger {
+        module: module.into(),
+        debug: actions_core::is_debug(),
+    };
+
+    log::set_max_level(logger.max_level());
+    log::set_boxed_logger(Box::new(logger)).unwrap();
+}
+
+pub(crate) fn is_actions_env() -> bool {
+    ACTIONS_ENV.load(Ordering::SeqCst)
+}
+
+impl log::Log for ActionsLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.target().starts_with(&self.module)
+            && (self.debug || metadata.level() >= Level::Info)
+    }
+
+    fn log(&self, record: &Record) {
+        if !self.enabled(record.metadata()) {
+            return
+        }
+        use ::actions_core as core;
+        match record.level() {
+            Level::Error => core::error(record.args()),
+            Level::Warn => core::warning(record.args()),
+            Level::Info => eprintln!("{}", record.args()),
+            Level::Debug => core::debug(format_args!("VERBOSE {}: {}", record.target(), record.args())),
+            Level::Trace => core::debug(format_args!("TRACE   {}: {}", record.target(), record.args())),
         }
     }
 

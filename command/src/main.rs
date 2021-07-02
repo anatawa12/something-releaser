@@ -24,10 +24,17 @@ pub struct CommonOptions {
     /// Debug verbose log
     #[clap(long, global = true)]
     debug: bool,
+    /// Enable Github Actions Mode
+    #[clap(long, global = true)]
+    github_actions_mode: bool,
 }
 
 fn parse_common_options(options: &CommonOptions) {
-    logger::init_with_options(options, module_path!());
+    if options.github_actions_mode {
+        logger::init_actions(module_path!());
+    } else {
+        logger::init_command_logger_with_options(options, module_path!());
+    }
 }
 
 #[derive(Clap)]

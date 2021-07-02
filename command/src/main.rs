@@ -5,6 +5,8 @@ use log::{debug as verbose, error, info, trace, warn};
 
 use ext::*;
 use helpers::*;
+use logger::is_actions_env;
+use running_group::start_group;
 pub use release_system::ReleaseSystem;
 
 include!("macros.rs");
@@ -12,6 +14,7 @@ mod ext;
 mod helpers;
 mod release_system;
 mod logger;
+mod running_group;
 
 #[derive(Clap)]
 pub struct CommonOptions {

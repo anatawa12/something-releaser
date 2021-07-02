@@ -24,7 +24,7 @@ pub async fn main(option: &Options) {
         &option.repo.to_string(),
     ).await;
 
-    println!("new version name is {}", info.version);
+    info!("new version name is {}", info.version);
 
     async fn write(path: &Path, body: &str) {
         File::create(path)
@@ -107,7 +107,7 @@ async fn change_version(
     let mut versions = vec![];
     let mut files_to_add = vec![];
     for x in changers {
-        println!("::group::running changer {}", x.name());
+        let group = start_group(format_args!("running changer {}", x.name()));
         let (version, paths) = x
             .update_version_for_release(path)
             .await
@@ -118,7 +118,7 @@ async fn change_version(
         );
         versions.push(version);
         files_to_add.extend_from_slice(&paths);
-        println!("::endgroup::");
+        drop(group);
     }
     let versions = versions
         .into_iter()

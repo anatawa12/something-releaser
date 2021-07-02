@@ -30,7 +30,7 @@ pub async fn main(option: &Options) {
     println!("::endgroup::");
 
     println!("::group::publish");
-    publish_project(&cwd, &action.publishers, &info, option.dry_run, true).await;
+    publish_project(&cwd, &action.publishers, &info, option.dry_run).await;
     println!("::endgroup::");
 
     let new_version = info.version.make_next_version();

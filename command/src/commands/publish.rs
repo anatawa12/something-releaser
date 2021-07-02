@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use clap::Clap;
 
-use crate::ext::ResultExt;
+use crate::*;
 use crate::release_system::command_builder::CommandBuilderMap;
 use crate::release_system::*;
 
@@ -18,7 +18,7 @@ pub async fn main(option: &Options) {
             .expect("reading release note Markdown"),
     };
 
-    run(&cwd, &option.publishers, &info, option.dry_run, false).await;
+    run(&cwd, &option.publishers, &info, option.dry_run).await;
 }
 
 pub async fn run(
@@ -26,7 +26,6 @@ pub async fn run(
     publishers: &[&dyn Publisher],
     version_info: &VersionInfo,
     dry_run: bool,
-    print_group: bool,
 ) {
     let mut builders = CommandBuilderMap::new();
     for publisher in publishers {
@@ -34,9 +33,7 @@ pub async fn run(
     }
     for x in builders.values() {
         let name = x.name();
-        if print_group {
-            println!("::group::running command {}", x.name());
-        }
+        let group = start_group(format_args!("running command {}", x.name()));
         let out = x
             .create_command_to_exec(dry_run)
             .current_dir(project)
@@ -44,12 +41,10 @@ pub async fn run(
             .expect_fn(|| format!("running {}", name))
             .wait_with_output()
             .expect_fn(|| format!("running {}", name));
-        if out.status.success() {
+        if !out.status.success() {
             panic!("running {}", name)
         }
-        if print_group {
-            println!("::endgroup::");
-        }
+        drop(group);
     }
 }
 

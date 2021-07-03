@@ -41,14 +41,20 @@ jobs:
       - name: Publish
         run: |
           set -eu
+          # set user name
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
           HASH="$(git rev-parse HEAD)"
           # checkout releases at origin/releases witout chanigng local tree
           git branch releases origin/releases
           git symbolic-ref HEAD refs/heads/releases
+          # copy command and save
           cp command/target/release/something-releaser ./something-releaser
+          # remove unused files & commit
           rm -rf command .github
           git add something-releaser command .github
           git commit -m "$VERSION at $HASH"
+          # create tag & push
           git tag -f "$VERSION"
           git tag -f "$MAJOR_VERSION"
           git push

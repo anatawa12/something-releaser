@@ -47,7 +47,7 @@ jobs:
           git symbolic-ref HEAD refs/heads/releases
           cp command/target/release/something-releaser ./something-releaser
           rm -rf command .github
-          git add command .github
+          git add something-releaser command .github
           git commit -m "$VERSION at $HASH"
           git tag -f "$VERSION"
           git tag -f "$MAJOR_VERSION"

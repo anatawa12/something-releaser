@@ -89,10 +89,14 @@ impl RepositoryExt for Repository {
             .ok()
             .map(|x| self.find_commit(x.target().unwrap()).unwrap());
 
-        let hash = head.unwrap()
+        let hash = head
+            .unwrap()
             .amend(None, None, None, None, None, Some(&tree))
             .expect("creating commit");
-        self.head().unwrap().set_target(hash, "amend commit").expect("setting head");
+        self.head()
+            .unwrap()
+            .set_target(hash, "amend commit")
+            .expect("setting head");
     }
 
     fn commit_head(&self, index: &mut Index, message: &str) {

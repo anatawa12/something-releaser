@@ -31,7 +31,7 @@ pub async fn run(
         change_version_for_next(version_changers, new_version.of_snapshot(), &target_dir).await;
     repo.add_files(&mut index, changed_files.iter());
     let message = format!("prepare for next version: {}", new_version);
-    repo.commit_head(&mut index, &message, false);
+    repo.commit_head(&mut index, &message);
 }
 
 async fn change_version_for_next(

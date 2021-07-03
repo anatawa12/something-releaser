@@ -70,28 +70,31 @@ pub async fn run(
     let (version, changed_files) = change_version(version_changers, &target_dir).await;
     repo.add_files(&mut index, changed_files.iter());
     let version_tag_name = format!("v{}", version);
+    index.write().expect("write index");
 
     // 2. commit newer version
-    repo.commit_head(&mut index, &version_tag_name, false);
+    repo.commit_head(&mut index, &version_tag_name);
     repo.reference(
         &format!("refs/tags/{}", version_tag_name),
         repo.head().expect("HEAD").target().unwrap(),
         false,
         &format!("crate tag {}", version_tag_name),
     ).expect_fn(|| format!("creating {}", version_tag_name));
+    index.write().expect("write index");
 
     // 3. create changelog
     let (release_note_html, release_note_markdown) =
         create_changelog(target_dir, changelog, repo_url).await;
     repo.add_files(&mut index, [target_dir.join(changelog)].iter());
 
-    repo.commit_head(&mut index, "", true);
+    repo.amend_commit_head(&mut index);
     repo.reference(
         &format!("refs/tags/{}", version_tag_name),
         repo.head().expect("HEAD").target().unwrap(),
         true,
         &format!("crate tag {}", version_tag_name),
     ).expect_fn(|| format!("creating {}", version_tag_name));
+    index.write().expect("write index");
 
     VersionInfo {
         version,

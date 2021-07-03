@@ -73,12 +73,29 @@ impl<T: RngCore> RngExt for T {
 }
 
 pub(crate) trait RepositoryExt {
-    fn commit_head(&self, index: &mut Index, message: &str, amend: bool);
+    fn amend_commit_head(&self, index: &mut Index);
+    fn commit_head(&self, index: &mut Index, message: &str);
     fn add_files(&self, index: &mut Index, files: impl Iterator<Item = impl AsRef<Path>>);
 }
 
 impl RepositoryExt for Repository {
-    fn commit_head(&self, index: &mut Index, message: &str, amend: bool) {
+    fn amend_commit_head(&self, index: &mut Index) {
+        let tree = self
+            .find_tree(index.write_tree().expect("writing index as a tree"))
+            .expect("tree not found");
+
+        let head = self
+            .head()
+            .ok()
+            .map(|x| self.find_commit(x.target().unwrap()).unwrap());
+
+        let hash = head.unwrap()
+            .amend(None, None, None, None, None, Some(&tree))
+            .expect("creating commit");
+        self.head().unwrap().set_target(hash, "amend commit").expect("setting head");
+    }
+
+    fn commit_head(&self, index: &mut Index, message: &str) {
         let signature = self.signature().expect("getting signature");
         let tree = self
             .find_tree(index.write_tree().expect("writing index as a tree"))
@@ -89,27 +106,10 @@ impl RepositoryExt for Repository {
             .ok()
             .map(|x| self.find_commit(x.target().unwrap()).unwrap());
 
-        let (message, parents) = if amend {
-            let head = head.as_ref().unwrap();
-            (
-                if message.is_empty() {
-                    head.message().unwrap()
-                } else {
-                    message
-                },
-                head.parents().collect(),
-            )
-        } else {
-            if let Some(head) = head {
-                (message, vec![head])
-            } else {
-                (message, vec![])
-            }
-        };
-        let parents: Vec<_> = parents.iter().collect();
+        let parents = head.as_ref().map(|x| vec![x]).unwrap_or_default();
 
         self.commit(
-            None,
+            Some("HEAD"),
             &signature,
             &signature,
             message,

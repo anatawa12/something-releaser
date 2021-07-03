@@ -12,10 +12,10 @@ inputs:
   version_changers:
     description: The comma separated version changer list
     required: true
-  version_changelog_html:
+  changelog_html:
     description: The path to output release of a version in html. In temporary dir by default.
     required: false
-  version_changelog_markdown:
+  changelog_markdown:
     description: The path to output release of a version in markdown. In temporary dir by default.
     required: false
 

@@ -24,6 +24,10 @@ pub async fn main(option: &Options) {
         &option.repo.to_string(),
     ).await;
 
+    if is_actions_env() {
+        info!("::set-output name=version::{}", info.version);
+        info!("::set-output name=next_version::{}", info.version.make_next_version());
+    }
     info!("new version name is {}", info.version);
 
     async fn write(path: &Path, body: &str) {

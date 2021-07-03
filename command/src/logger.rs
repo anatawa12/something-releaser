@@ -1,6 +1,6 @@
+use crate::CommonOptions;
 use log::*;
 use std::io::Write;
-use crate::CommonOptions;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Copy, Clone)]
@@ -50,7 +50,7 @@ pub(crate) fn init_command_logger_with_options(options: &CommonOptions, module: 
 impl log::Log for SimpleCommandLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
         if !metadata.target().starts_with(&self.module) {
-            return false
+            return false;
         }
         match self.log_level {
             LogLevel::Warn => metadata.level() >= Level::Warn,
@@ -62,7 +62,7 @@ impl log::Log for SimpleCommandLogger {
 
     fn log(&self, record: &Record) {
         if !self.enabled(record.metadata()) {
-            return
+            return;
         }
         match record.level() {
             Level::Error => eprintln!("e: {}", record.args()),
@@ -120,15 +120,23 @@ impl log::Log for ActionsLogger {
 
     fn log(&self, record: &Record) {
         if !self.enabled(record.metadata()) {
-            return
+            return;
         }
         use ::actions_core as core;
         match record.level() {
             Level::Error => core::error(record.args()),
             Level::Warn => core::warning(record.args()),
             Level::Info => eprintln!("{}", record.args()),
-            Level::Debug => core::debug(format_args!("VERBOSE {}: {}", record.target(), record.args())),
-            Level::Trace => core::debug(format_args!("TRACE   {}: {}", record.target(), record.args())),
+            Level::Debug => core::debug(format_args!(
+                "VERBOSE {}: {}",
+                record.target(),
+                record.args()
+            )),
+            Level::Trace => core::debug(format_args!(
+                "TRACE   {}: {}",
+                record.target(),
+                record.args()
+            )),
         }
     }
 

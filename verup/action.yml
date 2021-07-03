@@ -1,0 +1,24 @@
+name: "something releaser version up"
+description: "updates the version files"
+inputs: 
+  changelog:
+    description: Path to changelog file
+    required: true
+    default: CHANGELOG.md
+  repository:
+    description: The url to this repository
+    required: true
+    default: ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}
+  version_changers:
+    description: The comma separated version changer list
+    required: true
+  changelog_html:
+    description: The path to output release of a version in html. In temporary dir by default.
+    required: false
+  changelog_markdown:
+    description: The path to output release of a version in markdown. In temporary dir by default.
+    required: false
+
+runs: 
+  using: node12
+  main: main.mjs

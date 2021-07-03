@@ -11,7 +11,7 @@ The action to upgrade version configurations.
 #### inputs
 
 - changelog: Path to changelog file. \[default: CHANGELOG.md\]
-- repository: The url to this repository. \[default: ${ env.GITHUB_SERVER_URL }/${ env.GITHUB_REPOSITORY }\]
+- repository: The url to this repository. \[default: ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}\]
 - version_changers: The comma separated [version changer](#version-changer) list. required
 
 #### outputs

@@ -1,0 +1,59 @@
+name: CI
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: name of version. requires matches `v[0-9]+\.[0-9]+`
+        required: true
+jobs:
+  release:
+    name: Do Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: fix fetch
+        run: |
+          # fetch the branch to be published
+          git remote set-branches --add origin releases
+          # fetch tags to verify the tag is not exists
+          git fetch origin --tags
+      - name: Verify Inputs
+        id: verify
+        run: |
+          set -eu
+          if ! [[ "$VERSION" =~ ^v([0-9]+)\.([0-9]+)$ ]]; then 
+            echo "invalid version name" >&2
+            exit -1
+          fi
+
+          if git tag | grep "$VERSION" >/dev/null; then 
+            echo "version name duplicated" >&2
+            exit -1
+          fi
+          echo "::set-output name=major_version::v${BASH_REMATCH[1]}"
+        env:
+          VERSION: ${ github.event.inputs.version }
+        shell: bash
+      - name: Install Rust (rustup)
+        run: rustup update stable --no-self-update && rustup default stable
+      - name: Build
+        run: cd command && cargo build --release
+      - name: Publish
+        run: |
+          set -eu
+          HASH="$(git rev-parse HEAD)"
+          # checkout releases at origin/releases witout chanigng local tree
+          git branch releases origin/releases
+          git symbolic-ref HEAD refs/heads/releases
+          cp command/target/release/something-releaser ./something-releaser
+          rm -rf command .github
+          git add command .github
+          git commit -m "$VERSION at $HASH"
+          git tag -f "$VERSION"
+          git tag -f "$MAJOR_VERSION"
+          git push
+          git push --tags -f
+        shell: bash
+        env:
+          VERSION: ${ github.event.inputs.version }
+          MAJOR_VERSION: ${ steps.verify.outputs.major_version }

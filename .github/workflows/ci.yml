@@ -6,8 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Rust (rustup)
-        run: rustup update stable --no-self-update && rustup default stable
+      - uses: actions-rs/toolchain@v1
+      - uses: Swatinem/rust-cache@v1
+        with: { target-dir: "./command/target" }
       - run: cd command && cargo build
       - run: cd command && cargo test
 
@@ -16,6 +17,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Rust (rustup)
-        run: rustup update stable --no-self-update && rustup default stable
+      - uses: actions-rs/toolchain@v1
       - run: cd command && cargo fmt -- --check

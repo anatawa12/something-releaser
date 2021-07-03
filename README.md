@@ -4,7 +4,7 @@ The actions for me to publish files
 
 ## subactions
 
-### `anatawa12/something-releaser/set_user@1`
+### `anatawa12/something-releaser/set_user@v1`
 
 The action to set username and email to commit.
 This sets `user.name` and `user.email` in global.
@@ -17,7 +17,7 @@ This sets `user.name` and `user.email` in global.
 #### outputs
 No outputs.
 
-### `anatawa12/something-releaser/verup@1`
+### `anatawa12/something-releaser/verup@v1`
 
 The action to upgrade version configurations.
 
@@ -33,7 +33,7 @@ The action to upgrade version configurations.
 - version: the current version
 - next_version: the next version
 
-### `anatawa12/something-releaser/publish@1`
+### `anatawa12/something-releaser/publish@v1`
 
 The action to build and publish artifacts.
 
@@ -48,7 +48,7 @@ The action to build and publish artifacts.
 #### outputs
 No outputs in this action.
 
-### `anatawa12/something-releaser/verup_next@1`
+### `anatawa12/something-releaser/verup_next@v1`
 
 The action to upgrade version configurations.
 

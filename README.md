@@ -4,6 +4,19 @@ The actions for me to publish files
 
 ## subactions
 
+### `anatawa12/something-releaser/set_user@1`
+
+The action to set username and email to commit.
+This sets `user.name` and `user.email` in global.
+
+#### inputs
+
+- user: The user the environment will be. \[default: github-actions[bot\]\]
+- token: The github api token. \[default: ${{ github.token }}\]
+
+#### outputs
+No outputs.
+
 ### `anatawa12/something-releaser/verup@1`
 
 The action to upgrade version configurations.

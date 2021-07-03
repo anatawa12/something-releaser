@@ -1,0 +1,13 @@
+name: "something releaser version up"
+description: "updates the version files"
+inputs: 
+  new_version:
+    description: The next version
+    required: true
+  version_changers:
+    description: The comma separated version changer list
+    required: true
+
+runs: 
+  using: node12
+  main: main.mjs

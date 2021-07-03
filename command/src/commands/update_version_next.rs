@@ -32,6 +32,7 @@ pub async fn run(
     repo.add_files(&mut index, changed_files.iter());
     let message = format!("prepare for next version: {}", new_version);
     repo.commit_head(&mut index, &message);
+    index.write().expect("writing index");
 }
 
 async fn change_version_for_next(

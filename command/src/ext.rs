@@ -5,15 +5,24 @@ use git2::{Index, Repository};
 use rand::prelude::SliceRandom;
 use rand::RngCore;
 
-pub(crate) trait ResultExt<T, R> {
+pub(crate) trait ResultExt<T> {
     fn expect_fn<S: Display, F: FnOnce() -> S>(self, func: F) -> T;
 }
 
-impl<T, R: Debug> ResultExt<T, R> for Result<T, R> {
+impl<T, R: Debug> ResultExt<T> for Result<T, R> {
     fn expect_fn<S: Display, F: FnOnce() -> S>(self, func: F) -> T {
         match self {
             Ok(t) => t,
             Err(e) => panic!("{}: {:?}", func(), e),
+        }
+    }
+}
+
+impl<T> ResultExt<T> for Option<T> {
+    fn expect_fn<S: Display, F: FnOnce() -> S>(self, func: F) -> T {
+        match self {
+            Some(t) => t,
+            None => panic!("{}", func()),
         }
     }
 }

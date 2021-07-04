@@ -72,6 +72,22 @@ macro_rules! types_enum {
             }
         }
 
+        impl dyn $trait_name {
+            #[allow(dead_code)]
+            pub(crate) fn values() -> &'static [&'static Self] {
+                &[
+                    $(&$name,)*
+                ]
+            }
+
+            #[allow(dead_code)]
+            pub(crate) fn names() -> &'static [&'static str] {
+                &[
+                    $($str,)*
+                ]
+            }
+        }
+
         impl ::std::str::FromStr for Types {
             type Err = super::UnknownTypeErr;
 

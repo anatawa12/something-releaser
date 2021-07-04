@@ -7,6 +7,8 @@ use crate::release_system::command_builder::{CommandBuilderMap, GradleBuilder};
 use crate::release_system::VersionInfo;
 use crate::*;
 
+type StaticStrSlice = &'static [&'static str];
+
 #[async_trait()]
 pub trait Publisher {
     async fn publish_project(
@@ -15,6 +17,7 @@ pub trait Publisher {
         version_info: &VersionInfo,
     ) -> ();
     fn name(&self) -> &'static str;
+    fn secrets(&self) -> StaticStrSlice;
 }
 
 async fn create_temp_init_script(body: &str, prefix: &str) -> NamedTempFile {
@@ -86,6 +89,10 @@ impl Publisher for GradleMavenPublisher {
     fn name(&self) -> &'static str {
         "gradle maven publisher"
     }
+
+    fn secrets(&self) -> StaticStrSlice {
+        &["GRADLE_MAVEN_AUTH", "GPG_PRIVATE_KEY", "GPG_PRIVATE_PASS"]
+    }
 }
 
 pub(super) struct GradlePluginPortalPublisher;
@@ -111,6 +118,10 @@ impl Publisher for GradlePluginPortalPublisher {
 
     fn name(&self) -> &'static str {
         "gradle plugin portal publisher"
+    }
+
+    fn secrets(&self) -> StaticStrSlice {
+        &["GRADLE_PUBLISH_AUTH"]
     }
 }
 
@@ -146,6 +157,10 @@ impl Publisher for GradleIntellijPublisher {
 
     fn name(&self) -> &'static str {
         "gradle maven publisher"
+    }
+
+    fn secrets(&self) -> StaticStrSlice {
+        &["GRADLE_INTELLIJ_TOKEN"]
     }
 }
 

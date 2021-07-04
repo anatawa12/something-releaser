@@ -90,4 +90,5 @@ ____subcommands![
     update_version;
     update_version_next;
     publish;
+    set_environments;
 ];

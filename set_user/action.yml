@@ -1,0 +1,15 @@
+name: "something releaser set user"
+description: "sets git user config"
+inputs: 
+  user:
+    description: The user the environment will be
+    required: true
+    default: "github-actions[bot]"
+  token:
+    description: The github api token
+    default: ${{ github.token }}
+    required: true
+
+runs: 
+  using: node12
+  main: main.mjs

@@ -37,6 +37,8 @@ pub async fn run(
         let out = x
             .create_command_to_exec(dry_run)
             .current_dir(project)
+            .env("RELEASE_NOTE_HTML", &version_info.release_note_html)
+            .env("RELEASE_NOTE_MARKDOWN", &version_info.release_note_markdown)
             .spawn()
             .expect_fn(|| format!("running {}", name))
             .wait_with_output()

@@ -2,6 +2,6 @@ afterProject { proj ->
     if (proj.plugins.findPlugin("org.jetbrains.intellij") == null) return
 
     proj.tasks.publishPlugin {
-        proj.property("<<rand0>>token<<rand1>>")
+        token = proj.property("<<rand0>>token<<rand1>>")
     }
 }

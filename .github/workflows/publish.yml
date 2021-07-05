@@ -53,7 +53,7 @@ jobs:
           # remove unused files & commit
           rm -rf command .github
           git add something-releaser command .github
-          git commit -m "$VERSION at $HASH"
+          git reset --soft $(git commit-tree -p HEAD -p $HASH -m "$VERSION at $HASH" $(git write-tree))
           # create tag & push
           git tag -f "$VERSION"
           git tag -f "$MAJOR_VERSION"

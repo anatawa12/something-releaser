@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
-import { somethingReleaser, readInput } from "../lib.mjs";
+const { spawn } = require('child_process');
+const { somethingReleaser, readInput } = require("../lib.js");
 
 let publishers = readInput("publishers", "no publishers is specified").split(',');
 let changelogHtml = readInput("changelog_html", "changelog_html is required");

@@ -1,5 +1,5 @@
-import {spawnSync} from 'child_process';
-import {request, readInput} from "../lib.mjs";
+const {spawnSync} = require('child_process');
+const {request, readInput} = require("../lib.js");
 
 function error(message) {
     throw new Error(message)

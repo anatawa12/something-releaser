@@ -1,19 +1,5 @@
 import {spawnSync} from 'child_process';
-import {request} from "../simple-http.mjs"
-
-/**
- * @param name {string}
- * @param [error] {string | undefined}
- * @return {string|null}
- */
-function readInput(name, error) {
-    let input = process.env["INPUT_" + name.split(' ').join('_').toUpperCase()];
-    if (!input || input.trim() === "") {
-        if (error) throw new Error(error);
-        return null;
-    }
-    return input;
-}
+import {request, readInput} from "../lib.mjs";
 
 function error(message) {
     throw new Error(message)

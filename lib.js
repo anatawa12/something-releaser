@@ -20,7 +20,7 @@ exports = module.exports = {};
  * @return {string|null}
  */
 exports.readInput = function(name, error) {
-    return getEnv("INPUT_" + name.split(' ').join('_').toUpperCase(), error);
+    return exports.getEnv("INPUT_" + name.split(' ').join('_').toUpperCase(), error);
 }
 
 /**
@@ -43,7 +43,7 @@ exports.getEnv = function(name, error) {
  */
 exports.tempFile = name => {
     if (name) {
-        return join(tempDirectory(), name);
+        return join(exports.tempDirectory(), name);
     } else {
         return getPath();
     }

@@ -1,17 +1,17 @@
 'use strict';
-import fs from 'fs';
-import path, {dirname} from 'path';
-import crypto from "crypto";
-import os from "os";
-import http from "http";
-import https from "https";
-import {fileURLToPath} from "url";
+const fs = require('fs');
+const {join, dirname} = require('path');
+const crypto = require("crypto");
+const os = require("os");
+const http = require("http");
+const https = require("https");
+const {fileURLToPath} = require("url");
 
 const uniqueString = () => crypto.randomBytes(16).toString('hex');
 
 const tempDir = fs.realpathSync(os.tmpdir());
 
-const getPath = (prefix = '') => path.join(tempDir, prefix + uniqueString());
+const getPath = (prefix = '') => join(tempDir, prefix + uniqueString());
 
 /**
  * @param name {string}
@@ -42,7 +42,7 @@ export function getEnv(name, error) {
  */
 export const tempFile = name => {
     if (name) {
-        return path.join(tempDirectory(), name);
+        return join(tempDirectory(), name);
     } else {
         return getPath();
     }
@@ -82,4 +82,4 @@ export const request = (url, options, callback) => {
     }
 }
 
-export const somethingReleaser = path.join(dirname(fileURLToPath(import.meta.url)), "something-releaser")
+export const somethingReleaser = join(dirname(fileURLToPath(import.meta.url)), "something-releaser")

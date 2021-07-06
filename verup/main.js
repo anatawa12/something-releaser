@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
-import { somethingReleaser, readInput, tempFile, getEnv } from '../lib.mjs';
+const { spawn } = require('child_process');
+const { somethingReleaser, readInput, tempFile, getEnv } = require('../lib.js');
 
 let changelog = readInput("changelog", "no changelog is specified");
 let repository = readInput("repository", "no repository is specified")

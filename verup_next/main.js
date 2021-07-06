@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
-import { somethingReleaser, readInput } from '../lib.mjs';
+const { spawn } = require('child_process');
+const { somethingReleaser, readInput } = require('../lib.js');
 
 let newVersion = readInput("new_version", "no new_version is specified");
 let versionChangers = readInput("version_changers", "no version changer is specified").split(',');

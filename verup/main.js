@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const { somethingReleaser, readInput, tempFile, getEnv } = require('../lib.js');
 
 let changelog = readInput("changelog", "no changelog is specified");
-let repository = readInput("repository", "no repository is specified")
+let repository = readInput("repository")
     || (getEnv('GITHUB_SERVER_URL', 'no GITHUB_SERVER_URL') + '/'
         + getEnv('GITHUB_REPOSITORY', 'no GITHUB_REPOSITORY'));
 let versionChangers = readInput("version_changers", "no version changer is specified").split(',');

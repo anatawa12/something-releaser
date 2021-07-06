@@ -249,7 +249,7 @@ fn print_generated_yaml<'a, 'b>(
                     y_map!{
                         "uses" => "anatawa12/something-releaser/verup_next@v1",
                         "with" => y_map! {
-                            "new_version" => "${{ steps.verup.outputs.new_version }}",
+                            "new_version" => "${{ steps.verup.outputs.next_version }}",
                             "version_changers" => "gradle-properties",
                         },
                     },

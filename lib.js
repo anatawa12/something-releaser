@@ -13,12 +13,14 @@ const tempDir = fs.realpathSync(os.tmpdir());
 
 const getPath = (prefix = '') => join(tempDir, prefix + uniqueString());
 
+exports = module.exports = {};
+
 /**
  * @param name {string}
  * @param [error] {string | undefined}
  * @return {string|null}
  */
-export function readInput(name, error) {
+exports.readInput = function(name, error) {
     return getEnv("INPUT_" + name.split(' ').join('_').toUpperCase(), error);
 }
 
@@ -27,7 +29,7 @@ export function readInput(name, error) {
  * @param [error] {string | undefined}
  * @return {string|null}
  */
-export function getEnv(name, error) {
+exports.getEnv = function(name, error) {
     let input = process.env[name];
     if (!input || input.trim() === "") {
         if (error) throw new Error(error);
@@ -40,7 +42,7 @@ export function getEnv(name, error) {
  * @param name {string}
  * @return {string}
  */
-export const tempFile = name => {
+exports.tempFile = name => {
     if (name) {
         return join(tempDirectory(), name);
     } else {
@@ -52,7 +54,7 @@ export const tempFile = name => {
  * @param prefix {string}
  * @return {string}
  */
-export const tempDirectory = (prefix = '') => {
+exports.tempDirectory = (prefix = '') => {
     const directory = getPath(prefix);
     fs.mkdirSync(directory);
     return directory;
@@ -69,7 +71,7 @@ export const tempDirectory = (prefix = '') => {
  * @param options {http.RequestOptions}
  * @param callback {RequestCallback}
  */
-export const request = (url, options, callback) => {
+exports.request = (url, options, callback) => {
     if (!(url instanceof URL))
         url = new URL(url);
     switch (url.protocol) {
@@ -82,4 +84,4 @@ export const request = (url, options, callback) => {
     }
 }
 
-export const somethingReleaser = join(dirname(fileURLToPath(import.meta.url)), "something-releaser")
+exports.somethingReleaser = join(dirname(fileURLToPath(import.meta.url)), "something-releaser")

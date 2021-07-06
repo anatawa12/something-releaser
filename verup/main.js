@@ -3,7 +3,8 @@ import { somethingReleaser, readInput, tempFile, getEnv } from '../lib.mjs';
 
 let changelog = readInput("changelog", "no changelog is specified");
 let repository = readInput("repository", "no repository is specified")
-    || `${ getEnv('GITHUB_SERVER_URL') }/${ getEnv('GITHUB_REPOSITORY') }`;
+    || (getEnv('GITHUB_SERVER_URL', 'no GITHUB_SERVER_URL') + '/'
+        + getEnv('GITHUB_REPOSITORY', 'no GITHUB_REPOSITORY'));
 let versionChangers = readInput("version_changers", "no version changer is specified").split(',');
 let versionChangelogHtml = readInput("changelog_html") || tempFile("CHANGELOG.html");
 let versionChangelogMarkdown = readInput("changelog_markdown") || tempFile("CHANGELOG.md");

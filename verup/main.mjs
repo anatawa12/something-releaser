@@ -21,7 +21,8 @@ function readInput(name, error) {
 }
 
 let changelog = readInput("changelog", "no changelog is specified");
-let repository = readInput("repository", "no repository is specified");
+let repository = readInput("repository", "no repository is specified")
+    || `${ process.env.GITHUB_SERVER_URL }/${ process.env.GITHUB_REPOSITORY }`;
 let versionChangers = readInput("version_changers", "no version changer is specified").split(',');
 let versionChangelogHtml = readInput("changelog_html") || tempFile("CHANGELOG.html");
 let versionChangelogMarkdown = readInput("changelog_markdown") || tempFile("CHANGELOG.md");

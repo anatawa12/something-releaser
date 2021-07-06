@@ -1,23 +1,5 @@
-import { join } from 'path';
 import { spawn } from 'child_process';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-/**
- * @param name {string}
- * @param [error] {string | undefined}
- * @return {string|null}
- */
-function readInput(name, error) {
-    let input = process.env["INPUT_" + name.split(' ').join('_').toUpperCase()];
-    if (!input || input.trim() === "") {
-        if (error) throw new Error(error);
-        return null;
-    }
-    return input;
-}
+import { somethingReleaser, readInput } from "../lib.mjs";
 
 let publishers = readInput("publishers", "no publishers is specified").split(',');
 let changelogHtml = readInput("changelog_html", "changelog_html is required");
@@ -37,6 +19,6 @@ if (dry_run.toLowerCase() === 'true') {
     args.push("--dry-run");
 }
 
-spawn(join(__dirname, "..", "something-releaser"), args, {
+spawn(somethingReleaser, args, {
     stdio: ["ignore", "inherit", "inherit"]
 })

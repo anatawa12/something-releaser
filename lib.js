@@ -1,11 +1,10 @@
 'use strict';
 const fs = require('fs');
-const {join, dirname} = require('path');
+const {join} = require('path');
 const crypto = require("crypto");
 const os = require("os");
 const http = require("http");
 const https = require("https");
-const {fileURLToPath} = require("url");
 
 const uniqueString = () => crypto.randomBytes(16).toString('hex');
 
@@ -84,4 +83,4 @@ exports.request = (url, options, callback) => {
     }
 }
 
-exports.somethingReleaser = join(dirname(fileURLToPath(import.meta.url)), "something-releaser")
+exports.somethingReleaser = join(__dirname, "something-releaser")

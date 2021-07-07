@@ -7,15 +7,16 @@ use crate::release_system::*;
 use crate::*;
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
+use serde_yaml::{Mapping, Value};
 use sodiumoxide::crypto::box_::PublicKey;
 use sodiumoxide::crypto::sealedbox::seal;
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::{Formatter, Display};
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use serde_yaml::{Value, Mapping};
 
 const ENV_NAME: &str = "deployment";
+const ACTIONS_PAT: &str = "ACTIONS_PAT";
 
 pub async fn main(option: &Options) {
     if is_actions_env() {
@@ -26,11 +27,6 @@ pub async fn main(option: &Options) {
         .with_prompt("your repository name")
         .interact()
         .expect("enter correct repository name");
-
-    let pat = dialoguer::Password::new()
-        .with_prompt("Github Personal Access Token")
-        .interact()
-        .expect("enter correct PAT");
 
     let publisher_indices = dialoguer::MultiSelect::new()
         .with_prompt("Select Publisher")
@@ -55,14 +51,21 @@ pub async fn main(option: &Options) {
         .build()
         .unwrap();
 
-    let secrets = read_secrets(&option.secrets);
+    let secret_map = read_secrets(&option.secrets);
+
+    let pat = secret_map
+        .get(ACTIONS_PAT)
+        .expect("no ACTIONS_PAT in secrets");
+
     make_environment(&client, &pat, &repo).await;
     let (key, key_id) = get_public_key(&client, &pat, &repo).await;
 
     let secrets = {
         let mut environments = HashMap::new();
         for x in secret_names {
-            let v = secrets.get(x).expect_fn(|| format!("no {} in secrets", x));
+            let v = secret_map
+                .get(x)
+                .expect_fn(|| format!("no {} in secrets", x));
             environments.insert(x, v);
         }
         environments
@@ -71,17 +74,31 @@ pub async fn main(option: &Options) {
     for (k, v) in &secrets {
         set_env_secret(&client, &pat, &repo, k, v, &key, &key_id).await;
     }
+    set_env_secret(
+        &client,
+        &pat,
+        &repo,
+        ACTIONS_PAT,
+        secret_map
+            .get(ACTIONS_PAT)
+            .expect("no ACTIONS_PAT in secrets"),
+        &key,
+        &key_id,
+    )
+    .await;
 
     print_generated_yaml(
         publisher_names, 
         secrets.keys(),
+        &secret_map
+            .get("ACTIONS_USER_NAME")
+            .expect("no ACTIONS_USER_NAME in secrets"),
     );
 }
 
 fn read_secrets(path: &Path) -> HashMap<String, String> {
     let body = std::fs::read_to_string(path).expect("can't read");
-    serde_yaml::from_str::<HashMap<String, String>>(&body)
-        .expect("invalid yaml")
+    serde_yaml::from_str::<HashMap<String, String>>(&body).expect("invalid yaml")
 }
 
 async fn make_environment(client: &Client, pat: &str, repo: &RepositoryNamePair) {
@@ -208,6 +225,7 @@ macro_rules! y_map {
 fn print_generated_yaml<'a, 'b>(
     publishers: impl IntoIterator<Item = impl Display>,
     secrets: impl IntoIterator<Item = impl IntoString + Display>,
+    user_name: &str,
 ) {
     let yaml = y_map! {
         "name" => "Publisher",
@@ -217,8 +235,17 @@ fn print_generated_yaml<'a, 'b>(
                 "environment" => "deployment",
                 "runs-on" => "ubuntu-latest",
                 "steps" => Value::Sequence(vec![
-                    y_map!("uses" => "actions/checkout@v2"),
-                    y_map!("uses" => "anatawa12/something-releaser/set_user@v1"),
+                    y_map!{
+                        "uses" => "actions/checkout@v2",
+                        "with" => y_map!{
+                            "fetch-depth" => 0,
+                            "token" => "${{ secrets.ACTIONS_PAT }}",
+                        },
+                    },
+                    y_map!{
+                        "uses" => "anatawa12/something-releaser/set_user@v1",
+                        "with" => y_map!("user" => user_name),
+                    },
                     y_map!{
                         "name" => "Set up JDK 1.8",
                         "uses" => "actions/setup-java@v1",

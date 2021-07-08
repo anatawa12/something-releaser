@@ -1,0 +1,17 @@
+name: "something releaser publish"
+description: "publishes something(s)"
+inputs:
+  changelog_markdown:
+    description: The path to changelog of a version in markdown.
+    required: true
+  version_name:
+    description: The name of new version
+    required: true
+  token:
+    description: The github api token
+    default: ${{ github.token }}
+    required: true
+
+runs: 
+  using: node12
+  main: main.js

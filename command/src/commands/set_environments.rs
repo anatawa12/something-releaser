@@ -282,7 +282,14 @@ fn print_generated_yaml<'a, 'b>(
                     },
                     y_map!{
                         "name" => "Push",
-                        "run" => "git push",
+                        "run" => "git push && git push --tags",
+                    },
+                    y_map!{
+                        "uses" => "anatawa12/something-releaser/create_release@v1",
+                        "with" => y_map! {
+                            "new_version" => "${{ steps.verup.outputs.next_version }}",
+                            "changelog_markdown" => "${{ steps.verup.outputs.changelog_markdown }}",
+                        },
                     },
                 ]),
             },

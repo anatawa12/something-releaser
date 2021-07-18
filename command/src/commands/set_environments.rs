@@ -287,7 +287,7 @@ fn print_generated_yaml<'a, 'b>(
                     y_map!{
                         "uses" => "anatawa12/something-releaser/create_release@v1",
                         "with" => y_map! {
-                            "new_version" => "${{ steps.verup.outputs.next_version }}",
+                            "version_name" => "${{ steps.verup.outputs.version }}",
                             "changelog_markdown" => "${{ steps.verup.outputs.changelog_markdown }}",
                         },
                     },

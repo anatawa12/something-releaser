@@ -29,7 +29,8 @@ pub async fn run(
 ) {
     let mut builders = CommandBuilderMap::new();
     for publisher in publishers {
-        publisher.publish_project(&mut builders, version_info).await;
+        publisher.prepare_environment(version_info).await;
+        publisher.publish_project(&mut builders).await;
     }
     for x in builders.values() {
         let name = x.name();

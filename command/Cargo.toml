@@ -22,7 +22,7 @@ async-trait = "0.1"
 home = "0.5.3"
 tempfile = "3"
 reqwest = { version = "0.11", features = ["json"] }
-rand = "0.8"
+rand = { version = "0.8", features = ["min_const_gen"] }
 libz-sys = { version = "1", default-features = false, features = ["static"] }
 openssl-sys = { version = "0", default-features = false, features = ["vendored"] }
 actions-core = "0.0.2"

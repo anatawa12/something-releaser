@@ -63,6 +63,24 @@ impl<'s> PropertiesFile<'s> {
     pub fn write<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
         writing::write(self, out)
     }
+
+    pub async fn write_async_file(
+        &self,
+        path: &std::path::Path,
+        buf_size: usize,
+    ) -> std::io::Result<()> {
+        use tokio::io::AsyncWriteExt;
+
+        let mut buf = Vec::<u8>::with_capacity(buf_size);
+        self.write(&mut buf)?;
+        let mut properties = tokio::fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(&path)
+            .await?;
+        properties.write_all(&buf).await?;
+        properties.flush().await
+    }
 }
 
 #[cfg_attr(test, derive(Eq, PartialEq))]

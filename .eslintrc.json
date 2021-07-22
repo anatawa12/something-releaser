@@ -50,7 +50,9 @@
       "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
       "nonblock-statement-body-position": ["error", "below"],
       "@typescript-eslint/indent": ["error", 2],
-      "default-case": ["error"]
+      "default-case": ["error"],
+      "no-extra-parens": "off",
+      "@typescript-eslint/no-extra-parens": ["error"]
     },
     "env": {
       "node": true,

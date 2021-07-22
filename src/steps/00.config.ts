@@ -10,7 +10,7 @@ const schema = ajv.compile(schemaJson)
 
 export async function parseConfig(configPath: string): Promise<Yaml> {
   const config_yaml = loadYaml(
-    await promises.readFile(configPath, {encoding: 'utf8'})
+    await promises.readFile(configPath, {encoding: 'utf8'}),
   )
   if (!ajv.validate(schema, config_yaml)) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

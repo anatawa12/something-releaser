@@ -8,8 +8,8 @@ export type ObjectMap<Key extends string | number | symbol, Value> = {
   [_ in Key]: Value
 }
 
-export type KeyOfValue<Object, Value> = keyof (Object &
-  ObjectMap<keyof Object, Value>)
+export type KeyOfValue<Object, Value> =
+  keyof (Object & ObjectMap<keyof Object, Value>)
 
 export class Version {
   readonly major: number
@@ -24,7 +24,7 @@ export class Version {
     arg0: number,
     arg1?: number | boolean,
     arg2?: number | boolean,
-    arg3?: boolean
+    arg3?: boolean,
   ) {
     if (typeof arg1 != 'number') {
       this.major = arg0
@@ -42,9 +42,12 @@ export class Version {
       this.patch = arg2
       this.snapshot = arg3 ?? true
     }
-    if (!Number.isInteger(this.major)) throw new Error('major is not a integer')
-    if (!Number.isInteger(this.minor)) throw new Error('minor is not a integer')
-    if (!Number.isInteger(this.patch)) throw new Error('patch is not a integer')
+    if (!Number.isInteger(this.major)) 
+      throw new Error('major is not a integer')
+    if (!Number.isInteger(this.minor)) 
+      throw new Error('minor is not a integer')
+    if (!Number.isInteger(this.patch)) 
+      throw new Error('patch is not a integer')
   }
 
   static parse(value: string): Version {
@@ -69,9 +72,12 @@ export class Version {
 
   toString(): string {
     let r = `${this.major}`
-    if (this.minor) r += `.${this.minor}`
-    if (this.patch) r += `.${this.patch}`
-    if (this.snapshot) r += '-SNAPSHOT'
+    if (this.minor) 
+      r += `.${this.minor}`
+    if (this.patch) 
+      r += `.${this.patch}`
+    if (this.snapshot) 
+      r += '-SNAPSHOT'
     return r
   }
 }

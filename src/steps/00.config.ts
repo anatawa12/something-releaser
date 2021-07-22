@@ -45,17 +45,19 @@ function extractVariables(config: Yaml): void {
 function extractVariable<P extends string | number | symbol>(
   base: {[_ in P]?: string} | undefined,
   key: P,
-  path: string
+  path: string,
 ): void {
-  if (base == null) return
+  if (base == null) 
+    return
   let value = base[key]
-  if (value == null) return
+  if (value == null) 
+    return
 
   value = value.replace(/\$({[^}]*}?|\w+)/, function (str) {
     if (str.startsWith('${') && !str.endsWith('}')) {
       throw new Error(
         `Config: At ${path}: invalid variable reference.` +
-          'this supports $variable_name or ${variable_name}'
+          'this supports $variable_name or ${variable_name}',
       )
     }
     // get variable name
@@ -96,7 +98,8 @@ function extractor<Obj>(obj: Obj): Extractor<Obj> {
   // eslint-disable-next-line no-shadow
   function impl<Obj>(value: Obj, path: string): Extractor<Obj> {
     const r = function <Key extends keyof Obj>(key: Key): Extractor<Obj[Key]> {
-      if (value == null) return NOP_EXTRACTOR
+      if (value == null) 
+        return NOP_EXTRACTOR
       return impl(value[key], `${path}.${key}`)
     } as Extractor<Obj>
     r.e = function <Key extends KeyOfValue<Obj, string>>(key: Key) {

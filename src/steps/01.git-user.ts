@@ -3,7 +3,7 @@ import {Octokit} from '../types'
 
 export async function setGitUser(
   username: string,
-  octokit: Octokit
+  octokit: Octokit,
 ): Promise<void> {
   const [login, mail] = await findGitUser(username, octokit)
 
@@ -13,7 +13,7 @@ export async function setGitUser(
 
 export async function findGitUser(
   username: string,
-  octokit: Octokit
+  octokit: Octokit,
 ): Promise<[string, string]> {
   const res = await octokit.rest.users.getByUsername({username})
   if (res.data.type === 'Organization')

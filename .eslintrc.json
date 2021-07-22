@@ -8,6 +8,7 @@
       "project": "./tsconfig.json"
     },
     "rules": {
+      "prettier/prettier": "off",
       "eslint-comments/no-use": "off",
       "import/no-namespace": "off",
       "no-unused-vars": "off",
@@ -44,7 +45,11 @@
       "semi": "off",
       "@typescript-eslint/semi": ["error", "never"],
       "@typescript-eslint/type-annotation-spacing": "error",
-      "@typescript-eslint/unbound-method": "error"
+      "@typescript-eslint/unbound-method": "error",
+      "comma-dangle": "off",
+      "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
+      "nonblock-statement-body-position": ["error", "below"],
+      "@typescript-eslint/indent": ["error", 2]
     },
     "env": {
       "node": true,

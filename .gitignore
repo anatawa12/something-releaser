@@ -1,3 +1,8 @@
 /command/target
 /.idea
 *.iml
+
+/node_modules
+/lib
+/src/generated
+/dist

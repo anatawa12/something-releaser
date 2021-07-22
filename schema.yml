@@ -1,0 +1,99 @@
+$schema: "http://json-schema.org/draft-07/schema"
+required:
+  - git-user
+  - version-changer
+  - publish-environment
+  - publish-command
+additionalProperties: false
+properties: 
+
+
+  git-user:
+    additionalProperties: false
+    type: string
+    description: the name of git user to be used. this will be configured at first
+
+
+  version-changer:
+    additionalProperties: false
+    minProperties: 1
+    properties:
+
+      gradle-properties:
+        additionalProperties: false
+        type: object
+        description: change version via gradle.properties
+        properties: 
+          property:
+            type: string
+            description: the name of a property has version name in properties file
+            default: version
+          path:
+            description: the path to gradle.properties
+            default: 'gradle.properties'
+            oneOf:
+              - type: string
+              - items:
+                  type: string
+
+
+  publish-environment:
+    additionalProperties: false
+    minProperties: 1
+    properties:
+
+      gradle-maven:
+        additionalProperties: false
+        description:
+          Publish to maven repository via `maven-publish`.
+          You need to apply `maven-publish` plugin for project 
+          and configure publications.
+        required:
+          - repo
+        properties:
+          repo:
+            type: string
+            description: The url to maven
+          sign:
+            type: boolean
+            description: If false, it will not sign archifacts.
+            default: true
+          maven-user:
+            type: string
+          maven-pass:
+            type: string
+          gpg-key:
+            type: string
+          gpg-pass:
+            type: string
+
+      gradle-plugin-portal:
+        additionalProperties: false
+        description:
+          Publish to gradle plugin portal via `com.gradle.plugin-publish` plugin.
+          You need to apply `com.gradle.plugin-publish` plugin for project
+          and configure pluginBundle.
+        type: object
+        required:
+          - key
+        properties:
+          key:
+            type: string
+          sercret:
+            type: string
+
+      gradle-intellij-publisher:
+        additionalProperties: false
+        description:
+          Publish to intellij plugin portal via `org.jetbrains.intellij` plugin.
+          You need to apply `org.jetbrains.intellij` plugin for project 
+          and configure publishPlugin.
+        type: object
+        required:
+          - token
+        properties:
+          token:
+            type: string
+
+  publish-command:
+    type: string

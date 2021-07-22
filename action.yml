@@ -1,0 +1,15 @@
+name: 'something releaser'
+description: 'Releases something to somewhere'
+author: 'anatawa12'
+inputs:
+  config-path:
+    description: The path to .something-releaser.yml
+    required: true
+    default: .something-releaser.yml
+  token:
+    description: github token
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

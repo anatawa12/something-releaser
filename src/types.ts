@@ -17,16 +17,26 @@ export class Version {
   readonly patch: number | undefined
   readonly snapshot: boolean
 
+  constructor(config: Version)
   constructor(major: number, snapshot?: boolean)
   constructor(major: number, minor: number, snapshot?: boolean)
   constructor(major: number, minor: number, patch: number, snapshot?: boolean)
   constructor(
-    arg0: number,
+    arg0: number | Version,
     arg1?: number | boolean,
     arg2?: number | boolean,
     arg3?: boolean,
   ) {
-    if (typeof arg1 != 'number') {
+    if (typeof arg0 == 'object') {
+      this.major = arg0.major
+      this.minor = arg0.minor
+      this.patch = arg0.patch
+      this.snapshot = arg0.snapshot
+      if (this.patch != null && this.minor == null)
+        throw new Error("patch exists but minor doesn't")
+      if (this.minor != null && this.major == null)
+        throw new Error("minor exists but major doesn't")
+    } else if (typeof arg1 != 'number') {
       this.major = arg0
       this.minor = undefined
       this.patch = undefined
@@ -79,5 +89,31 @@ export class Version {
     if (this.snapshot) 
       r += '-SNAPSHOT'
     return r
+  }
+
+  unSnapshot(): Version {
+    return new Version({...this, snapshot: false})
+  }
+}
+
+// string builder
+export class StringBuilder {
+  body: string
+
+  constructor() {
+    this.body = ""
+  }
+
+  ln(line: string): void {
+    this.body += `${line}\n`
+  }
+
+  append(elem: string): this {
+    this.body += elem
+    return this
+  }
+
+  toString(): string {
+    return this.body
   }
 }

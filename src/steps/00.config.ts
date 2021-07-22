@@ -29,7 +29,10 @@ export async function parseConfig(configPath: string): Promise<Yaml> {
 function extractVariables(config: Yaml): void {
   const config_ = extractor(config)
   config_.e('git-user')
-  config_('version-changer')('gradle-properties').e('property').e('path')
+  config_('version-changer')('gradle-properties')
+    .aryOrSelf()
+    .e('property')
+    .e('path')
   config_('publish-environment')('gradle-maven')
     .e('repo')
     .e('sign')
@@ -75,10 +78,12 @@ function extractVariable<P extends string | number | symbol>(
 
 // variable extractor
 
+type UnwrapAry<T> = T extends (infer A)[] ? A : T
+
 interface Extractor<Obj> {
   <Key extends keyof Obj>(key: Key): Extractor<NonNullable<Obj[Key]>>
   e<Key extends KeyOfValue<Obj, string>>(key: Key): this
-  v: Obj
+  aryOrSelf(): Extractor<UnwrapAry<Obj>>
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -87,27 +92,35 @@ const NOP_EXTRACTOR: Extractor<any> = (() => {
   const r = function (_: any): Extractor<any> {
     return NOP_EXTRACTOR
   } as Extractor<any>
-  r.e = function () {
-    return this
-  }
+  r.e = function () { return this }
+  r.aryOrSelf = function () { return this }
   return r
 })()
 /* eslint-enable */
 
 function extractor<Obj>(obj: Obj): Extractor<Obj> {
-  // eslint-disable-next-line no-shadow
-  function impl<Obj>(value: Obj, path: string): Extractor<Obj> {
-    const r = function <Key extends keyof Obj>(key: Key): Extractor<Obj[Key]> {
-      if (value == null) 
-        return NOP_EXTRACTOR
-      return impl(value[key], `${path}.${key}`)
-    } as Extractor<Obj>
-    r.e = function <Key extends KeyOfValue<Obj, string>>(key: Key) {
-      extractVariable(value, key, path)
-      return this
+  return impl([obj], '')
+}
+
+function impl<Obj>(value: Obj[], path: string): Extractor<Obj> {
+  const r = function <Key extends keyof Obj>(key: Key): Extractor<Obj[Key]> {
+    if (value == null)
+      return NOP_EXTRACTOR
+    return impl(value.map((o) => o[key]), `${path}.${key}`)
+  } as Extractor<Obj>
+
+  r.e = function <Key extends KeyOfValue<Obj, string>>(key: Key) {
+    for (const obj of value) {
+      extractVariable(obj, key, path)
     }
-    r.v = value
     return r
   }
-  return impl(obj, '')
+
+  r.aryOrSelf = () => {
+    return impl(value.flatMap((obj) => Array.isArray(obj) ? obj : [obj]), 
+      `${path}(.[])`)
+  }
+
+  return r
 }
+

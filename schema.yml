@@ -21,20 +21,28 @@ properties:
 
       gradle-properties:
         additionalProperties: false
-        type: object
         description: change version via gradle.properties
-        properties: 
-          property:
-            type: string
-            description: the name of a property has version name in properties file
-            default: version
-          path:
-            description: the path to gradle.properties
-            default: 'gradle.properties'
-            oneOf:
-              - type: string
-              - items:
+        oneOf:
+          - additionalProperties: false
+            properties:
+              property:
+                type: string
+                description: the name of a property has version name in properties file
+                default: version
+              path:
+                type: string
+                description: the path to gradle.properties
+                default: 'gradle.properties'
+          - items:
+              additionalProperties: false
+              properties:
+                property:
                   type: string
+                  description: the name of a property has version name in properties file
+                  default: version
+                path:
+                  type: string
+                  description: the path to gradle.properties
 
 
   publish-environment:

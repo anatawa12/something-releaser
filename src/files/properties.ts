@@ -478,8 +478,8 @@ export function parse_value(value: Value): string {
 
   const [heading, last] = headingAndLast(value.lines)
   for (const line of heading) {
-    if (parse_escape_append(line[1])[0] !== "continue_line") {
-      logicFailre("unexpected end value line")
+    if (parse_escape_append(line[1])[0] !== "end_value_line") {
+      logicFailre("unexpected end continue line")
     }
   }
   if (parse_escape_append(last[1])[0] !== "end_value_line") {
@@ -534,7 +534,7 @@ function write_key_value_pair(pair: KeyValuePair, res: StringBuilder): void {
 
 function escapeProperties(str: string): string {
   // if no special chars found, no escape sequence
-  if (!str.match(/[ \t\n\r\f=:#!\p{C}]/u)) {
+  if (!str.match(/[\\\t\n\r\f=:#!\p{C}]/u) && !str.startsWith(' ')) {
     return str
   }
 
@@ -562,5 +562,6 @@ const ESCAPE_MAP: { [P in string]?: string } = Object.create(null, {
   ['\t']: { value: "\\t" },
   ['\n']: { value: "\\n" },
   ['\r']: { value: "\\r" },
-  ['\x0c']: { value: "\\f" },
+  ['\f']: { value: "\\f" },
+  ['\\']: { value: "\\\\" },
 })

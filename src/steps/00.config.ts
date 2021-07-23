@@ -4,11 +4,20 @@ import Ajv from 'ajv'
 import {load as loadYaml} from 'js-yaml'
 import schemaJson from '../generated/schema.json'
 import {KeyOfValue, Yaml} from '../types'
+import {
+  VersionChangers, 
+  createFromJson as createVersionChangers,
+} from '../version-changer'
 
 const ajv = new Ajv({allErrors: true})
 const schema = ajv.compile(schemaJson)
 
-export async function parseConfig(configPath: string): Promise<Yaml> {
+interface Configuration {
+  gitUser: string, 
+  versionChangers: VersionChangers,
+}
+
+export async function parseConfig(configPath: string): Promise<Configuration> {
   const config_yaml = loadYaml(
     await promises.readFile(configPath, {encoding: 'utf8'}),
   )
@@ -20,10 +29,14 @@ export async function parseConfig(configPath: string): Promise<Yaml> {
     throw new Error('config parsing error.')
   }
   // because validated by ajv, config is matched to Schema.
-  const config = config_yaml as Yaml
+  const yaml = config_yaml as Yaml
 
-  extractVariables(config)
-  return config
+  extractVariables(yaml)
+
+  return {
+    gitUser: yaml['git-user'],
+    versionChangers: createVersionChangers(yaml['version-changer']),
+  }
 }
 
 function extractVariables(config: Yaml): void {

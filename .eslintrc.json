@@ -1,11 +1,18 @@
 {
-    "plugins": ["jest", "@typescript-eslint"],
+    "plugins": ["jest", "@typescript-eslint", "import"],
     "extends": ["plugin:github/recommended"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "ecmaVersion": 9,
       "sourceType": "module",
       "project": "./tsconfig.eslint.json"
+    },
+    "settings": {
+      "import/resolver": {
+        "node": {
+          "extensions": [".ts"]
+        }
+      }
     },
     "rules": {
       "prettier/prettier": "off",
@@ -52,7 +59,11 @@
       "@typescript-eslint/indent": ["error", 2],
       "default-case": ["error"],
       "no-extra-parens": "off",
-      "@typescript-eslint/no-extra-parens": ["error"]
+      "@typescript-eslint/no-extra-parens": ["error"],
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": ["error"],
+      "sort-imports": 0,
+      "import/order": [2, { "alphabetize": { "order": "asc" } }]
     },
     "env": {
       "node": true,

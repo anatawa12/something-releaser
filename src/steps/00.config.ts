@@ -1,7 +1,7 @@
-import * as core from '@actions/core'
-import {load as loadYaml} from 'js-yaml'
 import {promises} from 'fs'
+import * as core from '@actions/core'
 import Ajv from 'ajv'
+import {load as loadYaml} from 'js-yaml'
 import schemaJson from '../generated/schema.json'
 import {KeyOfValue, Yaml} from '../types'
 

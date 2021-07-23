@@ -2,8 +2,8 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {parseConfig} from './steps/00.config'
 import {setGitUser} from './steps/01.git-user'
-import {createFromJson as createVersionChanger} from './version-changer'
 import {setCurrentVersion} from './steps/02.set-current-version'
+import {createFromJson as createVersionChanger} from './version-changer'
 
 async function run(): Promise<void> {
   const token = core.getInput('token')

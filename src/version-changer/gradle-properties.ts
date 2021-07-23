@@ -1,7 +1,7 @@
-import {VersionChanger} from '.'
-import {Version, Yaml} from '../types'
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
+import {Version, Yaml} from '../types'
+import {VersionChanger} from '.'
 
 export class GradleProperties implements VersionChanger {
   private readonly property: string

@@ -1,5 +1,5 @@
-import {VersionChangers} from '../version-changer'
 import {Version} from '../types'
+import {VersionChangers} from '../version-changer'
 
 export async function setCurrentVersion(changers: VersionChangers): Promise<Version> {
   const currentSnapshot = await changers.getVersionName()

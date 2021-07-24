@@ -52,28 +52,24 @@ properties:
 
       gradle-maven:
         additionalProperties: false
-        description:
-          Publish to maven repository via `maven-publish`.
-          You need to apply `maven-publish` plugin for project 
-          and configure publications.
         required:
           - repo
-        properties:
-          repo:
-            type: string
-            description: The url to maven
+        properties: 
+          repo: 
+            oneOf:
+              - $ref: '#/definitions/publish/gradle-maven-repo'
+              - items:
+                  $ref: '#/definitions/publish/gradle-maven-repo'
           sign:
-            type: boolean
-            description: If false, it will not sign archifacts.
-            default: true
-          maven-user:
-            type: string
-          maven-pass:
-            type: string
-          gpg-key:
-            type: string
-          gpg-pass:
-            type: string
+            additionalProperties: false
+            required:
+              - gpg-key
+              - gpg-pass
+            properties: 
+              gpg-key:
+                type: string
+              gpg-pass:
+                type: string
 
       gradle-plugin-portal:
         additionalProperties: false
@@ -105,3 +101,22 @@ properties:
 
   publish-command:
     type: string
+
+definitions:
+  publish:
+    gradle-maven-repo:
+      additionalProperties: false
+      description:
+        Publish to maven repository via `maven-publish`.
+        You need to apply `maven-publish` plugin for project
+        and configure publications.
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: The url to maven repository
+        user:
+          type: string
+        pass:
+          type: string

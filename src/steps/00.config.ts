@@ -3,6 +3,10 @@ import * as core from '@actions/core'
 import Ajv from 'ajv'
 import {load as loadYaml} from 'js-yaml'
 import schemaJson from '../generated/schema.json'
+import {
+  Configurators, 
+  createFromJson as createConfigurators,
+} from '../publish-environment'
 import {KeyOfValue, Yaml} from '../types'
 import {
   VersionChangers, 
@@ -15,6 +19,7 @@ const schema = ajv.compile(schemaJson)
 interface Configuration {
   gitUser: string, 
   versionChangers: VersionChangers,
+  publishConfigurators: Configurators,
 }
 
 export async function parseConfig(configPath: string): Promise<Configuration> {
@@ -36,6 +41,7 @@ export async function parseConfig(configPath: string): Promise<Configuration> {
   return {
     gitUser: yaml['git-user'],
     versionChangers: createVersionChangers(yaml['version-changer']),
+    publishConfigurators: createConfigurators(yaml['publish-environment']),
   }
 }
 
@@ -46,12 +52,14 @@ function extractVariables(config: Yaml): void {
     .aryOrSelf()
     .e('property')
     .e('path')
-  config_('publish-environment')('gradle-maven')
-    .e('repo')
-    .e('sign')
+  config_('publish-environment')('gradle-maven')('repo')
+    .aryOrSelf()
+    .e('url')
     .e('maven-user')
     .e('maven-pass')
+  config_('publish-environment')('gradle-maven')('sign')
     .e('gpg-key')
+    .e('gpg-pass')
   config_('publish-environment')('gradle-plugin-portal').e('key').e('sercret')
   config_('publish-environment')('gradle-intellij-publisher').e('token')
   // publish-command is

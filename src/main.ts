@@ -5,6 +5,9 @@ import {setGitUser} from './steps/01.git-user'
 import {setCurrentVersion} from './steps/02.set-current-version'
 
 async function run(): Promise<void> {
+  const baseDir = core.getInput('base-dir')
+  process.chdir(baseDir || ".")
+
   const token = core.getInput('token')
   const octokit = github.getOctokit(token)
 

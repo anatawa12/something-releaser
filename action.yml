@@ -2,6 +2,9 @@ name: 'something releaser'
 description: 'Releases something to somewhere'
 author: 'anatawa12'
 inputs:
+  base-dir:
+    description: The path to all paths (including .something-releaser.yml) will be resolved from
+    required: false
   config-path:
     description: The path to .something-releaser.yml
     required: true

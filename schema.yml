@@ -87,7 +87,7 @@ properties:
           secret:
             type: string
 
-      gradle-intellij-publisher:
+      gradle-intellij:
         additionalProperties: false
         description:
           Publish to intellij plugin portal via `org.jetbrains.intellij` plugin.

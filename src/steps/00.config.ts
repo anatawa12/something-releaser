@@ -61,7 +61,7 @@ function extractVariables(config: Yaml): void {
     .e('gpg-key')
     .e('gpg-pass')
   config_('publish-environment')('gradle-plugin-portal').e('key').e('secret')
-  config_('publish-environment')('gradle-intellij-publisher').e('token')
+  config_('publish-environment')('gradle-intellij').e('token')
   // publish-command is
   //config_.e('publish-command')
 }

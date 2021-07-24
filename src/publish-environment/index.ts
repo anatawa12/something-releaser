@@ -1,5 +1,7 @@
 import {Yaml} from '../types'
+import {GradleIntellij} from './gradle-intellij'
 import {GradleMaven} from './gradle-maven'
+import {GradlePluginPortal} from './gradle-plugin-portal'
 
 export interface Configurator {
   configure(): Promise<void>
@@ -32,6 +34,8 @@ export function createFromJson(
   const result: Configurator[] = []
 
   result.push(...GradleMaven.create(config['gradle-maven']))
+  result.push(...GradlePluginPortal.create(config['gradle-plugin-portal']))
+  result.push(...GradleIntellij.create(config['gradle-intellij']))
 
   return new Configurators(result)
 }

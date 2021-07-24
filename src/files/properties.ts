@@ -43,7 +43,7 @@ export class PropertiesFile {
         key_parsed: key,
         blank: "",
         key: null,
-        separator: ":",
+        separator: "=",
         value: { type: "actual", value },
       })
     }
@@ -525,7 +525,7 @@ function write_key_value_pair(pair: KeyValuePair, res: StringBuilder): void {
       break
     }
     case 'actual':
-      res.ln(escapeProperties(pair.key_parsed))
+      res.ln(escapeProperties(pair.value.value))
       break
     default:
       logicFailre("pair.value", pair.value)

@@ -299,3 +299,17 @@ describe("parse_escape_sequence", () => {
     ])
   })
 })
+
+describe("setting value and output then", () => {
+  test("keep saved value", () => {
+    const props = PropertiesFile.parse("")
+    props.set("the key", "value")
+    expect(props.get("the key")).toBe("value")
+  })
+
+  test("write value", () => {
+    const props = PropertiesFile.parse("")
+    props.set("the key", "value")
+    expect(props.toSource()).toBe("the key=value\n")
+  })
+})

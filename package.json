@@ -5,7 +5,7 @@
   "description": "releases somethings",
   "main": "lib/main.js",
   "scripts": {
-    "generate": "node generate.js",
+    "generate": "node scripts/generate-all.js",
     "build": "npm run generate && tsc",
     "lint": "eslint \"src/**/*.ts\"",
     "package": "ncc build --source-map --license licenses.txt",

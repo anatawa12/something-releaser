@@ -29,7 +29,10 @@
     "@actions/exec": "^1.1.0",
     "@actions/github": "^5.0.0",
     "ajv": "^8.6.2",
-    "js-yaml": "^4.1.0"
+    "fastpriorityqueue": "^0.7.1",
+    "isomorphic-git": "^1.9.2",
+    "js-yaml": "^4.1.0",
+    "simple-git": "^2.41.1"
   },
   "devDependencies": {
     "@types/http-auth": "^4.1.1",

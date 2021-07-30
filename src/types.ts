@@ -156,3 +156,5 @@ export type FormatArgs<Map, T extends string> =
 export type FormatProcessor<Map> = {
   [P in keyof Map]: (value: Map[P]) => string
 }
+
+export type Awaitable<T> = T | PromiseLike<T>

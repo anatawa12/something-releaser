@@ -2,6 +2,17 @@
 import {homedir} from 'os'
 import * as path from 'path'
 import {FormatArgs, FormatProcessor} from './types'
+export {
+  Commit,
+  GitClient, 
+  RevWalker,
+} from './utils/git-client'
+export {
+  asSequence, 
+  asAsyncSequence, 
+  AsyncSequence,
+  Sequence, 
+} from './utils/sequence'
 
 export function headingAndLast<Heading extends any[], Last>(array: [...Heading, Last]): [Heading, Last]
 export function headingAndLast<E>(array: E[]): [E[], E]

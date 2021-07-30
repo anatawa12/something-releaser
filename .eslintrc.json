@@ -63,7 +63,9 @@
       "no-redeclare": "off",
       "@typescript-eslint/no-redeclare": ["error"],
       "sort-imports": 0,
-      "import/order": [2, { "alphabetize": { "order": "asc" } }]
+      "import/order": [2, { "alphabetize": { "order": "asc" } }],
+      "no-dupe-class-members": "off",
+      "@typescript-eslint/no-dupe-class-members": ["error"]
     },
     "env": {
       "node": true,

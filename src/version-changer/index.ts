@@ -1,4 +1,5 @@
 import {Version, Yaml} from '../types'
+import {asPair} from '../utils'
 import {GradleProperties} from './gradle-properties'
 
 export interface VersionChanger {
@@ -61,6 +62,23 @@ export function createFromJson(
   const result: VersionChanger[] = []
 
   result.push(...GradleProperties.createArray(config['gradle-properties']))
+
+  return new VersionChangers(result)
+}
+
+export function createFromEnvVariable(str: string): VersionChangers {
+  const result: VersionChanger[] = []
+
+  for (const changerDesc of str.split(';')) {
+    const [changer, desc] = asPair(changerDesc, '@', false)
+    switch (changer) {
+      case 'gradle-properties':
+        result.push(...GradleProperties.createFromDesc(desc))
+        break
+      default:
+        throw new Error(`unknown changer: ${changer}`)
+    }
+  }
 
   return new VersionChangers(result)
 }

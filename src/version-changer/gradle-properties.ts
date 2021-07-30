@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
 import {Version, Yaml} from '../types'
+import {asPair, asSequence} from '../utils'
 import {VersionChanger} from '.'
 
 export class GradleProperties implements VersionChanger {
@@ -17,6 +18,19 @@ export class GradleProperties implements VersionChanger {
     } else {
       return [new GradleProperties(args)]
     }
+  }
+
+  static createFromDesc(desc: string | undefined): GradleProperties[] {
+    if (desc == null)
+      return [new GradleProperties({
+        property: 'version', 
+        path: 'gradle.properties',
+      })]
+    return asSequence(desc.split(','))
+      .map(fileDesc => asPair(fileDesc, '@', true))
+      .map(([property, path]) => 
+        new GradleProperties({ property: property ?? 'version', path }))
+      .asArray()
   }
 
   private constructor(arg: {property?: string; path?: string}) {

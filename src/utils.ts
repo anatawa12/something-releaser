@@ -59,3 +59,13 @@ export function processFormat<Map, P extends string>(
 export function gradleHomeDir(): string {
   return process.env.GRADLE_USER_HOME || path.join(homedir(), ".gradle")
 }
+
+export function asPair(str: string, sep: string, laterIfNotFound: true): [string | undefined, string]
+export function asPair(str: string, sep: string, laterIfNotFound: false): [string, string | undefined]
+export function asPair(str: string, sep: string, laterIfNotFound: boolean): [string | undefined, string | undefined] {
+  const i = str.indexOf('@')
+  if (i === -1) {
+    return laterIfNotFound ? [undefined, str] : [str, undefined]
+  }
+  return [str.substr(0, i), str.substr(i + 1)]
+}

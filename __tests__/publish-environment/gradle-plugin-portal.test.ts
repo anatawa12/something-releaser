@@ -2,8 +2,8 @@ import {mkdtempSync, promises as fs} from 'fs'
 import os from 'os'
 import * as path from 'path'
 import {describe, expect, test, beforeEach, afterEach, afterAll} from '@jest/globals'
+import {GradlePluginPortal} from '../../src/commands/gradle-plugin-portal'
 import {PropertiesFile} from '../../src/files/properties'
-import {GradlePluginPortal} from '../../src/publish-environment/gradle-plugin-portal'
 
 test("generated init script", () => {
   const portal = new GradlePluginPortal({

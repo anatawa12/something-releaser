@@ -1,5 +1,5 @@
 import {expect, test} from '@jest/globals'
-import {GradleIntellij} from '../../src/publish-environment/gradle-intellij'
+import {GradleIntellij} from '../../src/commands/gradle-intellij'
 
 test("generated init script", () => {
   const maven = new GradleIntellij({

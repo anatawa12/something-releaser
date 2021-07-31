@@ -1,8 +1,8 @@
-import * as github from '@actions/github/lib/utils'
-import * as gitUser from '../../src/steps/01.git-user'
 import {expect, test} from '@jest/globals'
+import {Octokit} from '@octokit/rest'
+import * as gitUser from '../../src/commands/git-user'
 
-const octokit = new github.GitHub()
+const octokit = new Octokit()
 
 test('throws organization', async () => {
   await expect(gitUser.findGitUser('fixrtm', octokit))

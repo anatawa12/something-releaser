@@ -1,9 +1,7 @@
 import {promises as fs} from 'fs'
 import * as path from 'path'
 import {GroovyGenerator} from '../files/groovy'
-import {Yaml} from '../types'
 import {gradleHomeDir} from '../utils'
-import {Configurator} from '.'
 
 type RepoConfig = {
   url: string
@@ -19,7 +17,7 @@ type Config = {
   } 
 }
 
-export class GradleMaven implements Configurator {
+export class GradleMaven {
   private readonly repo: RepoConfig[]
   private readonly sign: Config['sign']
 
@@ -90,15 +88,5 @@ export class GradleMaven implements Configurator {
     }
     res += ')'
     return res
-  }
-
-  static create(args: Yaml['publish-environment']['gradle-maven']): GradleMaven[] {
-    if (!args)
-      return []
-    if (Array.isArray(args)) {
-      return args.map(arg => new GradleMaven(arg))
-    } else {
-      return [new GradleMaven(args)]
-    }
   }
 }

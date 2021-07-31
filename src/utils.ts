@@ -3,11 +3,6 @@ import {homedir} from 'os'
 import * as path from 'path'
 import {FormatArgs, FormatProcessor} from './types'
 export {
-  Commit,
-  GitClient, 
-  RevWalker,
-} from './utils/git-client'
-export {
   asSequence, 
   asAsyncSequence, 
   AsyncSequence,

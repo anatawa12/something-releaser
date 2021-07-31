@@ -1,5 +1,5 @@
 import * as exec from '@actions/exec'
-import {Octokit} from '../types'
+import {Octokit} from '@octokit/rest'
 
 export async function setGitUser(
   username: string,

@@ -1,13 +1,14 @@
 import {promises as fs} from 'fs'
 import * as path from 'path'
 import {PropertiesFile} from '../files/properties'
-import {Yaml} from '../types'
 import {gradleHomeDir} from '../utils'
-import {Configurator} from '.'
 
-type Config = NonNullable<Yaml['publish-environment']['gradle-plugin-portal']>
+type Config = {
+  key: string;
+  secret: string;
+}
 
-export class GradlePluginPortal implements Configurator {
+export class GradlePluginPortal {
   private readonly key: string
   private readonly secret: string
 
@@ -31,12 +32,6 @@ export class GradlePluginPortal implements Configurator {
   
   toString(): string {
     return 'gradle-plugin-portal(with key and secrets)'
-  }
-
-  static create(args: Yaml['publish-environment']['gradle-plugin-portal']): GradlePluginPortal[] {
-    if (!args)
-      return []
-    return [new GradlePluginPortal(args)]
   }
 }
 

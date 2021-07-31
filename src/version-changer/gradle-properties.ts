@@ -1,24 +1,12 @@
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
-import {Version, Yaml} from '../types'
+import {Version} from '../types'
 import {asPair, asSequence} from '../utils'
 import {VersionChanger} from '.'
 
 export class GradleProperties implements VersionChanger {
   private readonly property: string
   private readonly path: string
-
-  static createArray(
-    args: Yaml['version-changer']['gradle-properties'],
-  ): GradleProperties[] {
-    if (!args) 
-      return []
-    if (Array.isArray(args)) {
-      return args.map(arg => new GradleProperties(arg))
-    } else {
-      return [new GradleProperties(args)]
-    }
-  }
 
   static createFromDesc(desc: string | undefined): GradleProperties[] {
     if (desc == null)

@@ -1,13 +1,13 @@
 import {promises as fs} from 'fs'
 import * as path from 'path'
 import {GroovyGenerator} from '../files/groovy'
-import {Yaml} from '../types'
 import {gradleHomeDir} from '../utils'
-import {Configurator} from '.'
 
-type Config = NonNullable<Yaml['publish-environment']['gradle-intellij']>
+type Config = {
+  token: string;
+}
 
-export class GradleIntellij implements Configurator {
+export class GradleIntellij {
   private readonly token: string
 
   constructor(config: Config) {
@@ -42,11 +42,5 @@ export class GradleIntellij implements Configurator {
   
   toString(): string {
     return 'gradle-intellij(with token)'
-  }
-
-  static create(args: Yaml['publish-environment']['gradle-intellij']): GradleIntellij[] {
-    if (!args)
-      return []
-    return [new GradleIntellij(args)]
   }
 }

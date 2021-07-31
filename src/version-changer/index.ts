@@ -1,4 +1,4 @@
-import {Version, Yaml} from '../types'
+import {Version} from '../types'
 import {asPair} from '../utils'
 import {GradleProperties} from './gradle-properties'
 
@@ -54,16 +54,6 @@ export class VersionChangers {
       }
     }
   }
-}
-
-export function createFromJson(
-  config: Yaml['version-changer'],
-): VersionChangers {
-  const result: VersionChanger[] = []
-
-  result.push(...GradleProperties.createArray(config['gradle-properties']))
-
-  return new VersionChangers(result)
 }
 
 export function createFromEnvVariable(str: string): VersionChangers {

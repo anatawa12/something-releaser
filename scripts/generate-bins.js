@@ -13,6 +13,9 @@ const commands = [
   'prepare-gradle-maven',
   'prepare-gradle-plugin-portal',
   'prepare-gradle-intellij',
+  'version-unsnapshot',
+  'version-snapshot',
+  'version-next',
 ];
 
 const jsDir = join(__dirname, '..', 'bin')

@@ -69,9 +69,9 @@ export class Version {
 
   toString(): string {
     let r = `${this.major}`
-    if (this.minor) 
+    if (this.minor != null) 
       r += `.${this.minor}`
-    if (this.patch) 
+    if (this.patch != null) 
       r += `.${this.patch}`
     if (this.snapshot) 
       r += '-SNAPSHOT'
@@ -80,6 +80,18 @@ export class Version {
 
   unSnapshot(): Version {
     return new Version({...this, snapshot: false})
+  }
+
+  makeSnapshot(): Version {
+    return new Version({...this, snapshot: true})
+  }
+
+  next(): Version {
+    if (this.patch != null)
+      return new Version({...this, patch: this.patch + 1})
+    if (this.minor != null)
+      return new Version({...this, minor: this.minor + 1})
+    return new Version({...this, major: this.major + 1})
   }
 }
 

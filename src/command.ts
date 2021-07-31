@@ -30,6 +30,9 @@ type Command =
   | ['set-git-user', string]
   | ['get-version']
   | ['set-version', string]
+  | ['version-unsnapshot', string]
+  | ['version-snapshot', string]
+  | ['version-next', string]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', ...string[]]
   | ['prepare-gradle-plugin-portal', string, string]
@@ -93,6 +96,27 @@ async function mainImpl(...args: Command): Promise<void> {
       const version = Version.parse(args[1]
         ?? throws(new Error(`version name required`)))
       await changers.setVersionName(version)
+      break
+    }
+    case 'version-unsnapshot': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .unSnapshot()
+        .toString())
+      break
+    }
+    case 'version-snapshot': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeSnapshot()
+        .toString())
+      break
+    }
+    case 'version-next': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .next()
+        .toString())
       break
     }
     case 'generate-changelog': {

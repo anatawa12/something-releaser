@@ -1,18 +1,11 @@
-name: 'something releaser'
-description: 'Releases something to somewhere'
+name: 'something releaser installer'
+description: 'install something-releaser'
 author: 'anatawa12'
 inputs:
-  base-dir:
-    description: The path to all paths (including .something-releaser.yml) will be resolved from
-    required: false
-  config-path:
-    description: The path to .something-releaser.yml
-    required: true
-    default: .something-releaser.yml
   token:
     description: github token
     required: true
     default: ${{ github.token }}
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'bin/action.js'

@@ -6,3 +6,8 @@
 /lib
 /src/generated
 /dist
+
+/path-posix/
+/path-win/
+/bin/*
+!/bin/actions.js

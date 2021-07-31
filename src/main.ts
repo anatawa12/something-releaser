@@ -4,6 +4,7 @@ import {parseConfig} from './steps/00.config'
 import {setGitUser} from './steps/01.git-user'
 import {setCurrentVersion} from './steps/02.set-current-version'
 import {createChangeLog} from './steps/04.create-changelog'
+export {main} from './command'
 
 async function run(): Promise<void> {
   const baseDir = core.getInput('base-dir')
@@ -23,5 +24,7 @@ async function run(): Promise<void> {
   const changelog = await createChangeLog(githubUrl)
 }
 
+if (require.main === module) {
 // eslint-disable-next-line github/no-then
-run().catch(error => core.setFailed(error))
+  run().catch(error => core.setFailed(error))
+}

@@ -7,6 +7,7 @@ import {setGitUser} from './commands/git-user'
 import {GradleIntellij} from './commands/gradle-intellij'
 import {GradleMaven} from './commands/gradle-maven'
 import {GradlePluginPortal} from './commands/gradle-plugin-portal'
+import {GradleSigning} from './commands/gradle-signing'
 import {Version} from './utils'
 import {createFromEnvVariable as createVersionChangers} from './version-changer'
 
@@ -34,7 +35,8 @@ type Command =
   | ['version-snapshot', string]
   | ['version-next', string]
   | ['generate-changelog', ...string[]]
-  | ['prepare-gradle-maven', ...string[]]
+  | ['prepare-gradle-maven', string, ...string[]]
+  | ['prepare-gradle-signing', string, ...string[]]
   | ['prepare-gradle-plugin-portal', string, string]
   | ['prepare-gradle-intellij', string]
 
@@ -125,36 +127,29 @@ async function mainImpl(...args: Command): Promise<void> {
     }
     case 'prepare-gradle-maven': {
       let i = 1
-      let sign: {'gpg-key': string, 'gpg-pass': string} | undefined = undefined
-      if (args[i] === '--signed') {
-        i++
-        sign = {
-          'gpg-key': args[i++],
-          'gpg-pass': args[i++],
-        }
-      } else if (args[i] !== '--unsigned')
-        throws(new Error('--signed or --unsigned expected'))
+      const url = args[i++]
       let user: string | undefined = undefined
       let pass: string | undefined = undefined
-      const repo: {url: string, user?: string, pass?: string}[] = []
       while (i < args.length) {
         switch (args[i++]) {
           case '--user':
-            user = args[i++]
+            user = args[i++] ?? throws(new Error("no value for --user"))
             break
           case '--pass':
-            pass = args[i++]
-            break
-          case '--url':
-            repo.push({url: args[i++], user, pass})
-            user = undefined
-            pass = undefined
+            pass = args[i++] ?? throws(new Error("no value for --pass"))
             break
           default:
             throws(new Error(`unknown option: ${args[i - 1]}`))
         }
       }
-      await new GradleMaven({sign, repo}).configure()
+      await new GradleMaven({url, user, pass}).configure()
+      break
+    }
+    case 'prepare-gradle-signing': {
+      const key: string = args[1] ?? throws(new Error("no gpg key is specified"))
+      const pass: string = args[2] ?? throws(new Error("no gpg pass is specified. " +
+        "if not exists, pass empty string"))
+      await new GradleSigning({key, pass}).configure()
       break
     }
     case 'prepare-gradle-plugin-portal': {

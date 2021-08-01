@@ -1,27 +1,29 @@
-import {mkdtempSync, promises as fs} from 'fs'
+import {readFileSync, mkdtempSync, promises as fs} from 'fs'
 import os from 'os'
 import * as path from 'path'
 import {describe, expect, test, beforeEach, afterEach, afterAll} from '@jest/globals'
 import {GradleMaven} from '../../src/commands/gradle-maven'
+import {GradleSigning} from '../../src/commands/gradle-signing'
 import {spawn} from '../test-utils/process'
 import {SimpleHttp} from '../test-utils/simple-http'
 
 test("generated init script", () => {
-  const maven = new GradleMaven({
-    url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/",
-    user: "sonatype-test",
-    pass: "sonatype-password",
+  const maven = new GradleSigning({
+    key,
+    pass: '',
   })
 
   expect(maven.generateInitScript())
     .toBe(`afterProject { proj ->
-  if (proj.plugins.findPlugin("org.gradle.maven-publish") == null) return
-  proj.publishing.repositories.maven {
-    url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-    // gradle may disallow insecure protocol
-    allowInsecureProtocol = true
-    credentials.username = "sonatype-test"
-    credentials.password = "sonatype-password"
+  if (proj.plugins.findPlugin("org.gradle.publishing") == null) return
+  proj.apply {
+    plugin("signing")
+  }
+  proj.signing.useInMemoryPgpKeys("${
+  key.replace(/'/g, "\\'").replace(/\n/g, "\\n")
+}", "")
+  proj.publishing.publications.forEach { publication ->
+    proj.signing.sign(publication)
   }
 }
 `)
@@ -35,7 +37,7 @@ describe('test with project', () => {
   const httpDir = path.join(tempDir, "http")
   const homeDir = path.join(tempDir, "home")
   const gradleDir = path.join(tempDir, "gradle")
-  const port = 1080
+  const port = 1081
   let server: SimpleHttp
 
   beforeEach(() => {
@@ -57,6 +59,10 @@ describe('test with project', () => {
   })
 
   test("with gradle-maven.test.project", async () => {
+    const sign = new GradleSigning({
+      'key': key,
+      'pass': '',
+    })
     const maven = new GradleMaven({
       url: `http://localhost:${port}/`,
       user: testUser,
@@ -64,6 +70,7 @@ describe('test with project', () => {
     })
 
     // configure
+    await sign.configure()
     await maven.configure()
 
     // run
@@ -77,9 +84,14 @@ describe('test with project', () => {
     // check files exists
     await fs.stat(path.join(httpDir,
       "com/anatawa12/something-releaser/test/publish/unspecified/publish-unspecified.jar"))
+    await fs.stat(path.join(httpDir,
+      "com/anatawa12/something-releaser/test/publish/unspecified/publish-unspecified.jar.asc"))
     // check private is not published
     await expect(fs.stat(path.join(httpDir, "com/anatawa12/something-releaser/test/private")))
       .rejects
       .toThrow()
   }, 60 * 1000)
 })
+
+// by https://tools.ietf.org/id/draft-bre-openpgp-samples-01.html
+const key = readFileSync(path.join(__dirname, "../../__tests__resources/gpg/bob.secret-key.asc"), {encoding: 'utf8'})

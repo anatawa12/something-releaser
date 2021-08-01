@@ -34,7 +34,7 @@
     "fastpriorityqueue": "^0.7.1",
     "isomorphic-git": "^1.9.2",
     "js-yaml": "^4.1.0",
-    "simple-git": "^2.41.1"
+    "simple-git": "^2.42.0"
   },
   "devDependencies": {
     "@types/http-auth": "^4.1.1",

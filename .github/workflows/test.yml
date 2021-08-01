@@ -21,3 +21,7 @@ jobs:
           npm run all
       # check if this action is valid
       - uses: ./
+
+      # prepare bats for tests and run tests
+      - run: npm install -g bats
+      - run: bats shell-tests/*

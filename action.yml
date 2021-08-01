@@ -8,4 +8,4 @@ inputs:
     default: ${{ github.token }}
 runs:
   using: 'node12'
-  main: 'bin/action.js'
+  main: 'bin/actions.js'

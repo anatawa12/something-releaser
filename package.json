@@ -41,7 +41,7 @@
     "@types/js-yaml": "^4.0.2",
     "@types/mime-types": "^2.1.0",
     "@types/node": "^12.12.6",
-    "@typescript-eslint/parser": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.5",
     "@vercel/ncc": "^0.29.0",
     "cmd-shim": "^4.1.0",
     "eslint": "^7.31.0",

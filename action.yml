@@ -1,0 +1,11 @@
+name: 'something releaser installer'
+description: 'install something-releaser'
+author: 'anatawa12'
+inputs:
+  token:
+    description: github token
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'node12'
+  main: 'bin/actions.js'

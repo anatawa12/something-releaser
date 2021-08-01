@@ -19,3 +19,5 @@ jobs:
           npm install
       - run: |
           npm run all
+      # check if this action is valid
+      - uses: ./

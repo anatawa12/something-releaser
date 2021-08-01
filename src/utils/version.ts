@@ -1,15 +1,22 @@
+interface VersionConfig {
+  readonly major: number
+  readonly minor: number | undefined
+  readonly patch: number | undefined
+  readonly snapshot: boolean
+}
+
 export class Version {
   readonly major: number
   readonly minor: number | undefined
   readonly patch: number | undefined
   readonly snapshot: boolean
 
-  constructor(config: Version)
+  constructor(config: VersionConfig)
   constructor(major: number, snapshot?: boolean)
   constructor(major: number, minor: number, snapshot?: boolean)
   constructor(major: number, minor: number, patch: number, snapshot?: boolean)
   constructor(
-    arg0: number | Version,
+    arg0: number | VersionConfig,
     arg1?: number | boolean,
     arg2?: number | boolean,
     arg3?: boolean,

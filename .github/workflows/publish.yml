@@ -72,7 +72,7 @@ jobs:
             tsconfig.json \
           
           # edit gitignore
-          gsed -n '/#### PUBLISH DELETE MARKER ####/q;p' -i .gitignore
+          sed -n '/#### PUBLISH DELETE MARKER ####/q;p' -i .gitignore
           
           # add modified files and commit
           git add .

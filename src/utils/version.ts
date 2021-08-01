@@ -34,28 +34,28 @@ export class Version {
       this.major = arg0
       this.minor = undefined
       this.patch = undefined
-      this.snapshot = arg1 ?? true
+      this.snapshot = arg1 ?? false
     } else if (typeof arg2 != 'number') {
       this.major = arg0
       this.minor = arg1
       this.patch = undefined
-      this.snapshot = arg2 ?? true
+      this.snapshot = arg2 ?? false
     } else {
       this.major = arg0
       this.minor = arg1
       this.patch = arg2
-      this.snapshot = arg3 ?? true
+      this.snapshot = arg3 ?? false
     }
     if (!Number.isInteger(this.major))
       throw new Error('major is not a integer')
-    if (!Number.isInteger(this.minor))
+    if (this.minor !== undefined && !Number.isInteger(this.minor))
       throw new Error('minor is not a integer')
-    if (!Number.isInteger(this.patch))
+    if (this.patch !== undefined && !Number.isInteger(this.patch))
       throw new Error('patch is not a integer')
   }
 
   static parse(value: string): Version {
-    const regex = /^v?(\d+)(.\d+)?(.\d+)?(-SNAPSHOT)?$/i
+    const regex = /^v?(\d+)(?:.(\d+))?(?:.(\d+))?(-SNAPSHOT)?$/i
     const match = value.match(regex)
     if (match == null)
       throw new Error(`the version name doesn't match ${regex}`)

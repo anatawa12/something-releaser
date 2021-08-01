@@ -1,8 +1,7 @@
 // the java .properties file support library
 // based on command/src/helpers/properties.rs@d9e6052c
 
-import {StringBuilder} from '../types'
-import {headingAndLast, logicFailre} from '../utils'
+import {headingAndLast, logicFailre, StringBuilder} from '../utils'
 
 export class PropertiesFile {
   private readonly body: Element[]

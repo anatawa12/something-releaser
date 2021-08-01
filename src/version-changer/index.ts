@@ -1,5 +1,4 @@
-import {Version} from '../types'
-import {asPair} from '../utils'
+import {asPair, Version} from '../utils'
 import {GradleProperties} from './gradle-properties'
 
 export interface VersionChanger {

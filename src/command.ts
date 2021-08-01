@@ -7,7 +7,7 @@ import {setGitUser} from './commands/git-user'
 import {GradleIntellij} from './commands/gradle-intellij'
 import {GradleMaven} from './commands/gradle-maven'
 import {GradlePluginPortal} from './commands/gradle-plugin-portal'
-import {Version} from './types'
+import {Version} from './utils'
 import {createFromEnvVariable as createVersionChangers} from './version-changer'
 
 function throws(error: Error): never {

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
-import {Version} from '../types'
-import {asPair, asSequence} from '../utils'
+import {Version,asPair, asSequence} from '../utils'
+
 import {VersionChanger} from '.'
 
 export class GradleProperties implements VersionChanger {

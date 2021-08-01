@@ -8,6 +8,8 @@ export {
   AsyncSequence,
   Sequence, 
 } from './utils/sequence'
+export {Version} from './utils/version'
+export {StringBuilder} from './utils/string-builder'
 
 export function headingAndLast<Heading extends any[], Last>(array: [...Heading, Last]): [Heading, Last]
 export function headingAndLast<E>(array: E[]): [E[], E]

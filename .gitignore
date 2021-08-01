@@ -1,3 +1,13 @@
 /command/target
 /.idea
 *.iml
+
+/node_modules
+/lib
+/src/generated
+/dist
+
+/path-posix/
+/path-win/
+/bin/*
+!/bin/actions.js

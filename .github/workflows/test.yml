@@ -1,0 +1,25 @@
+name: 'build-test'
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run all
+      # check if this action is valid
+      - uses: ./
+
+      # prepare bats for tests and run tests
+      - run: npm install -g bats
+      - run: bats shell-tests/*

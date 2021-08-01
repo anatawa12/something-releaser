@@ -34,10 +34,15 @@ jobs:
         env:
           VERSION: ${{ github.event.inputs.version }}
         shell: bash
-      - name: Install Rust (rustup)
-        run: rustup update stable --no-self-update && rustup default stable
-      - name: Build
-        run: cd command && cargo build --release
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'npm'
+
+      # building
+      - run: npm ci
+      - run: npm run all
+
       - name: Publish
         run: |
           set -eu
@@ -48,11 +53,25 @@ jobs:
           # checkout releases at origin/releases witout chanigng local tree
           git branch releases origin/releases
           git symbolic-ref HEAD refs/heads/releases
-          # copy command and save
-          cp command/target/release/something-releaser ./something-releaser
-          # remove unused files & commit
-          rm -rf command .github
-          git add something-releaser command .github
+          # remove unused files
+          rm -rf \
+            .github \
+            __tests__ \
+            __tests__resources \
+            lib \
+            node_modules \
+            scripts \
+            shell-tests \
+            .eslintignore \
+            .eslintrc.json \
+            jest.config.js \
+            package.json \
+            package-lock.json \
+            tsconfig.eslint.json \
+            tsconfig.json \
+          
+          # add modified files and commit
+          git add .
           git reset --soft $(git commit-tree -p HEAD -p $HASH -m "$VERSION at $HASH" $(git write-tree))
           # create tag & push
           git tag -f "$VERSION"

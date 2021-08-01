@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = "com.anatawa12.something-releaser.test"
+
+publishing.publications {
+    maven(MavenPublication) {
+        from components.java
+    }
+}

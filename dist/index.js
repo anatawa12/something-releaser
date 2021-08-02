@@ -1353,11 +1353,13 @@ function gradleHomeDir() {
 }
 exports.gradleHomeDir = gradleHomeDir;
 function asPair(str, sep, laterIfNotFound) {
-    const i = str.indexOf('@');
+    var _a;
+    const { index: i, 0: { length: len } } = typeof sep == 'string' ? { index: str.indexOf(sep), 0: sep }
+        : (_a = sep.exec(str)) !== null && _a !== void 0 ? _a : { index: -1, 0: "" };
     if (i === -1) {
         return laterIfNotFound ? [undefined, str] : [str, undefined];
     }
-    return [str.substr(0, i), str.substr(i + 1)];
+    return [str.substr(0, i), str.substr(i + len)];
 }
 exports.asPair = asPair;
 
@@ -1574,14 +1576,12 @@ class GradleProperties {
     }
     static createFromDesc(desc) {
         if (desc == null)
-            return [new GradleProperties({
-                    property: 'version',
-                    path: 'gradle.properties',
-                })];
-        return utils_1.asSequence(desc.split(','))
-            .map(fileDesc => utils_1.asPair(fileDesc, '@', true))
-            .map(([property, path]) => new GradleProperties({ property: property !== null && property !== void 0 ? property : 'version', path }))
-            .asArray();
+            return new GradleProperties({
+                property: 'version',
+                path: 'gradle.properties',
+            });
+        const [property, path] = utils_1.asPair(desc, '@', false);
+        return new GradleProperties({ property: property || 'version', path });
     }
     async loadVersion() {
         const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' });
@@ -1595,7 +1595,7 @@ class GradleProperties {
         const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' });
         const properties = properties_1.PropertiesFile.parse(source);
         properties.set(this.property, version.toString());
-        await fs.promises.writeFile(this.path, version, { encoding: 'utf-8' });
+        await fs.promises.writeFile(this.path, properties.toSource(), { encoding: 'utf-8' });
     }
     toString() {
         return `gradle-properties(at ${this.path} prop ${this.property})`;
@@ -1662,10 +1662,10 @@ exports.VersionChangers = VersionChangers;
 function createFromEnvVariable(str) {
     const result = [];
     for (const changerDesc of str.split(';')) {
-        const [changer, desc] = utils_1.asPair(changerDesc, '@', false);
+        const [changer, desc] = utils_1.asPair(changerDesc, /:|(?=@)/, false);
         switch (changer) {
             case 'gradle-properties':
-                result.push(...gradle_properties_1.GradleProperties.createFromDesc(desc));
+                result.push(gradle_properties_1.GradleProperties.createFromDesc(desc));
                 break;
             default:
                 throw new Error(`unknown changer: ${changer}`);

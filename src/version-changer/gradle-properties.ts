@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
-import {Version,asPair, asSequence} from '../utils'
+import {Version,asPair} from '../utils'
 
 import {VersionChanger} from '.'
 
@@ -8,17 +8,14 @@ export class GradleProperties implements VersionChanger {
   private readonly property: string
   private readonly path: string
 
-  static createFromDesc(desc: string | undefined): GradleProperties[] {
+  static createFromDesc(desc: string | undefined): GradleProperties {
     if (desc == null)
-      return [new GradleProperties({
+      return new GradleProperties({
         property: 'version', 
         path: 'gradle.properties',
-      })]
-    return asSequence(desc.split(','))
-      .map(fileDesc => asPair(fileDesc, '@', true))
-      .map(([property, path]) => 
-        new GradleProperties({ property: property ?? 'version', path }))
-      .asArray()
+      })
+    const [property, path] = asPair(desc, '@', false)
+    return new GradleProperties({ property: property || 'version', path })
   }
 
   private constructor(arg: {property?: string; path?: string}) {
@@ -39,7 +36,7 @@ export class GradleProperties implements VersionChanger {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
     const properties = PropertiesFile.parse(source)
     properties.set(this.property, version.toString())
-    await fs.promises.writeFile(this.path, version, {encoding: 'utf-8'})
+    await fs.promises.writeFile(this.path, properties.toSource(), {encoding: 'utf-8'})
   }
 
   toString(): string {

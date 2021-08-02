@@ -57,12 +57,13 @@ export function gradleHomeDir(): string {
   return process.env.GRADLE_USER_HOME || path.join(homedir(), ".gradle")
 }
 
-export function asPair(str: string, sep: string, laterIfNotFound: true): [string | undefined, string]
-export function asPair(str: string, sep: string, laterIfNotFound: false): [string, string | undefined]
-export function asPair(str: string, sep: string, laterIfNotFound: boolean): [string | undefined, string | undefined] {
-  const i = str.indexOf('@')
+export function asPair(str: string, sep: string | RegExp, laterIfNotFound: true): [string | undefined, string]
+export function asPair(str: string, sep: string | RegExp, laterIfNotFound: false): [string, string | undefined]
+export function asPair(str: string, sep: string | RegExp, laterIfNotFound: boolean): [string | undefined, string | undefined] {
+  const {index: i, 0: {length: len}} = typeof sep == 'string' ? {index: str.indexOf(sep), 0: sep}
+    : sep.exec(str) ?? { index: -1, 0: "" }
   if (i === -1) {
     return laterIfNotFound ? [undefined, str] : [str, undefined]
   }
-  return [str.substr(0, i), str.substr(i + 1)]
+  return [str.substr(0, i), str.substr(i + len)]
 }

@@ -59,7 +59,7 @@ export function createFromEnvVariable(str: string): VersionChangers {
   const result: VersionChanger[] = []
 
   for (const changerDesc of str.split(';')) {
-    const [changer, desc] = asPair(changerDesc, '@', false)
+    const [changer, desc] = asPair(changerDesc, /:|(?=@)/, false)
     switch (changer) {
       case 'gradle-properties':
         result.push(GradleProperties.createFromDesc(desc))

@@ -62,7 +62,7 @@ export function createFromEnvVariable(str: string): VersionChangers {
     const [changer, desc] = asPair(changerDesc, '@', false)
     switch (changer) {
       case 'gradle-properties':
-        result.push(...GradleProperties.createFromDesc(desc))
+        result.push(GradleProperties.createFromDesc(desc))
         break
       default:
         throw new Error(`unknown changer: ${changer}`)

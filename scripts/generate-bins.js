@@ -11,6 +11,7 @@ const commands = [
   'set-version',
   'generate-changelog',
   'prepare-gradle-maven',
+  'prepare-gradle-signing',
   'prepare-gradle-plugin-portal',
   'prepare-gradle-intellij',
   'version-unsnapshot',

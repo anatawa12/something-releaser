@@ -14,8 +14,8 @@ export class GradleProperties implements VersionChanger {
         property: 'version', 
         path: 'gradle.properties',
       })
-    const [property, path] = asPair(desc, '@', true)
-    return new GradleProperties({ property: property ?? 'version', path })
+    const [property, path] = asPair(desc, '@', false)
+    return new GradleProperties({ property: property || 'version', path })
   }
 
   private constructor(arg: {property?: string; path?: string}) {
@@ -36,7 +36,7 @@ export class GradleProperties implements VersionChanger {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
     const properties = PropertiesFile.parse(source)
     properties.set(this.property, version.toString())
-    await fs.promises.writeFile(this.path, version, {encoding: 'utf-8'})
+    await fs.promises.writeFile(this.path, properties.toSource(), {encoding: 'utf-8'})
   }
 
   toString(): string {

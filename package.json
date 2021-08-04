@@ -40,7 +40,7 @@
     "@types/http-auth": "^4.1.1",
     "@types/js-yaml": "^4.0.2",
     "@types/mime-types": "^2.1.0",
-    "@types/node": "^12.12.6",
+    "@types/node": "^12.20.18",
     "@typescript-eslint/parser": "^4.28.5",
     "@vercel/ncc": "^0.29.0",
     "cmd-shim": "^4.1.0",

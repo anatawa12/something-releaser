@@ -388,6 +388,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GradlePluginPortal = void 0;
 const fs_1 = __nccwpck_require__(5747);
 const path = __importStar(__nccwpck_require__(5622));
+const groovy_1 = __nccwpck_require__(1833);
 const properties_1 = __nccwpck_require__(8130);
 const utils_1 = __nccwpck_require__(918);
 class GradlePluginPortal {
@@ -399,10 +400,30 @@ class GradlePluginPortal {
         properties.set("gradle.publish.key", this.key);
         properties.set("gradle.publish.secret", this.secret);
     }
+    generateInitScript() {
+        const ge = new groovy_1.GroovyGenerator();
+        ge.block("afterProject { proj ->", () => {
+            ge.line("if (proj.plugins.findPlugin(%s) == null) return", "com.gradle.plugin-publish");
+            // configure publish repository
+            ge.block("if (proj.pluginBundle.mavenCoordinates.groupId == null) {", () => {
+                ge.line("throw new Exception(%s)", "mavenCoordinates.groupId is not specified!");
+            });
+        });
+        return ge.toString();
+    }
     async configure() {
         const propertiesFilePath = path.join(utils_1.gradleHomeDir(), "gradle.properties");
         const properties = properties_1.PropertiesFile.parse(await readOrEmpty(propertiesFilePath));
         this.setProperties(properties);
+        const init_d = path.join(utils_1.gradleHomeDir(), "init.d");
+        const initScriptPath = path.join(init_d, "gradle-plugin-portal.gradle");
+        await fs_1.promises.mkdir(init_d, { recursive: true });
+        // if file exists: throw error
+        // eslint-disable-next-line github/no-then
+        if (await fs_1.promises.stat(initScriptPath).then(() => true, () => false)) {
+            throw new Error("can't create gradle-intellij.gradle: exists");
+        }
+        await fs_1.promises.writeFile(initScriptPath, this.generateInitScript(), { encoding: 'utf8' });
         await fs_1.promises.writeFile(propertiesFilePath, properties.toSource(), { encoding: 'utf8' });
     }
     toString() {

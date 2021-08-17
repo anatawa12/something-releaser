@@ -8,6 +8,7 @@ import {GradleIntellij} from './commands/gradle-intellij'
 import {GradleMaven} from './commands/gradle-maven'
 import {GradlePluginPortal} from './commands/gradle-plugin-portal'
 import {GradleSigning} from './commands/gradle-signing'
+import {publishToCurseForge} from './commands/publish-to-curse-forge'
 import {Version} from './utils'
 import {createFromEnvVariable as createVersionChangers} from './version-changer'
 
@@ -39,6 +40,7 @@ type Command =
   | ['prepare-gradle-signing', string, ...string[]]
   | ['prepare-gradle-plugin-portal', string, string]
   | ['prepare-gradle-intellij', string]
+  | ['publish-to-curse-forge', ...string[]]
 
 export async function main(...args: string[]): Promise<void> {
   return await mainImpl(...args as Command)
@@ -160,6 +162,10 @@ async function mainImpl(...args: Command): Promise<void> {
     case 'prepare-gradle-intellij': {
       const [token] = args.slice(1)
       await new GradleIntellij({token}).configure()
+      break
+    }
+    case 'publish-to-curse-forge': {
+      await publishToCurseForge(args.slice(1))
       break
     }
     default:

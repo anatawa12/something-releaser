@@ -17,6 +17,7 @@ const commands = [
   'version-unsnapshot',
   'version-snapshot',
   'version-next',
+  'publish-to-curse-forge',
 ];
 
 const jsDir = join(__dirname, '..', 'bin')

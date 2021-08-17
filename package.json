@@ -31,9 +31,12 @@
     "@octokit/rest": "^18.7.2",
     "ajv": "^8.6.2",
     "auto-changelog": "git+https://github.com/anatawa12/auto-changelog.git",
+    "commander": "^8.1.0",
     "fastpriorityqueue": "^0.7.1",
+    "form-data": "^4.0.0",
     "isomorphic-git": "^1.9.2",
     "js-yaml": "^4.1.0",
+    "node-fetch": "^2.6.1",
     "simple-git": "^2.42.0"
   },
   "devDependencies": {
@@ -41,7 +44,8 @@
     "@types/js-yaml": "^4.0.2",
     "@types/mime-types": "^2.1.0",
     "@types/node": "^12.20.19",
-    "@typescript-eslint/parser": "^4.29.0",
+    "@types/node-fetch": "^2.5.12",
+    "@typescript-eslint/parser": "^4.29.2",
     "@vercel/ncc": "^0.29.0",
     "cmd-shim": "^4.1.0",
     "eslint": "^7.32.0",

@@ -1,5 +1,6 @@
 import {asPair, Version} from '../utils'
 import {GradleProperties} from './gradle-properties'
+import {RegexPattern} from './regex-pattern'
 
 export interface VersionChanger {
   loadVersion(): Promise<Version>
@@ -63,6 +64,9 @@ export function createFromEnvVariable(str: string): VersionChangers {
     switch (changer) {
       case 'gradle-properties':
         result.push(GradleProperties.createFromDesc(desc))
+        break
+      case 'regex-pattern':
+        result.push(RegexPattern.createFromDesc(desc))
         break
       default:
         throw new Error(`unknown changer: ${changer}`)

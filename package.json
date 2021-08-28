@@ -34,7 +34,7 @@
     "commander": "^8.1.0",
     "fastpriorityqueue": "^0.7.1",
     "form-data": "^4.0.0",
-    "isomorphic-git": "^1.9.2",
+    "isomorphic-git": "^1.10.0",
     "js-yaml": "^4.1.0",
     "node-fetch": "^2.6.1",
     "simple-git": "^2.42.0"

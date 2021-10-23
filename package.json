@@ -53,7 +53,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-jest": "^25.2.2",
     "http-auth": "^4.1.9",
-    "jest": "^27.1.0",
+    "jest": "^27.3.1",
     "json-schema-to-typescript": "^10.1.5",
     "mime-types": "^2.1.32",
     "ts-jest": "^27.0.5",

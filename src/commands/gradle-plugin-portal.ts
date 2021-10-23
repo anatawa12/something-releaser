@@ -65,7 +65,7 @@ async function readOrEmpty(p: string): Promise<string> {
   try {
     return await fs.readFile(p, { encoding: 'utf8' })
   } catch (e) {
-    if (e.code === 'ENOENT')
+    if ((e as any).code === 'ENOENT')
       return ''
     throw e
   }

@@ -37,7 +37,7 @@
     "isomorphic-git": "^1.10.0",
     "js-yaml": "^4.1.0",
     "node-fetch": "^2.6.1",
-    "simple-git": "^2.45.0"
+    "simple-git": "^2.47.0"
   },
   "devDependencies": {
     "@types/http-auth": "^4.1.1",

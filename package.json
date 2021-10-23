@@ -31,7 +31,7 @@
     "@octokit/rest": "^18.9.1",
     "ajv": "^8.6.2",
     "auto-changelog": "git+https://github.com/anatawa12/auto-changelog.git",
-    "commander": "^8.1.0",
+    "commander": "^8.3.0",
     "fastpriorityqueue": "^0.7.1",
     "form-data": "^4.0.0",
     "isomorphic-git": "^1.10.0",

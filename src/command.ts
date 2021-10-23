@@ -51,7 +51,8 @@ async function trueOrENOENT(promise: Promise<unknown>): Promise<boolean> {
     await promise
     return true
   } catch (e) {
-    if (e.code === 'ENOENT')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((e as any).code === 'ENOENT')
       return false
     throw e
   }

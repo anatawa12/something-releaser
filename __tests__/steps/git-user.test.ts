@@ -2,7 +2,7 @@ import {expect, test} from '@jest/globals'
 import {Octokit} from '@octokit/rest'
 import * as gitUser from '../../src/commands/git-user'
 
-const octokit = new Octokit()
+const octokit = new Octokit({auth: process.env.GH_TOKEN})
 
 test('throws organization', async () => {
   await expect(gitUser.findGitUser('fixrtm', octokit))

@@ -1,4 +1,4 @@
-import {asPair, Version} from '../utils'
+import {Version} from '../utils'
 import {GradleProperties} from './gradle-properties'
 import {RegexPattern} from './regex-pattern'
 
@@ -56,22 +56,34 @@ export class VersionChangers {
   }
 }
 
-export function createFromEnvVariable(str: string): VersionChangers {
-  const result: VersionChanger[] = []
+export type ChangerDescriptor = {
+  changer: string,
+  info: string | undefined,
+  path: string | undefined,
+}
 
-  for (const changerDesc of str.split(';')) {
-    const [changer, desc] = asPair(changerDesc, /:|(?=@)/, false)
-    switch (changer) {
-      case 'gradle-properties':
-        result.push(GradleProperties.createFromDesc(desc))
-        break
-      case 'regex-pattern':
-        result.push(RegexPattern.createFromDesc(desc))
-        break
-      default:
-        throw new Error(`unknown changer: ${changer}`)
-    }
+export function parseDescriptor(changerDesc: string): ChangerDescriptor {
+  const match = changerDesc.match(/(?<changer>[^:@]*)(?::(?<info>[^@]*))?(?:@(?<file>[\s\S]*))?/)
+  if (match == null)
+    throw new Error(`logic failure: don't match: '${changerDesc}'`)
+  return match.groups as ChangerDescriptor
+}
+
+export function createChanger(descriptor: ChangerDescriptor): VersionChanger {
+  switch (descriptor.changer) {
+    case 'gradle-properties':
+      return GradleProperties.createFromDesc(descriptor)
+    case 'regex-pattern':
+      return RegexPattern.createFromDesc(descriptor)
+    default:
+      throw new Error(`unknown changer: ${descriptor.changer}`)
   }
+}
 
-  return new VersionChangers(result)
+export function createChangers(descriptors: ChangerDescriptor[]): VersionChangers {
+  return new VersionChangers(descriptors.map(createChanger))
+}
+
+export function createFromEnvVariable(str: string): VersionChangers {
+  return createChangers(str.split(';').map(parseDescriptor))
 }

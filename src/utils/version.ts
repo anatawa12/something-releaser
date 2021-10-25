@@ -9,15 +9,15 @@ interface VersionConfig {
 
 export type Release =
   // none
-  | [kind: 'stable']
+  | readonly [kind: 'stable']
   // -SNAPSHOT
-  | [kind: 'snapshot']
+  | readonly [kind: 'snapshot']
   // -alphaN
-  | [kind: 'alpha', number: number]
+  | readonly [kind: 'alpha', number: number]
   // -betaN
-  | [kind: 'beta', number: number]
+  | readonly [kind: 'beta', number: number]
   // -rcN
-  | [kind: 'candidate', number: number]
+  | readonly [kind: 'candidate', number: number]
 
 export class Version {
   readonly major: number

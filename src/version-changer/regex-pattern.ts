@@ -7,7 +7,7 @@ export class RegexPattern implements VersionChanger {
   private readonly path: string
 
   static createFromDesc({info: pattern, path}: ChangerDescriptor): RegexPattern {
-    if (pattern == null || path == null)
+    if (!pattern || !path)
       throw new Error(`regex-pattern requires both pattern and path`)
     return new RegexPattern({ pattern, path })
   }

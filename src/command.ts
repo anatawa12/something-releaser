@@ -22,14 +22,23 @@ function println(body: string): void {
   console.log(body)
 }
 
+function eprintln(body: string): void {
+  // eslint-disable-next-line no-console
+  console.warn(body)
+}
+
 type Command =
   | ['something-releaser', ...string[]]
   | ['install', ...([string] | [string, string] | [] )]
   | ['set-git-user', string]
   | ['get-version']
   | ['set-version', string]
-  | ['version-unsnapshot', string]
+  | ['version-unsnapshot', string] // deprecated
+  | ['version-stable', string]
   | ['version-snapshot', string]
+  | ['version-alpha', ...([ver: string, num: string] | [ver: string])]
+  | ['version-beta', ...([ver: string, num: string] | [ver: string])]
+  | ['version-candidate', ...([ver: string, num: string] | [ver: string])]
   | ['version-next', string]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', string, ...string[]]
@@ -100,6 +109,14 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'version-unsnapshot': {
+      eprintln("version-unsnapshot is deprecated. use version-stable")
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeStable()
+        .toString())
+      break
+    }
+    case 'version-stable': {
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
         .makeStable()
@@ -110,6 +127,27 @@ async function mainImpl(...args: Command): Promise<void> {
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
         .makeSnapshot()
+        .toString())
+      break
+    }
+    case 'version-alpha': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeAlpha(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-beta': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeBeta(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-candidate': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeCandidate(parseInt(args[2] ?? '1'))
         .toString())
       break
     }

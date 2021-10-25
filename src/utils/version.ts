@@ -121,6 +121,18 @@ export class Version {
     return new Version({...this, release: ['stable']})
   }
 
+  makeAlpha(number: number): Version {
+    return new Version({...this, release: ['alpha', number]})
+  }
+
+  makeBeta(number: number): Version {
+    return new Version({...this, release: ['beta', number]})
+  }
+
+  makeCandidate(number: number): Version {
+    return new Version({...this, release: ['candidate', number]})
+  }
+
   makeSnapshot(): Version {
     return new Version({...this, release: ['snapshot']})
   }

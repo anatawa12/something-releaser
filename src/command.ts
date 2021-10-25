@@ -9,16 +9,12 @@ import {GradleMaven} from './commands/gradle-maven'
 import {GradlePluginPortal} from './commands/gradle-plugin-portal'
 import {GradleSigning} from './commands/gradle-signing'
 import {publishToCurseForge} from './commands/publish-to-curse-forge'
+import env from './env'
 import {Version} from './utils'
-import {createFromEnvVariable as createVersionChangers} from './version-changer'
+import {createChangers} from './version-changer'
 
 function throws(error: Error): never {
   throw error
-}
-
-function getEnv(name: string): string {
-  return process.env[name]
-    ?? throws(new Error(`environment variable ${name} not found`))
 }
 
 function println(body: string): void {
@@ -92,12 +88,12 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'get-version': {
-      const changers = createVersionChangers(getEnv('RELEASER_CHANGER'))
+      const changers = createChangers(env.releaseChanger)
       println((await changers.getVersionName()).toString())
       break
     }
     case 'set-version': {
-      const changers = createVersionChangers(getEnv('RELEASER_CHANGER'))
+      const changers = createChangers(env.releaseChanger)
       const version = Version.parse(args[1]
         ?? throws(new Error(`version name required`)))
       await changers.setVersionName(version)

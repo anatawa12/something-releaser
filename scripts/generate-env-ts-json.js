@@ -5,22 +5,6 @@ const {join} = require('path')
 const {load: loadYaml} = require('js-yaml')
 const {compile} = require('json-schema-to-typescript')
 
-const commands = [
-  'something-releaser',
-  'set-git-user',
-  'get-version',
-  'set-version',
-  'generate-changelog',
-  'prepare-gradle-maven',
-  'prepare-gradle-signing',
-  'prepare-gradle-plugin-portal',
-  'prepare-gradle-intellij',
-  'version-unsnapshot',
-  'version-snapshot',
-  'version-next',
-  'publish-to-curse-forge',
-];
-
 const envYml = join(__dirname, '..', 'src', 'env.yml')
 const envJson = join(__dirname, '..', 'src', 'generated', 'env.json')
 const envTs = join(__dirname, '..', 'src', 'generated', 'env.ts')

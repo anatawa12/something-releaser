@@ -102,7 +102,7 @@ async function mainImpl(...args: Command): Promise<void> {
     case 'version-unsnapshot': {
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
-        .unSnapshot()
+        .makeStable()
         .toString())
       break
     }

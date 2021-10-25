@@ -15,7 +15,7 @@ it("default save and write", async () => {
   const desc = GradleProperties.createFromDesc(create())
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, true))
+    .toEqual(new Version(1, 0, 0, ['snapshot']))
   await desc.setVersion(new Version(1))
   await expect(fs.readFile("gradle.properties", {encoding: 'utf8'}))
     .resolves
@@ -29,7 +29,7 @@ it("custom prop save and write", async () => {
   const desc = GradleProperties.createFromDesc(create("project-version"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, true))
+    .toEqual(new Version(1, 0, 0, ['snapshot']))
   await desc.setVersion(new Version(1))
   await expect(fs.readFile("gradle.properties", {encoding: 'utf8'}))
     .resolves
@@ -43,7 +43,7 @@ it("custom file save and write", async () => {
   const desc = GradleProperties.createFromDesc(create(undefined, "versions"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, true))
+    .toEqual(new Version(1, 0, 0, ['snapshot']))
   await desc.setVersion(new Version(1))
   await expect(fs.readFile("versions", {encoding: 'utf8'}))
     .resolves
@@ -57,7 +57,7 @@ it("custom prop and file save and write", async () => {
   const desc = GradleProperties.createFromDesc(create("project-version", "versions"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, true))
+    .toEqual(new Version(1, 0, 0, ['snapshot']))
   await desc.setVersion(new Version(1))
   await expect(fs.readFile("versions", {encoding: 'utf8'}))
     .resolves

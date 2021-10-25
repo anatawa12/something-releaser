@@ -1,31 +1,45 @@
+import {logicFailre} from '../utils'
+
 interface VersionConfig {
   readonly major: number
   readonly minor: number | undefined
   readonly patch: number | undefined
-  readonly snapshot: boolean
+  readonly release: Release
 }
+
+export type Release =
+  // none
+  | [kind: 'stable']
+  // -SNAPSHOT
+  | [kind: 'snapshot']
+  // -alphaN
+  | [kind: 'alpha', number: number]
+  // -betaN
+  | [kind: 'beta', number: number]
+  // -rcN
+  | [kind: 'candidate', number: number]
 
 export class Version {
   readonly major: number
   readonly minor: number | undefined
   readonly patch: number | undefined
-  readonly snapshot: boolean
+  readonly release: Release
 
   constructor(config: VersionConfig)
-  constructor(major: number, snapshot?: boolean)
-  constructor(major: number, minor: number, snapshot?: boolean)
-  constructor(major: number, minor: number, patch: number, snapshot?: boolean)
+  constructor(major: number, release?: Release)
+  constructor(major: number, minor: number, release?: Release)
+  constructor(major: number, minor: number, patch: number, release?: Release)
   constructor(
     arg0: number | VersionConfig,
-    arg1?: number | boolean,
-    arg2?: number | boolean,
-    arg3?: boolean,
+    arg1?: number | Release,
+    arg2?: number | Release,
+    arg3?: Release,
   ) {
     if (typeof arg0 == 'object') {
       this.major = arg0.major
       this.minor = arg0.minor
       this.patch = arg0.patch
-      this.snapshot = arg0.snapshot
+      this.release = arg0.release
       if (this.patch != null && this.minor == null)
         throw new Error("patch exists but minor doesn't")
       if (this.minor != null && this.major == null)
@@ -34,17 +48,17 @@ export class Version {
       this.major = arg0
       this.minor = undefined
       this.patch = undefined
-      this.snapshot = arg1 ?? false
+      this.release = arg1 ?? ['stable']
     } else if (typeof arg2 != 'number') {
       this.major = arg0
       this.minor = arg1
       this.patch = undefined
-      this.snapshot = arg2 ?? false
+      this.release = arg2 ?? ['stable']
     } else {
       this.major = arg0
       this.minor = arg1
       this.patch = arg2
-      this.snapshot = arg3 ?? false
+      this.release = arg3 ?? ['stable']
     }
     if (!Number.isInteger(this.major))
       throw new Error('major is not a integer')
@@ -55,23 +69,25 @@ export class Version {
   }
 
   static parse(value: string): Version {
-    const regex = /^v?(\d+)(?:.(\d+))?(?:.(\d+))?(-SNAPSHOT)?$/i
+    const regex = /^v?(?<maj>\d+)(\.(?<min>\d+))?(\.(?<pat>\d+))?(-(?<snap>SNAPSHOT)|-((?<alpha>alpha)|(?<beta>beta)|(?<rc>rc))(?<n>\d+))?$/i
     const match = value.match(regex)
     if (match == null)
       throw new Error(`the version name doesn't match ${regex}`)
-    const snapshot = !!match[4]
-    const major = parseInt(match[1])
-    if (match[2]) {
-      const minor = parseInt(match[2])
-      if (match[3]) {
-        const patch = parseInt(match[3])
-        return new Version(major, minor, patch, snapshot)
-      } else {
-        return new Version(major, minor, snapshot)
-      }
-    } else {
-      return new Version(major, snapshot)
-    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const groups = match.groups!
+
+    return new Version({
+      major: parseInt(groups.maj),
+      minor: groups.min ? parseInt(groups.min) : undefined,
+      patch: groups.pat ? parseInt(groups.pat) : undefined,
+      release: 
+        groups.snap ? ['snapshot']
+        : groups.alpha ? ['alpha', parseInt(groups.n)]
+        : groups.beta ? ['beta', parseInt(groups.n)]
+        : groups.rc ? ['candidate', parseInt(groups.n)]
+        : ['stable'],
+    })
   }
 
   toString(): string {
@@ -80,17 +96,33 @@ export class Version {
       r += `.${this.minor}`
     if (this.patch != null)
       r += `.${this.patch}`
-    if (this.snapshot)
-      r += '-SNAPSHOT'
+    switch (this.release[0]) {
+      case 'stable':
+        break
+      case 'snapshot':
+        r += '-SNAPSHOT'
+        break
+      case 'alpha':
+        r += `-alpha${this.release[1]}`
+        break
+      case 'beta':
+        r += `-beta${this.release[1]}`
+        break
+      case 'candidate':
+        r += `-rc${this.release[1]}`
+        break
+      default:
+        logicFailre("release type", this.release[0])
+    }
     return r
   }
 
-  unSnapshot(): Version {
-    return new Version({...this, snapshot: false})
+  makeStable(): Version {
+    return new Version({...this, release: ['stable']})
   }
 
   makeSnapshot(): Version {
-    return new Version({...this, snapshot: true})
+    return new Version({...this, release: ['snapshot']})
   }
 
   next(): Version {

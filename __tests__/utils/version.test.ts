@@ -82,21 +82,45 @@ describe('construct', () =>  {
       1, 0, 0, ['stable'])
     test("1.0.0-SNAPSHOT",
       1, 0, 0, ['snapshot'])
+    test("1.0.0-alpha1",
+      1, 0, 0, ['alpha', 1])
+    test("1.0.0-beta2",
+      1, 0, 0, ['beta', 2])
+    test("1.0.0-rc3",
+      1, 0, 0, ['candidate', 3])
 
     test("1.0",
       1, 0, undefined, ['stable'])
     test("1.0-SNAPSHOT",
       1, 0, undefined, ['snapshot'])
+    test("1.0-alpha1",
+      1, 0, undefined, ['alpha', 1])
+    test("1.0-beta2",
+      1, 0, undefined, ['beta', 2])
+    test("1.0-rc3",
+      1, 0, undefined, ['candidate', 3])
 
     test("1.1",
       1, 1, undefined, ['stable'])
     test("1.1-SNAPSHOT",
       1, 1, undefined, ['snapshot'])
+    test("1.1-alpha1",
+      1, 1, undefined, ['alpha', 1])
+    test("1.1-beta2",
+      1, 1, undefined, ['beta', 2])
+    test("1.1-rc3",
+      1, 1, undefined, ['candidate', 3])
 
     test("1",
       1, undefined, undefined, ['stable'])
     test("1-SNAPSHOT",
       1, undefined, undefined, ['snapshot'])
+    test("1-alpha1",
+      1, undefined, undefined, ['alpha', 1])
+    test("1-beta2",
+      1, undefined, undefined, ['beta', 2])
+    test("1-rc3",
+      1, undefined, undefined, ['candidate', 3])
   })
 })
 
@@ -106,6 +130,12 @@ describe('toString', () => {
       .toEqual('1')
     expect(`${new Version(1, ['snapshot'])}`)
       .toEqual('1-SNAPSHOT')
+    expect(`${new Version(1, ['alpha', 1])}`)
+      .toEqual('1-alpha1')
+    expect(`${new Version(1, ['beta', 2])}`)
+      .toEqual('1-beta2')
+    expect(`${new Version(1, ['candidate', 3])}`)
+      .toEqual('1-rc3')
 
     expect(`${new Version(1, 0)}`)
       .toEqual('1.0')
@@ -115,6 +145,18 @@ describe('toString', () => {
       .toEqual('1.0-SNAPSHOT')
     expect(`${new Version(1, 1, ['snapshot'])}`)
       .toEqual('1.1-SNAPSHOT')
+    expect(`${new Version(1, 0, ['alpha', 1])}`)
+      .toEqual('1.0-alpha1')
+    expect(`${new Version(1, 1, ['alpha', 1])}`)
+      .toEqual('1.1-alpha1')
+    expect(`${new Version(1, 0, ['beta', 2])}`)
+      .toEqual('1.0-beta2')
+    expect(`${new Version(1, 1, ['beta', 2])}`)
+      .toEqual('1.1-beta2')
+    expect(`${new Version(1, 0, ['candidate', 3])}`)
+      .toEqual('1.0-rc3')
+    expect(`${new Version(1, 1, ['candidate', 3])}`)
+      .toEqual('1.1-rc3')
 
     expect(`${new Version(1, 0, 0)}`)
       .toEqual('1.0.0')
@@ -132,6 +174,30 @@ describe('toString', () => {
       .toEqual('1.0.1-SNAPSHOT')
     expect(`${new Version(1, 1, 1, ['snapshot'])}`)
       .toEqual('1.1.1-SNAPSHOT')
+    expect(`${new Version(1, 0, 0, ['alpha', 1])}`)
+      .toEqual('1.0.0-alpha1')
+    expect(`${new Version(1, 1, 0, ['alpha', 1])}`)
+      .toEqual('1.1.0-alpha1')
+    expect(`${new Version(1, 0, 1, ['alpha', 1])}`)
+      .toEqual('1.0.1-alpha1')
+    expect(`${new Version(1, 1, 1, ['alpha', 1])}`)
+      .toEqual('1.1.1-alpha1')
+    expect(`${new Version(1, 0, 0, ['beta', 2])}`)
+      .toEqual('1.0.0-beta2')
+    expect(`${new Version(1, 1, 0, ['beta', 2])}`)
+      .toEqual('1.1.0-beta2')
+    expect(`${new Version(1, 0, 1, ['beta', 2])}`)
+      .toEqual('1.0.1-beta2')
+    expect(`${new Version(1, 1, 1, ['beta', 2])}`)
+      .toEqual('1.1.1-beta2')
+    expect(`${new Version(1, 0, 0, ['candidate', 3])}`)
+      .toEqual('1.0.0-rc3')
+    expect(`${new Version(1, 1, 0, ['candidate', 3])}`)
+      .toEqual('1.1.0-rc3')
+    expect(`${new Version(1, 0, 1, ['candidate', 3])}`)
+      .toEqual('1.0.1-rc3')
+    expect(`${new Version(1, 1, 1, ['candidate', 3])}`)
+      .toEqual('1.1.1-rc3')
   })
 })
 

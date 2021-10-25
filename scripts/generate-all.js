@@ -8,3 +8,4 @@ mkdirSync(join(__dirname, "..", "src", "generated"), {recursive: true})
 
 require("./generate-sequence-ts")
 require("./generate-bins")
+require("./generate-env-ts-json")

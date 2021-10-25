@@ -4,12 +4,15 @@ import path from 'path'
 import {expect, it} from '@jest/globals'
 import { Version } from '../../src/utils'
 import {GradleProperties} from '../../src/version-changer/gradle-properties'
+import {creator} from './util'
+
+const create = creator('gradle-properties')
 
 it("default save and write", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test"))
   process.chdir(tempDir)
   await fs.writeFile("gradle.properties", "version=1.0.0-SNAPSHOT\n")
-  const desc = GradleProperties.createFromDesc(undefined)
+  const desc = GradleProperties.createFromDesc(create())
   await expect(desc.loadVersion())
     .resolves
     .toEqual(new Version(1, 0, 0, true))
@@ -23,7 +26,7 @@ it("custom prop save and write", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test"))
   process.chdir(tempDir)
   await fs.writeFile("gradle.properties", "project-version=1.0.0-SNAPSHOT\n")
-  const desc = GradleProperties.createFromDesc("project-version")
+  const desc = GradleProperties.createFromDesc(create("project-version"))
   await expect(desc.loadVersion())
     .resolves
     .toEqual(new Version(1, 0, 0, true))
@@ -37,7 +40,7 @@ it("custom file save and write", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test"))
   process.chdir(tempDir)
   await fs.writeFile("versions", "version=1.0.0-SNAPSHOT\n")
-  const desc = GradleProperties.createFromDesc("@versions")
+  const desc = GradleProperties.createFromDesc(create(undefined, "versions"))
   await expect(desc.loadVersion())
     .resolves
     .toEqual(new Version(1, 0, 0, true))
@@ -51,7 +54,7 @@ it("custom prop and file save and write", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test"))
   process.chdir(tempDir)
   await fs.writeFile("versions", "project-version=1.0.0-SNAPSHOT\n")
-  const desc = GradleProperties.createFromDesc("project-version@versions")
+  const desc = GradleProperties.createFromDesc(create("project-version", "versions"))
   await expect(desc.loadVersion())
     .resolves
     .toEqual(new Version(1, 0, 0, true))

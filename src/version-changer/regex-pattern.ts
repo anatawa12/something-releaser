@@ -1,17 +1,14 @@
 import * as fs from 'fs'
 import {Version, asPair} from '../utils'
-import {VersionChanger} from '.'
+import {ChangerDescriptor, VersionChanger} from '.'
 
 export class RegexPattern implements VersionChanger {
   private readonly match: RegExp
   private readonly path: string
 
-  static createFromDesc(desc: string | undefined): RegexPattern {
-    if (desc == null)
-      throw new Error(`regex-pattern requires <pattern>@<path>`)
-    const [pattern, path] = asPair(desc, '@', false)
+  static createFromDesc({info: pattern, path}: ChangerDescriptor): RegexPattern {
     if (!pattern || !path)
-      throw new Error(`regex-pattern requires <pattern>@<path>`)
+      throw new Error(`regex-pattern requires both pattern and path`)
     return new RegexPattern({ pattern, path })
   }
 

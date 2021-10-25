@@ -4,16 +4,19 @@ import path from 'path'
 import {expect, it} from '@jest/globals'
 import { Version } from '../../src/utils'
 import {RegexPattern} from '../../src/version-changer/regex-pattern'
+import {creator} from './util'
+
+const create = creator('regex-pattern')
 
 it("invalid descriptions", async () => {
-  expect(() => RegexPattern.createFromDesc(undefined))
-    .toThrow(`regex-pattern requires <pattern>@<path>`)
-  expect(() => RegexPattern.createFromDesc("@path"))
-    .toThrow(`regex-pattern requires <pattern>@<path>`)
-  expect(() => RegexPattern.createFromDesc("@"))
-    .toThrow(`regex-pattern requires <pattern>@<path>`)
-  expect(() => RegexPattern.createFromDesc("pattern"))
-    .toThrow(`regex-pattern requires <pattern>@<path>`)
+  expect(() => RegexPattern.createFromDesc(create()))
+    .toThrow(`regex-pattern requires both pattern and path`)
+  expect(() => RegexPattern.createFromDesc(create("", "path")))
+    .toThrow(`regex-pattern requires both pattern and path`)
+  expect(() => RegexPattern.createFromDesc(create("", "")))
+    .toThrow(`regex-pattern requires both pattern and path`)
+  expect(() => RegexPattern.createFromDesc(create("pattern")))
+    .toThrow(`regex-pattern requires both pattern and path`)
 })
 
 it("custom prop save and write", async () => {
@@ -21,7 +24,7 @@ it("custom prop save and write", async () => {
   process.chdir(tempDir)
   await fs.writeFile("test.txt", "version = \"1.0.0-SNAPSHOT\"\n" +
     "version = \"0.1.0-SNAPSHOT\"\n")
-  const desc = RegexPattern.createFromDesc("version = \"$1\"@test.txt")
+  const desc = RegexPattern.createFromDesc(create("version = \"$1\"", "test.txt"))
   await expect(desc.loadVersion())
     .resolves
     .toEqual(new Version(1, 0, 0, true))

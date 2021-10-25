@@ -126,6 +126,8 @@ export class Version {
   }
 
   next(): Version {
+    if (this.release[1] != null)
+      return new Version({...this, release: [this.release[0], this.release[1] + 1]})
     if (this.patch != null)
       return new Version({...this, patch: this.patch + 1})
     if (this.minor != null)

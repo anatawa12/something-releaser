@@ -26,6 +26,7 @@ const commands = [
   'version-next',
   'publish-to-curse-forge',
   'send-tweet',
+  'send-discord',
 ];
 
 const jsDir = join(__dirname, '..', 'bin')

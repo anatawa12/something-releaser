@@ -27,7 +27,7 @@ it("custom prop save and write", async () => {
   const desc = RegexPattern.createFromDesc(create("version = \"$1\"", "test.txt"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, true))
+    .toEqual(new Version(1, 0, 0, ['snapshot']))
   await desc.setVersion(new Version(1))
   await expect(fs.readFile("test.txt", {encoding: 'utf8'}))
     .resolves

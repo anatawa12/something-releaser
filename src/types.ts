@@ -15,13 +15,13 @@ type FormatChars<T extends string> =
 // apply FormatValue for each T[n]
 type FormatValues<Map, T extends string[]> =
   T extends [] ? []
-    : T extends [infer Head, ...infer Tail]
-      ? Head extends string
-        ? Tail extends string[]
-          ? [FormatValue<Map, Head>, ...FormatValues<Map, Tail>]
-          : never
+  : T extends [infer Head, ...infer Tail]
+    ? Head extends string
+      ? Tail extends string[]
+        ? [FormatValue<Map, Head>, ...FormatValues<Map, Tail>]
         : never
       : never
+    : never
 
 // returns type of Map[T] and never if not found
 type FormatValue<Map, T extends string> = T extends keyof Map ? Map[T] : never

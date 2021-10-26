@@ -22,14 +22,25 @@ function println(body: string): void {
   console.log(body)
 }
 
+function eprintln(body: string): void {
+  // eslint-disable-next-line no-console
+  console.warn(body)
+}
+
 type Command =
   | ['something-releaser', ...string[]]
   | ['install', ...([string] | [string, string] | [] )]
   | ['set-git-user', string]
   | ['get-version']
   | ['set-version', string]
-  | ['version-unsnapshot', string]
+  | ['version-unsnapshot', string] // deprecated
+  | ['version-stable', string]
   | ['version-snapshot', string]
+  | ['version-alpha', ...([ver: string, num: string] | [ver: string])]
+  | ['version-beta', ...([ver: string, num: string] | [ver: string])]
+  | ['version-candidate', ...([ver: string, num: string] | [ver: string])]
+  | ['version-get-channel', string]
+  | ['version-set-channel', ...([ver: string, channel: string, num: string] | [ver: string, channel: string])]
   | ['version-next', string]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', string, ...string[]]
@@ -100,9 +111,17 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'version-unsnapshot': {
+      eprintln("version-unsnapshot is deprecated. use version-stable")
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
-        .unSnapshot()
+        .makeStable()
+        .toString())
+      break
+    }
+    case 'version-stable': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeStable()
         .toString())
       break
     }
@@ -111,6 +130,63 @@ async function mainImpl(...args: Command): Promise<void> {
         ?? throws(new Error('version name required')))
         .makeSnapshot()
         .toString())
+      break
+    }
+    case 'version-alpha': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeAlpha(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-beta': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeBeta(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-candidate': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeCandidate(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-get-channel': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .release[0])
+      break
+    }
+    case 'version-set-channel': {
+      let version = Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+      switch (args[2].toLowerCase()) {
+        case 'a':
+        case 'alpha':
+        case 'α':
+          version = version.makeAlpha(parseInt(args[3] ?? '1'))
+          break
+        case 'b':
+        case 'beta':
+        case 'β':
+          version = version.makeBeta(parseInt(args[3] ?? '1'))
+          break
+        case 'rc':
+        case 'candidate':
+          version = version.makeCandidate(parseInt(args[3] ?? '1'))
+          break
+        case 'snapshot':
+          version = version.makeSnapshot()
+          break
+        case 'stable':
+          version = version.makeStable()
+          break
+        default:
+          throw new Error(`unknown release channel: ${args[2]}`)
+      }
+      println(version.toString())
       break
     }
     case 'version-next': {

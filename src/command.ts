@@ -167,6 +167,7 @@ async function mainImpl(...args: Command): Promise<void> {
         case 'alpha':
         case 'α':
           version = version.makeAlpha(parseInt(args[2] ?? '1'))
+          break
         case 'b':
         case 'beta':
         case 'β':
@@ -183,7 +184,7 @@ async function mainImpl(...args: Command): Promise<void> {
           version = version.makeStable()
           break
         default:
-          throw new Error(`unknown release channel: ${args[2]}`);
+          throw new Error(`unknown release channel: ${args[2]}`)
       }
       println(version.toString())
       break

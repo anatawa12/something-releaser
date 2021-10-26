@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
-@test 'version-cancicate defaults rc1' {
-  result="$(version-cancicate 1.0 1)"
+@test 'version-candidate defaults rc1' {
+  result="$(version-candidate 1.0)"
   [ "$result" = 1.0-rc1 ]
 }
 

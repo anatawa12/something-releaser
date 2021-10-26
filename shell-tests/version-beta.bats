@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 @test 'version-beta defaults beta1' {
-  result="$(version-alpha 1.0)"
+  result="$(version-beta 1.0)"
   [ "$result" = 1.0-beta1 ]
 }
 

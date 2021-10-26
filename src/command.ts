@@ -166,16 +166,16 @@ async function mainImpl(...args: Command): Promise<void> {
         case 'a':
         case 'alpha':
         case 'α':
-          version = version.makeAlpha(parseInt(args[2] ?? '1'))
+          version = version.makeAlpha(parseInt(args[3] ?? '1'))
           break
         case 'b':
         case 'beta':
         case 'β':
-          version = version.makeBeta(parseInt(args[2] ?? '1'))
+          version = version.makeBeta(parseInt(args[3] ?? '1'))
           break
         case 'rc':
         case 'candidate':
-          version = version.makeCandidate(parseInt(args[2] ?? '1'))
+          version = version.makeCandidate(parseInt(args[3] ?? '1'))
           break
         case 'snapshot':
           version = version.makeSnapshot()

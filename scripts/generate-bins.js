@@ -20,6 +20,8 @@ const commands = [
   'version-alpha',
   'version-beta',
   'version-candidate',
+  'version-get-channel',
+  'version-set-channel',
   'version-snapshot',
   'version-next',
   'publish-to-curse-forge',

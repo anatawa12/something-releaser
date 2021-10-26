@@ -39,6 +39,8 @@ type Command =
   | ['version-alpha', ...([ver: string, num: string] | [ver: string])]
   | ['version-beta', ...([ver: string, num: string] | [ver: string])]
   | ['version-candidate', ...([ver: string, num: string] | [ver: string])]
+  | ['version-get-channel', string]
+  | ['version-set-channel', ...([ver: string, channel: string, num: string] | [ver: string, channel: string])]
   | ['version-next', string]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', string, ...string[]]
@@ -149,6 +151,41 @@ async function mainImpl(...args: Command): Promise<void> {
         ?? throws(new Error('version name required')))
         .makeCandidate(parseInt(args[2] ?? '1'))
         .toString())
+      break
+    }
+    case 'version-get-channel': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .release[0])
+      break
+    }
+    case 'version-set-channel': {
+      let version = Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+      switch (args[2].toLowerCase()) {
+        case 'a':
+        case 'alpha':
+        case 'α':
+          version = version.makeAlpha(parseInt(args[2] ?? '1'))
+        case 'b':
+        case 'beta':
+        case 'β':
+          version = version.makeBeta(parseInt(args[2] ?? '1'))
+          break
+        case 'rc':
+        case 'candidate':
+          version = version.makeCandidate(parseInt(args[2] ?? '1'))
+          break
+        case 'snapshot':
+          version = version.makeSnapshot()
+          break
+        case 'stable':
+          version = version.makeStable()
+          break
+        default:
+          throw new Error(`unknown release channel: ${args[2]}`);
+      }
+      println(version.toString())
       break
     }
     case 'version-next': {

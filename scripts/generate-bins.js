@@ -25,6 +25,7 @@ const commands = [
   'version-snapshot',
   'version-next',
   'publish-to-curse-forge',
+  'publish-to-maven',
   'send-tweet',
 ];
 

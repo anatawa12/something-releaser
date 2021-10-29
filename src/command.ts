@@ -10,6 +10,7 @@ import {GradlePluginPortal} from './commands/gradle-plugin-portal'
 import {GradleSigning} from './commands/gradle-signing'
 import {publishToCurseForge} from './commands/publish-to-curse-forge'
 import {publishToMaven} from './commands/publish-to-maven'
+import {sendDiscord} from './commands/send-discord'
 import {sendTweet} from './commands/send-tweet'
 import env from './env'
 import {Version} from './utils'
@@ -52,6 +53,7 @@ type Command =
   | ['publish-to-curse-forge', ...string[]]
   | ['publish-to-maven', ...string[]]
   | ['send-tweet', ...string[]]
+  | ['send-discord', ...string[]]
 
 export async function main(...args: string[]): Promise<void> {
   return await mainImpl(...args as Command)
@@ -251,6 +253,10 @@ async function mainImpl(...args: Command): Promise<void> {
     }
     case 'send-tweet': {
       await sendTweet(args.slice(1))
+      break
+    }
+    case 'send-discord': {
+      await sendDiscord(args.slice(1))
       break
     }
     default:

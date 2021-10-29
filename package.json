@@ -38,7 +38,7 @@
     "isomorphic-git": "^1.10.1",
     "js-yaml": "^4.1.0",
     "jsdom": "^16.7.0",
-    "node-fetch": "^3.0.0",
+    "node-fetch": "^2.6.5",
     "oauth": "^0.9.15",
     "openpgp": "^5.0.0",
     "simple-git": "^2.47.0"

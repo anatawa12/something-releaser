@@ -1,4 +1,4 @@
-import {createHash, Hash} from 'crypto'
+import {createHash} from 'crypto'
 import {createReadStream} from 'fs'
 import {extname} from 'path'
 import {Readable} from 'stream'
@@ -109,23 +109,17 @@ async function updateMetadataXml(
   opts: ParsedOptions,
   fetch: OurFetch,
 ): Promise<boolean> {
-  function findNode(parent: Element | Document, name: string, first?: true): Element {
-    return parent.querySelector(`:scope > ${name}`) ?? (() => {
-      const newElem = (parent.ownerDocument || parent).createElementNS(null, name)
-      if (first)
-        parent.prepend(newElem)
-      else
-        parent.appendChild(newElem)
-      return newElem
-    })()
+  const response = await fetch(metadataXmlUrl, {})
+  let xmlText: string
+  if (response.status === 404) {
+    xmlText = `<?xml version="1.0" encoding="UTF-8"?>\n<metadata>\n</metadata>`
+  } else {
+    handleFetchError(`fetching ${metadataXmlUrl}`, response)
+    xmlText = await response.text()
   }
-
-  const xmlText = await fetch(metadataXmlUrl, {})
-    .then(handleFetchError.bind(null, `fetching ${metadataXmlUrl}`))
-    .then(async v => v.text())
   const document = new jsdom.window.DOMParser().parseFromString(xmlText, "application/xml")
-  const versioning = findNode(document, 'versioning')
-  const versions = findNode(versioning, 'versions')
+  const versioning = findOrAppendNode(document, 'versioning')
+  const versions = findOrAppendNode(versioning, 'versions')
   const versionList = versions.querySelectorAll(":scope > version")
   for (const version of versionList) {
     if (version.textContent === opts.versionName)
@@ -133,12 +127,10 @@ async function updateMetadataXml(
   }
 
   // requires update
-  const newVersion = versions.ownerDocument.createElementNS(null, 'version')
-  newVersion.textContent = opts.versionName
-  versions.appendChild(newVersion)
+  addTextElement(versions, 'version', opts.versionName)
   if (!opts.notRelease)
-    findNode(versioning, 'release', true).textContent = opts.versionName
-  findNode(versioning, 'latest', true).textContent = opts.versionName
+    findOrAppendNode(versioning, 'release', true).textContent = opts.versionName
+  findOrAppendNode(versioning, 'latest', true).textContent = opts.versionName
   await fetch(metadataXmlUrl, {
     method: "PUT",
     body: new jsdom.window.XMLSerializer().serializeToString(document),
@@ -159,50 +151,42 @@ async function readToBuffer(readable: Readable): Promise<Buffer> {
 function createPomFile(opts: ParsedOptions): Buffer {
   const document = jsdom.window.document.implementation
     .createDocument(null, "project")
-  const addElement = (parent: Document | Element, node: string, content?: string): Element => {
-    const doc = parent.ownerDocument || parent
-    const newElement = doc.createElementNS(null, node)
-    if (content)
-      newElement.textContent = content
-    parent.appendChild(newElement)
-    return newElement
-  }
-  addElement(document, "modelVersion", "4.0.0")
-  opts.groupId && addElement(document, "groupId", opts.groupId)
-  opts.artifactId && addElement(document, "artifactId", opts.artifactId)
-  opts.versionName && addElement(document, "version", opts.versionName)
-  opts.packaging && addElement(document, "packaging", opts.packaging)
+  addTextElement(document, "modelVersion", "4.0.0")
+  opts.groupId && addTextElement(document, "groupId", opts.groupId)
+  opts.artifactId && addTextElement(document, "artifactId", opts.artifactId)
+  opts.versionName && addTextElement(document, "version", opts.versionName)
+  opts.packaging && addTextElement(document, "packaging", opts.packaging)
 
-  opts.name && addElement(document, "name", opts.name)
-  opts.description && addElement(document, "description", opts.description)
-  opts.url && addElement(document, "url", opts.url)
+  opts.name && addTextElement(document, "name", opts.name)
+  opts.description && addTextElement(document, "description", opts.description)
+  opts.url && addTextElement(document, "url", opts.url)
   //opts.licenses
   if (opts.developers.length) {
-    const developers = addElement(document, "developers")
+    const developers = addTextElement(document, "developers")
     for (const config of opts.developers) {
-      const developer = addElement(developers, "developer")
-      config.name && addElement(developer, "name", config.name)
-      config.id && addElement(developer, "id", config.id)
-      config.mail && addElement(developer, "mail", config.mail)
+      const developer = addTextElement(developers, "developer")
+      config.name && addTextElement(developer, "name", config.name)
+      config.id && addTextElement(developer, "id", config.id)
+      config.mail && addTextElement(developer, "mail", config.mail)
       if (config.roles.length) {
-        const roles = addElement(developer, "roles")
+        const roles = addTextElement(developer, "roles")
         for (const role of config.roles)
-          addElement(roles, "role", role)
+          addTextElement(roles, "role", role)
       }
-      config.timezone && addElement(developer, "timezone", config.timezone)
+      config.timezone && addTextElement(developer, "timezone", config.timezone)
     }
   }
 
   // dependencies
   if (opts.dependencies.length) {
-    const dependencies = addElement(document, "dependencies")
+    const dependencies = addTextElement(document, "dependencies")
     for (const depCfg of opts.dependencies) {
-      const dependency = addElement(dependencies, "dependency")
-      depCfg.group && addElement(dependency, "groupId", depCfg.group)
-      depCfg.artifact && addElement(dependency, "artifactId", depCfg.artifact)
-      depCfg.version && addElement(dependency, "version", depCfg.version)
-      depCfg.classifier && addElement(dependency, "classifier", depCfg.classifier)
-      depCfg.extension && addElement(dependency, "type", depCfg.extension)
+      const dependency = addTextElement(dependencies, "dependency")
+      depCfg.group && addTextElement(dependency, "groupId", depCfg.group)
+      depCfg.artifact && addTextElement(dependency, "artifactId", depCfg.artifact)
+      depCfg.version && addTextElement(dependency, "version", depCfg.version)
+      depCfg.classifier && addTextElement(dependency, "classifier", depCfg.classifier)
+      depCfg.extension && addTextElement(dependency, "type", depCfg.extension)
     }
   }
   return Buffer.from(new jsdom.window.XMLSerializer().serializeToString(document), "utf-8")
@@ -222,12 +206,8 @@ async function addSigns(filesToUpload: FileDesc[], privateKey: PrivateKey): Prom
 }
 
 function addHashFiles(filesToUpload: FileDesc[]): void {
-  const md5 = createHash('md5')
-  const sha1 = createHash('sha1')
-  const sha256 = createHash('sha256')
-  const sha512 = createHash('sha512')
-  
-  const addHashFile = (file: FileDesc, hashName: string, hash: Hash): void => {
+  const addHashFile = (file: FileDesc, hashName: string): void => {
+    const hash = createHash(hashName)
     hash.update(file[1])
     filesToUpload.push([
       `${file[0]}.${hashName}`, 
@@ -237,11 +217,11 @@ function addHashFiles(filesToUpload: FileDesc[]): void {
 
   const len = filesToUpload.length
   for (let i = 0; i < len; i++) {
-    const file = filesToUpload[len]
-    addHashFile(file, 'md5', md5)
-    addHashFile(file, 'sha1', sha1)
-    addHashFile(file, 'sha256', sha256)
-    addHashFile(file, 'sha512', sha512)
+    const file = filesToUpload[i]
+    addHashFile(file, 'md5')
+    addHashFile(file, 'sha1')
+    addHashFile(file, 'sha256')
+    addHashFile(file, 'sha512')
   }
 }
 
@@ -261,6 +241,27 @@ function handleFetchError(operation: string, response: Response): Response {
   if (400 <= response.status)
     throw new Error(`${operation} returns error status: ${response.status} ${response.statusText}`)
   throw new Error(`${operation} returns unknown status: ${response.status} ${response.statusText}`)
+}
+
+function findOrAppendNode(parent: Element | Document, node: string, first?: true): Element {
+  return parent.querySelector(`:scope > ${node}`) ?? addElement(parent, node, first)
+}
+
+function addTextElement(parent: Document | Element, node: string, content?: string): Element {
+  const newElement = addElement(parent, node)
+  if (content)
+    newElement.textContent = content
+  return newElement
+}
+
+function addElement(parent: Element | Document, node: string, first?: boolean): Element {
+  const newElem = (parent.ownerDocument || parent).createElementNS(null, node)
+  const addTo: Element = 'documentElement' in parent ? parent.documentElement : parent
+  if (first)
+    addTo.prepend(newElem)
+  else
+    addTo.appendChild(newElem)
+  return newElem
 }
 
 // if there is no equals on argument, it will be parsed in simple format:
@@ -455,6 +456,7 @@ export function parseAuthor(input: string, previous?: Author[]): Author[] {
         case 'mail':
           author.mail = value
           break
+        case 'role':
         case 'roles':
           author.roles.push(value)
           break
@@ -477,7 +479,7 @@ export function parseAuthor(input: string, previous?: Author[]): Author[] {
     }
     author.mail = extractMatchedValue(/<([^>]+)>/, 1)?.trim()
     author.id = extractMatchedValue(/@(\S+)/, 1)?.trim()
-    author.name = input.replace(/\s+/, ' ').trim() || undefined
+    author.name = name.replace(/\s+/, ' ').trim() || undefined
   }
   if (!author.name
     && !author.id

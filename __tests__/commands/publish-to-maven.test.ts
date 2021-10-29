@@ -11,16 +11,13 @@ describe("parse author simple format", () => {
   }
 
   test('simple format', async () => {
-    run_test("", {roles: []})
-
-    run_test("name @test <mail>", {roles: [], name: 'name', id: 'test', mail: 'mail'})
-    run_test("     @test <mail>", {roles: [], id: 'test', mail: 'mail'})
-    run_test("name       <mail>", {roles: [], name: 'name', mail: 'mail'})
-    run_test("           <mail>", {roles: [], mail: 'mail'})
-    run_test("name @test       ", {roles: [], name: 'name', id: 'test'})
-    run_test("     @test       ", {roles: [], id: 'test'})
-    run_test("name             ", {roles: [], name: 'name'})
-    run_test("                 ", {roles: []})
+    run_test("name <mail@test> @test", {roles: [], name: 'name', id: 'test', mail: 'mail@test'})
+    run_test("     <mail@test> @test", {roles: [], id: 'test', mail: 'mail@test'})
+    run_test("name <mail@test>      ", {roles: [], name: 'name', mail: 'mail@test'})
+    run_test("     <mail@test>      ", {roles: [], mail: 'mail@test'})
+    run_test("name             @test", {roles: [], name: 'name', id: 'test'})
+    run_test("                 @test", {roles: [], id: 'test'})
+    run_test("name                  ", {roles: [], name: 'name'})
   })
 
   test('simple kvp', async () => {
@@ -31,7 +28,6 @@ describe("parse author simple format", () => {
     run_test("name=name,id=test", {roles: [], name: 'name', id: 'test'})
     run_test("id=test", {roles: [], id: 'test'})
     run_test("name=name", {roles: [], name: 'name'})
-    run_test("", {roles: []})
   })
 
   test('roles', async () => {
@@ -56,7 +52,7 @@ describe("run the command", () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), "test"))
   const httpDir = path.join(tempDir, "http")
   const testFile = path.join(tempDir, "testFile.jar")
-  const port = 1081
+  const port = 1082
   let server: SimpleHttp
 
   beforeEach(() => {

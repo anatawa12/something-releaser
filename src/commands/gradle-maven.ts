@@ -42,7 +42,6 @@ export class GradleMaven {
     const initScriptPath = path.join(init_d, `gradle-maven.${Date.now()}.${process.pid}.gradle`)
     await fs.mkdir(init_d, { recursive: true })
     // if file exists: throw error
-    // eslint-disable-next-line github/no-then
     if (await fs.stat(initScriptPath).then(() => true, () => false)) {
       throw new Error("can't create gradle-maven.gradle: exists")
     }

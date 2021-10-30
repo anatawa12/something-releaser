@@ -8,7 +8,7 @@
     "generate": "node scripts/generate-all.js",
     "build": "tsc",
     "lint": "eslint \"src/**/*.ts\"",
-    "package": "ncc build --source-map --license licenses.txt",
+    "package": "ncc build --source-map --minify --license licenses.txt",
     "style": "eslint \"src/**/*.ts\" --fix",
     "test": "jest",
     "all": "npm run generate && npm run build && npm run lint && npm run package && npm test"
@@ -41,7 +41,8 @@
     "node-fetch": "^2.6.5",
     "oauth": "^0.9.15",
     "openpgp": "^5.0.0",
-    "simple-git": "^2.47.0"
+    "simple-git": "^2.47.0",
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@types/http-auth": "^4.1.1",

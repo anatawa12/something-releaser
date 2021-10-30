@@ -1,20 +1,6 @@
-import {promises as fs} from 'fs'
 import * as path from 'path'
-import * as core from '@actions/core'
-import {Octokit} from '@octokit/rest'
-import {run as autoChangelog} from 'auto-changelog/src/run'
-import {setGitUser} from './commands/git-user'
-import {GradleIntellij} from './commands/gradle-intellij'
-import {GradleMaven} from './commands/gradle-maven'
-import {GradlePluginPortal} from './commands/gradle-plugin-portal'
-import {GradleSigning} from './commands/gradle-signing'
-import {publishToCurseForge} from './commands/publish-to-curse-forge'
-import {publishToMaven} from './commands/publish-to-maven'
-import {sendDiscord} from './commands/send-discord'
-import {sendTweet} from './commands/send-tweet'
 import env from './env'
 import {Version} from './utils'
-import {createChangers} from './version-changer'
 
 function throws(error: Error): never {
   throw error
@@ -80,6 +66,8 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'install': {
+      const core = await import('@actions/core')
+      const {promises: fs} = await import('fs')
       // if not found, find
       if (!await trueOrENOENT(fs.stat(ghTokenPath))) {
         const githubToken = args[1]
@@ -99,17 +87,22 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'set-git-user': {
+      const {promises: fs} = await import('fs')
+      const {setGitUser} = await import('./commands/git-user')
+      const {Octokit} = await import('@octokit/rest')
       const octokit = new Octokit({auth: await fs.readFile(ghTokenPath, 'utf8')})
       const user = args[1] ?? throws(new Error(`user name required`))
       await setGitUser(user, octokit)
       break
     }
     case 'get-version': {
+      const {createChangers} = await import('./version-changer')
       const changers = createChangers(env.releaseChanger)
       println((await changers.getVersionName()).toString())
       break
     }
     case 'set-version': {
+      const {createChangers} = await import('./version-changer')
       const changers = createChangers(env.releaseChanger)
       const version = Version.parse(args[1]
         ?? throws(new Error(`version name required`)))
@@ -203,6 +196,7 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'generate-changelog': {
+      const {run: autoChangelog} = await import('auto-changelog/src/run')
       await autoChangelog(
         ['node', 'generate-changelog', ...args.slice(1)], 
         env.changelog,
@@ -210,6 +204,7 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'prepare-gradle-maven': {
+      const {GradleMaven} = await import('./commands/gradle-maven')
       let i = 1
       const url = args[i++]
       let user: string | undefined = undefined
@@ -230,6 +225,7 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'prepare-gradle-signing': {
+      const {GradleSigning} = await import('./commands/gradle-signing')
       const key: string = args[1] ?? throws(new Error("no gpg key is specified"))
       const pass: string = args[2] ?? throws(new Error("no gpg pass is specified. " +
         "if not exists, pass empty string"))
@@ -237,28 +233,34 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'prepare-gradle-plugin-portal': {
+      const {GradlePluginPortal} = await import('./commands/gradle-plugin-portal')
       const [key, secret] = args.slice(1)
       await new GradlePluginPortal({key, secret}).configure()
       break
     }
     case 'prepare-gradle-intellij': {
+      const {GradleIntellij} = await import('./commands/gradle-intellij')
       const [token] = args.slice(1)
       await new GradleIntellij({token}).configure()
       break
     }
     case 'publish-to-curse-forge': {
+      const {publishToCurseForge} = await import('./commands/publish-to-curse-forge')
       await publishToCurseForge(args.slice(1))
       break
     }
     case 'publish-to-maven': {
+      const {publishToMaven} = await import('./commands/publish-to-maven')
       await publishToMaven(args.slice(1))
       break
     }
     case 'send-tweet': {
+      const {sendTweet} = await import('./commands/send-tweet')
       await sendTweet(args.slice(1))
       break
     }
     case 'send-discord': {
+      const {sendDiscord} = await import('./commands/send-discord')
       await sendDiscord(args.slice(1))
       break
     }

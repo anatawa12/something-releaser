@@ -203,7 +203,10 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'generate-changelog': {
-      await autoChangelog(['node', 'generate-changelog', ...args.slice(1)])
+      await autoChangelog(
+        ['node', 'generate-changelog', ...args.slice(1)], 
+        env.changelog,
+      )
       break
     }
     case 'prepare-gradle-maven': {

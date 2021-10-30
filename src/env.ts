@@ -31,6 +31,7 @@ type EnvPropDesc<T> = {
 
 const propKeys = [
   'releaseChanger',
+  'changelog',
 ] as const
 
 type SameType<A, B> = A extends B ? B extends A ? true : false: false
@@ -48,6 +49,10 @@ const props: Props = {
     parseEnv: (v: string) => v.split(';').map(parseVersionDescriptor),
     optional: false,
   },
+  changelog: {
+    parse: (v) => v,
+    optional: true,
+  },
 }
 
 const jsonFile = JSON.parse(readConfigJson())
@@ -58,12 +63,15 @@ if (!tester(jsonFile)) {
 
 export interface Env {
   releaseChanger: ChangerDescriptor[]
+  changelog?: { [P in string]?: string | string[] }
 }
 
 const parsedJson: Partial<Env> = {}
 
 for (const key of propKeys) {
   if (jsonFile[key])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     parsedJson[key] = props[key].parse(jsonFile[key])
 }
 

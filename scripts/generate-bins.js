@@ -28,6 +28,7 @@ const commands = [
   'publish-to-maven',
   'send-tweet',
   'send-discord',
+  'file-util',
 ];
 
 const jsDir = join(__dirname, '..', 'bin')

@@ -21,6 +21,10 @@ export function logicFailre(msg: string, never?: never): never {
   throw new Error(`logic failre: ${msg}: ${never}`)
 }
 
+export function throws(error: Error): never {
+  throw error
+}
+
 export function processFormat<Map, P extends string>(
   format: P,
   args: FormatArgs<Map, P>,

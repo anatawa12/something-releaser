@@ -21,7 +21,7 @@ async function propertiesUtil(args: string[]): Promise<void> {
       const value = propertiesFile.get(property)
       process.stdout.write(value ?? '')
       if (value == null)
-        process.exit(-1)
+        process.exit(1)
       break
     }
     case 'set': {

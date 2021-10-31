@@ -1,10 +1,6 @@
 import * as path from 'path'
 import env from './env'
-import {Version} from './utils'
-
-function throws(error: Error): never {
-  throw error
-}
+import {throws, Version} from './utils'
 
 function println(body: string): void {
   // eslint-disable-next-line no-console
@@ -40,6 +36,7 @@ type Command =
   | ['publish-to-maven', ...string[]]
   | ['send-tweet', ...string[]]
   | ['send-discord', ...string[]]
+  | ['file-util', ...string[]]
 
 export async function main(...args: string[]): Promise<void> {
   return await mainImpl(...args as Command)
@@ -262,6 +259,11 @@ async function mainImpl(...args: Command): Promise<void> {
     case 'send-discord': {
       const {sendDiscord} = await import('./commands/send-discord')
       await sendDiscord(args.slice(1))
+      break
+    }
+    case 'file-util': {
+      const {fileUtil} = await import('./commands/file-util')
+      await fileUtil(args.slice(1))
       break
     }
     default:

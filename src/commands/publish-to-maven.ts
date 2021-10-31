@@ -93,12 +93,16 @@ function computeUrls(opts: ParsedOptions): {
   if (opts.versionName)
     fileBaseUrl += `/${opts.versionName}`
   fileBaseUrl += `/${fileBaseName}`
+  
+  let fileUrl = fileBaseUrl
+  if (opts.extension)
+    fileUrl += `.${opts.extension}`
 
   return {
     artifactUrl,
     fileBaseName,
     fileBaseUrl,
-    fileUrl: `${fileBaseUrl}${opts.extension}`,
+    fileUrl,
     metadataXmlUrl: `${artifactUrl}/maven-metadata.xml`,
   }
 }
@@ -232,7 +236,10 @@ async function pushFiles(filesToUpload: FileDesc[], fetch: OurFetch): Promise<vo
       body: desc,
     }).then(handleFetchError.bind(null,  `putting to ${file}`))
   }
-  await Promise.all(filesToUpload.map(pushFile))
+
+  for (const fileToUpload of filesToUpload) {
+    await pushFile(fileToUpload)
+  }
 }
 
 function handleFetchError(operation: string, response: Response): Response {
@@ -402,7 +409,7 @@ async function parseArgs(args: string[]): Promise<ParsedOptions> {
   if (opts.extension != null)
     extension = opts.extension
   else if (opts.file !== '-')
-    extension = extname(opts.file)
+    extension = extname(opts.file).substring(1)
   else {
     process.stderr.write("--extension for stdin")
     process.exit(1)

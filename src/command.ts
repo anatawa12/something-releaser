@@ -37,6 +37,7 @@ type Command =
   | ['send-tweet', ...string[]]
   | ['send-discord', ...string[]]
   | ['file-util', ...string[]]
+  | import('./commands/github-commands').GithubCommands
 
 export async function main(...args: string[]): Promise<void> {
   return await mainImpl(...args as Command)
@@ -264,6 +265,21 @@ async function mainImpl(...args: Command): Promise<void> {
     case 'file-util': {
       const {fileUtil} = await import('./commands/file-util')
       await fileUtil(args.slice(1))
+      break
+    }
+    case 'gh-get-input':
+    case 'gh-get-input-boolean':
+    case 'gh-set-output':
+    case 'gh-export-variable':
+    case 'gh-set-secret':
+    case 'gh-add-path':
+    case 'gh-group-start':
+    case 'gh-group-end':
+    case 'gh-error':
+    case 'gh-warning':
+    case 'gh-notice': {
+      const {runGithubCommands} = await import("./commands/github-commands")
+      await runGithubCommands(args)
       break
     }
     default:

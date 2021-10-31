@@ -29,6 +29,17 @@ const commands = [
   'send-tweet',
   'send-discord',
   'file-util',
+  'gh-get-input',
+  'gh-get-input-boolean',
+  'gh-set-output',
+  'gh-export-variable',
+  'gh-set-secret',
+  'gh-add-path',
+  'gh-group-start',
+  'gh-group-end',
+  'gh-error',
+  'gh-warning',
+  'gh-notice',
 ];
 
 const jsDir = join(__dirname, '..', 'bin')

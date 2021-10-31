@@ -2,7 +2,6 @@ import {promises as fs} from 'fs'
 import os from 'os'
 import path from 'path'
 import {expect, it} from '@jest/globals'
-import { Version } from '../../src/utils'
 import {RegexPattern} from '../../src/version-changer/regex-pattern'
 import {creator} from './util'
 
@@ -27,8 +26,8 @@ it("custom prop save and write", async () => {
   const desc = RegexPattern.createFromDesc(create("version = \"$1\"", "test.txt"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, ['snapshot']))
-  await desc.setVersion(new Version(1))
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
   await expect(fs.readFile("test.txt", {encoding: 'utf8'}))
     .resolves
     .toBe("version = \"1\"\n" +

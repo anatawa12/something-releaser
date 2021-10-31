@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import {PropertiesFile} from '../files/properties'
-import {Version} from '../utils'
 
 import {ChangerDescriptor, VersionChanger} from '.'
 
@@ -20,19 +19,19 @@ export class GradleProperties implements VersionChanger {
     this.path = arg.path ?? 'gradle.properties'
   }
 
-  async loadVersion(): Promise<Version> {
+  async loadVersion(): Promise<string> {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
     const properties = PropertiesFile.parse(source)
     const version = properties.get(this.property)
     if (!version)
       throw new Error(`no such property: ${this.property}`)
-    return Version.parse(version)
+    return version
   }
 
-  async setVersion(version: Version): Promise<void> {
+  async setVersion(version: string): Promise<void> {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
     const properties = PropertiesFile.parse(source)
-    properties.set(this.property, version.toString())
+    properties.set(this.property, version)
     await fs.promises.writeFile(this.path, properties.toSource(), {encoding: 'utf-8'})
   }
 

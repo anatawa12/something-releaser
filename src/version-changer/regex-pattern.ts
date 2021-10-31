@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import {Version, asPair} from '../utils'
+import {asPair} from '../utils'
 import {ChangerDescriptor, VersionChanger} from '.'
 
 export class RegexPattern implements VersionChanger {
@@ -22,19 +22,19 @@ export class RegexPattern implements VersionChanger {
     this.path = arg.path
   }
 
-  async loadVersion(): Promise<Version> {
+  async loadVersion(): Promise<string> {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
     const matchResult = source.match(this.match)
     if (!matchResult)
       throw new Error(`no such region matches ${this.match}`)
     if (!matchResult.groups)
       throw new Error(`logic failure ${this.match}`)
-    return Version.parse(matchResult.groups.version)
+    return matchResult.groups.version
   }
 
-  async setVersion(version: Version): Promise<void> {
+  async setVersion(version: string): Promise<void> {
     const source = await fs.promises.readFile(this.path, { encoding: 'utf-8' })
-    const replaced = source.replace(this.match, `$<prefix>${version.toString()}$<suffix>`)
+    const replaced = source.replace(this.match, `$<prefix>${version}$<suffix>`)
     await fs.promises.writeFile(this.path, replaced, {encoding: 'utf-8'})
   }
 

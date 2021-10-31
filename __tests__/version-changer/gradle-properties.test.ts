@@ -2,7 +2,6 @@ import {promises as fs} from 'fs'
 import os from 'os'
 import path from 'path'
 import {expect, it} from '@jest/globals'
-import { Version } from '../../src/utils'
 import {GradleProperties} from '../../src/version-changer/gradle-properties'
 import {creator} from './util'
 
@@ -15,8 +14,8 @@ it("default save and write", async () => {
   const desc = GradleProperties.createFromDesc(create())
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, ['snapshot']))
-  await desc.setVersion(new Version(1))
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
   await expect(fs.readFile("gradle.properties", {encoding: 'utf8'}))
     .resolves
     .toBe("version=1\n")
@@ -29,8 +28,8 @@ it("custom prop save and write", async () => {
   const desc = GradleProperties.createFromDesc(create("project-version"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, ['snapshot']))
-  await desc.setVersion(new Version(1))
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
   await expect(fs.readFile("gradle.properties", {encoding: 'utf8'}))
     .resolves
     .toBe("project-version=1\n")
@@ -43,8 +42,8 @@ it("custom file save and write", async () => {
   const desc = GradleProperties.createFromDesc(create(undefined, "versions"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, ['snapshot']))
-  await desc.setVersion(new Version(1))
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
   await expect(fs.readFile("versions", {encoding: 'utf8'}))
     .resolves
     .toBe("version=1\n")
@@ -57,8 +56,8 @@ it("custom prop and file save and write", async () => {
   const desc = GradleProperties.createFromDesc(create("project-version", "versions"))
   await expect(desc.loadVersion())
     .resolves
-    .toEqual(new Version(1, 0, 0, ['snapshot']))
-  await desc.setVersion(new Version(1))
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
   await expect(fs.readFile("versions", {encoding: 'utf8'}))
     .resolves
     .toBe("project-version=1\n")

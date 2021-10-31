@@ -102,8 +102,7 @@ async function mainImpl(...args: Command): Promise<void> {
     case 'set-version': {
       const {createChangers} = await import('./version-changer')
       const changers = createChangers(env.releaseChanger)
-      const version = Version.parse(args[1]
-        ?? throws(new Error(`version name required`)))
+      const version = args[1] ?? throws(new Error(`version name required`))
       await changers.setVersionName(version)
       break
     }

@@ -411,7 +411,7 @@ async function parseArgs(args: string[]): Promise<ParsedOptions> {
   return {
     ...opts,
     versionName: opts.versionName
-      || (await createChangers(env.releaseChanger).getVersionName()).toString(),
+      || await createChangers(env.releaseChanger).getVersionName(),
     extension,
     packaging: opts.packaging ?? extension,
     developers: opts.developers ?? [],

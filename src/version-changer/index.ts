@@ -1,10 +1,9 @@
-import {Version} from '../utils'
 import {GradleProperties} from './gradle-properties'
 import {RegexPattern} from './regex-pattern'
 
 export interface VersionChanger {
-  loadVersion(): Promise<Version>
-  setVersion(version: Version): Promise<void>
+  loadVersion(): Promise<string>
+  setVersion(version: string): Promise<void>
   toString(): string
 }
 
@@ -17,7 +16,7 @@ export class VersionChangers {
       throw new Error("invalid version changers: empty")
   }
 
-  async getVersionName(): Promise<Version> {
+  async getVersionName(): Promise<string> {
     const versionMap = Object.create(null) as { [P in string]?: VersionChanger[] }
     for (const changer of this.changers) {
       try {
@@ -34,7 +33,7 @@ export class VersionChangers {
 
     const versions = Object.entries<VersionChanger[]|undefined>(versionMap)
     if (versions.length === 1)
-      return Version.parse(versions[0][0])
+      return versions[0][0]
 
     let msg = "multiple versions found!"
     for (const [version, changers] of versions) {
@@ -45,7 +44,7 @@ export class VersionChangers {
     throw new Error(msg)
   }
 
-  async setVersionName(version: Version): Promise<void> {
+  async setVersionName(version: string): Promise<void> {
     for (const changer of this.changers) {
       try {
         await changer.setVersion(version)

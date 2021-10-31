@@ -236,7 +236,10 @@ async function pushFiles(filesToUpload: FileDesc[], fetch: OurFetch): Promise<vo
       body: desc,
     }).then(handleFetchError.bind(null,  `putting to ${file}`))
   }
-  await Promise.all(filesToUpload.map(pushFile))
+
+  for (const fileToUpload of filesToUpload) {
+    await pushFile(fileToUpload)
+  }
 }
 
 function handleFetchError(operation: string, response: Response): Response {

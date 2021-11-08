@@ -62,7 +62,7 @@ export type ChangerDescriptor = {
 }
 
 export function parseDescriptor(changerDesc: string): ChangerDescriptor {
-  const match = changerDesc.match(/(?<changer>[^:@]*)(?::(?<info>[^@]*))?(?:@(?<file>[\s\S]*))?/)
+  const match = changerDesc.match(/^(?<changer>[^:@]*)(?::(?<info>[^@]*))?(?:@(?<path>[\s\S]*))?$/)
   if (match == null)
     throw new Error(`logic failure: don't match: '${changerDesc}'`)
   return match.groups as ChangerDescriptor

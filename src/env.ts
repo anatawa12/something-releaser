@@ -1,6 +1,6 @@
 import {readFileSync} from "fs"
 import Ajv from 'ajv'
-import {Env as EnvJson} from './generated/env'
+import {ChangelogElement, Env as EnvJson} from './generated/env'
 import envSchema from './generated/env.json'
 import {logicFailre} from './utils'
 import {
@@ -58,12 +58,12 @@ const props: Props = {
 const jsonFile = JSON.parse(readConfigJson())
 
 if (!tester(jsonFile)) {
-  throw new Error(`invalid .something-releaser.json: \n${tester.errors?.join("\n")}`)
+  throw new Error(`invalid .something-releaser.json: \n${ajv.errorsText(tester.errors, { separator: "\n" })}`)
 }
 
 export interface Env {
   releaseChanger: ChangerDescriptor[]
-  changelog?: { [P in string]?: string | string[] }
+  changelog?: { [P in string]?: ChangelogElement }
 }
 
 const parsedJson: Partial<Env> = {}

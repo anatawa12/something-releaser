@@ -37,7 +37,7 @@
     "form-data": "^4.0.0",
     "isomorphic-git": "^1.10.1",
     "js-yaml": "^4.1.0",
-    "jsdom": "^18.0.1",
+    "jsdom": "^18.1.0",
     "node-fetch": "^2.6.6",
     "oauth": "^0.9.15",
     "openpgp": "^5.0.1",

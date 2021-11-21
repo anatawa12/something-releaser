@@ -1,5 +1,6 @@
 import {readFileSync} from "fs"
 import Ajv from 'ajv'
+import * as JSON5 from 'json5'
 import {ChangelogElement, Env as EnvJson} from './generated/env'
 import envSchema from './generated/env.json'
 import {logicFailre} from './utils'
@@ -55,7 +56,7 @@ const props: Props = {
   },
 }
 
-const jsonFile = JSON.parse(readConfigJson())
+const jsonFile = JSON5.parse(readConfigJson())
 
 if (!tester(jsonFile)) {
   throw new Error(`invalid .something-releaser.json: \n${ajv.errorsText(tester.errors, { separator: "\n" })}`)
@@ -106,14 +107,22 @@ for (const key of propKeys) {
 export default env
 
 function readConfigJson(): string {
-  try {
-    return readFileSync('.something-releaser.json', 'utf8')
-  } catch (e) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((e as any).code === 'ENOENT')
-      return '{}'
-    throw e
+  const files = [
+    '.something-releaser.json',
+    '.something-releaser.json5',
+  ]
+  for (const file of files) {
+    try {
+      return readFileSync(file, 'utf8')
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((e as any).code === 'ENOENT') {
+        continue
+      }
+      throw e
+    }
   }
+  return '{}'
 }
 
 function parseReleaseChanger(value: EnvJson['releaseChanger']): ChangerDescriptor[] {

@@ -35,7 +35,7 @@
     "commander": "^8.3.0",
     "fastpriorityqueue": "^0.7.1",
     "form-data": "^4.0.0",
-    "isomorphic-git": "^1.10.1",
+    "isomorphic-git": "^1.13.1",
     "js-yaml": "^4.1.0",
     "jsdom": "^18.1.0",
     "json5": "^2.2.0",

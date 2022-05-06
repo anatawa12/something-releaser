@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/http-auth": "^4.1.1",
     "@types/js-yaml": "^4.0.5",
-    "@types/jsdom": "^16.2.13",
+    "@types/jsdom": "^16.2.14",
     "@types/mime-types": "^2.1.1",
     "@types/node": "^12.20.37",
     "@types/node-fetch": "^2.6.1",

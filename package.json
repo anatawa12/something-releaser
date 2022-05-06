@@ -41,7 +41,7 @@
     "json5": "^2.2.1",
     "node-fetch": "^2.6.7",
     "oauth": "^0.9.15",
-    "openpgp": "^5.0.1",
+    "openpgp": "^5.2.1",
     "simple-git": "^3.7.1",
     "tslib": "^2.4.0"
   },

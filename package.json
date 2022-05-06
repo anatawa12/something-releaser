@@ -39,7 +39,7 @@
     "js-yaml": "^4.1.0",
     "jsdom": "^19.0.0",
     "json5": "^2.2.0",
-    "node-fetch": "^2.6.6",
+    "node-fetch": "^2.6.7",
     "oauth": "^0.9.15",
     "openpgp": "^5.0.1",
     "simple-git": "^2.47.0",

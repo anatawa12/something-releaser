@@ -163,7 +163,8 @@ export function parseLiteralString(literal: string): string {
       i += 2 + 4
     } else {
       i += 2
-      builder += '"\\/\b\f\n\r\t'['"\\/bfnrt'.indexOf(c)]
+      // there's extra support for \' for json path
+      builder += '\'"\\/\b\f\n\r\t'['\'"\\/bfnrt'.indexOf(c)]
     }
     since = i
   }

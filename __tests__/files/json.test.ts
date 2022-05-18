@@ -144,22 +144,40 @@ describe("parseString", () => {
 })
 
 describe("setting value and output then", () => {
-  test("keep saved value", () => {
+  test("keep saved value of object", () => {
     const props = JsonFile.parse("{}")
     props.set(["the key"], "value")
     expect(props.get(["the key"])).toBe("value")
   })
 
-  test("read value", () => {
+  test("read value of object", () => {
     const props = JsonFile.parse(`{"the key": "value", "the key2": 100}`)
     expect(props.get(["the key"])).toBe("value")
     expect(props.get(["the key2"])).toBe(100)
   })
 
-  test("write value", () => {
+  test("write value of object", () => {
     const props = JsonFile.parse("{}")
     props.set(["the key"], "value")
     expect(props.toSource()).toBe(`{"the key": "value"}`)
+  })
+
+  test("keep saved value of array", () => {
+    const props = JsonFile.parse("[]")
+    props.set([0], "value")
+    expect(props.get([0])).toBe("value")
+  })
+
+  test("read value of array", () => {
+    const props = JsonFile.parse(`["value",100]`)
+    expect(props.get([0])).toBe("value")
+    expect(props.get([1])).toBe(100)
+  })
+
+  test("write value of array", () => {
+    const props = JsonFile.parse("[]")
+    props.set([0], "value")
+    expect(props.toSource()).toBe(`["value"]`)
   })
 
   test("indented adding value of object", () => {

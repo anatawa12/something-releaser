@@ -62,8 +62,12 @@ export class JsonFile {
         found.value = primitiveToJsonValue(value)
       }
     } else if (container?.type === "array") {
-      if (typeof valueKey !== "number" || typeof container.values === "string")
-        return undefined
+      if (typeof valueKey !== "number")
+        return
+      if (typeof container.values === "string") {
+        container.values = [["", primitiveToJsonValue(value), ""]]
+        return
+      }
       const found = container.values[valueKey]
       if (found != null) {
         found[1] = primitiveToJsonValue(value)
@@ -75,6 +79,8 @@ export class JsonFile {
         container.values.push([last[0], primitiveToJsonValue(value), last[2]])
         last[0] = secondLast[0]
         last[2] = secondLast[2]
+      } else {
+        throw new Error(`index out of range (${valueKey})`)
       }
     } else {
       throw new Error(`specified object not found (${container?.type})`)

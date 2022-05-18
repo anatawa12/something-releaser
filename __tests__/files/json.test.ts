@@ -1,5 +1,5 @@
 import {expect, test, describe} from '@jest/globals'
-import {__test__, JsonFile} from '../../src/files/json'
+import {parseLiteralString, JsonFile} from '../../src/files/json'
 
 describe("parse and write file", () => {
   function json(...args: Parameters<(typeof JsonFile)["__test__new__"]>): JsonFile {
@@ -125,22 +125,20 @@ describe("parse and write file", () => {
 })
 
 describe("parseString", () => {
-  const parseString = __test__.parseString
-  const mkString = (str: string): {type: "string", literal: string} => ({type: "string", literal: str})
   test("simple literal", () => {
-    expect(parseString(mkString(`"the key"`))).toBe("the key")
+    expect(parseLiteralString(`"the key"`)).toBe("the key")
   })
 
   test("escaped", () => {
-    expect(parseString(mkString(`"\\"\\\\\\/\\b\\f\\n\\r\\t`))).toBe(`"\\/\b\f\n\r\t`)
+    expect(parseLiteralString(`"\\"\\\\\\/\\b\\f\\n\\r\\t`)).toBe(`"\\/\b\f\n\r\t`)
   })
 
   test("hex escaped", () => {
-    expect(parseString(mkString(`"\\u0123`))).toBe(`\u0123`)
+    expect(parseLiteralString(`"\\u0123`)).toBe(`\u0123`)
   })
 
   test("mixed", () => {
-    expect(parseString(mkString(`"A> hello \\"\\u0123\\"! how are you?\\nB> I'm good."`)))
+    expect(parseLiteralString(`"A> hello \\"\\u0123\\"! how are you?\\nB> I'm good."`))
       .toBe(`A> hello "\u0123"! how are you?\nB> I'm good.`)
   })
 })

@@ -147,9 +147,10 @@ function primitiveToJsonValue(value: JsonPrimitiveValue): JsonString | JsonNumbe
 }
 
 function parseString(string: JsonString): string {
-  if (string.parsed != null)
-    return string.parsed
-  const literal = string.literal
+  return string.parsed ?? (string.parsed = parseLiteralString(string.literal))
+}
+
+export function parseLiteralString(literal: string): string {
   let builder = ""
 
   let since = 1
@@ -170,21 +171,20 @@ function parseString(string: JsonString): string {
   if (since < literal.length - 1)
     builder += literal.substring(since, literal.length - 1)
 
-  string.parsed = builder
   return builder
 }
 
 type JsonKey = string | number
 type JsonPrimitiveValue = string | number | boolean | null
 
-type JsonValue = JsonObject | JsonArray | JsonString | JsonNumber | JsonLiteral
+export type JsonValue = JsonObject | JsonArray | JsonString | JsonNumber | JsonLiteral
 
-interface JsonObject {
+export interface JsonObject {
   readonly type: "object",
   values: JsonKVP[] | string
 }
 
-interface JsonKVP {
+export interface JsonKVP {
   headingSpace: string,
   key: JsonString,
   separator: string,
@@ -192,24 +192,24 @@ interface JsonKVP {
   tailingSpace: string,
 }
 
-interface JsonArray {
+export interface JsonArray {
   readonly type: "array",
   readonly values: [headingSpace: string, value: JsonValue, tailingSpace: string][] | string,
 }
 
-interface JsonString {
+export interface JsonString {
   readonly type: "string",
   readonly literal: string,
   parsed?: string,
 }
 
-interface JsonNumber {
+export interface JsonNumber {
   readonly type: "number",
   readonly literal: string,
   readonly parsed: number,
 }
 
-interface JsonLiteral<V extends false | true | null = false | true | null> {
+export interface JsonLiteral<V extends false | true | null = false | true | null> {
   readonly type: `${V}`,
   readonly value: V,
 }
@@ -626,8 +626,4 @@ class Tokenizer {
     throw new ParsingError(`unexpected token: ${type}, expected ${expected}`,
       ...this.computeLineNumberAt(tokenBegin))
   }
-}
-
-export const __test__ = {
-  parseString,
 }

@@ -71,3 +71,7 @@ export function asPair(str: string, sep: string | RegExp, laterIfNotFound: boole
   }
   return [str.substr(0, i), str.substr(i + len)]
 }
+
+export function includes<T, Values extends T[]>(values: Values, value: T): value is Values[number] {
+  return values.includes(value)
+}

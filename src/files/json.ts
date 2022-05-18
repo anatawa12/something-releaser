@@ -20,10 +20,10 @@ export class JsonFile {
     return new JsonFile(headingSpace, value, tailingSpace)
   }
 
-  toSource(): string {
+  toSource(minified = false): string {
     const builder = new StringBuilder()
     builder.append(this.headingSpace)
-    appendValue(builder, this.value)
+    appendValue(builder, this.value, minified)
     builder.append(this.tailingSpace)
     return builder.toString()
   }
@@ -106,7 +106,7 @@ export class JsonFile {
     }
   }
 
-  private getObject(keys: JsonKey[]): JsonValue | undefined {
+  getObject(keys: JsonKey[]): JsonValue | undefined {
     let current = this.value
     for (const key of keys) {
       if (current.type === "object") {
@@ -201,7 +201,7 @@ export interface JsonKVP {
 
 export interface JsonArray {
   readonly type: "array",
-  readonly values: [headingSpace: string, value: JsonValue, tailingSpace: string][] | string,
+  values: [headingSpace: string, value: JsonValue, tailingSpace: string][] | string,
 }
 
 export interface JsonString {
@@ -221,39 +221,56 @@ export interface JsonLiteral<V extends false | true | null = false | true | null
   readonly value: V,
 }
 
-function appendValue(builder: StringBuilder, value: JsonValue): void {
+export function toStringJsonValue(value: JsonValue, minified = false): string {
+  const builder = new StringBuilder()
+  appendValue(builder, value, minified)
+  return builder.toString()
+}
+
+function appendValue(builder: StringBuilder, value: JsonValue, minified = false): void {
   let first = true
   switch (value.type) {
     case "object":
       builder.append("{")
-      if (typeof value.values == "string")
-        builder.append(value.values)
-      else
+      if (typeof value.values == "string") {
+        if (!minified)
+          builder.append(value.values)
+      } else {
         for (const kvp of value.values) {
           if (!first)
             builder.append(",")
           first = false
-          builder.append(kvp.headingSpace)
+          if (!minified)
+            builder.append(kvp.headingSpace)
           appendValue(builder, kvp.key)
-          builder.append(kvp.separator)
+          if (minified)
+            builder.append(":")
+          else
+            builder.append(kvp.separator)
           appendValue(builder, kvp.value)
-          builder.append(kvp.tailingSpace)
+          if (!minified)
+            builder.append(kvp.tailingSpace)
         }
+      }
       builder.append("}")
       break
     case "array":
       builder.append("[")
-      if (typeof value.values == "string")
-        builder.append(value.values)
-      else
+      if (typeof value.values == "string") {
+        if (!minified)
+          builder.append(value.values)
+      } else {
         for (const [headingSpace, element, tailingSpace] of value.values) {
           if (!first)
             builder.append(",")
           first = false
-          builder.append(headingSpace)
+          if (!minified)
+            builder.append(headingSpace)
           appendValue(builder, element)
-          builder.append(tailingSpace)
+          if (!minified)
+            builder.append(tailingSpace)
         }
+      }
       builder.append("]")
       break
     case "string":

@@ -1,6 +1,6 @@
 // the json file support library
 
-import {logicFailre, StringBuilder} from '../utils'
+import {headingAndLast, logicFailre, StringBuilder} from '../utils'
 
 export class JsonFile {
   private readonly headingSpace: string
@@ -27,22 +27,169 @@ export class JsonFile {
     builder.append(this.tailingSpace)
     return builder.toString()
   }
+
+  static __test__new__(headingSpace: string, value: JsonValue, tailingSpace: string): JsonFile {
+    return new JsonFile(headingSpace, value, tailingSpace)
+  }
+
+  set(keys: JsonKey[], value: JsonPrimitiveValue): void {
+    const [containerKey, valueKey] = headingAndLast(keys)
+    const container = this.getObject(containerKey)
+    if (container?.type === "object") {
+      const keyString = `${valueKey}`
+      if (typeof container.values == "string") {
+        container.values = [{
+          headingSpace: "",
+          key: primitiveToJsonValue(keyString),
+          separator: ": ",
+          value: primitiveToJsonValue(value),
+          tailingSpace: "",
+        }]
+        return
+      }
+      const found = container.values.find(v => parseString(v.key) === keyString)
+      if (found == null) {
+        const lastKVP = container.values[container.values.length - 1]
+        container.values.push({
+          headingSpace: lastKVP.headingSpace,
+          key: primitiveToJsonValue(keyString),
+          separator: lastKVP.separator,
+          value: primitiveToJsonValue(value),
+          tailingSpace: lastKVP.tailingSpace,
+        })
+        lastKVP.tailingSpace = ""
+      } else {
+        found.value = primitiveToJsonValue(value)
+      }
+    } else if (container?.type === "array") {
+      if (typeof valueKey !== "number" || typeof container.values === "string")
+        return undefined
+      const found = container.values[valueKey]
+      if (found != null) {
+        found[1] = primitiveToJsonValue(value)
+      } else if (valueKey === container.values.length) {
+        const last = container.values[container.values.length - 1]
+        const secondLast: [string, {} | null, string] = container.values.length >= 2
+          ? container.values[container.values.length - 2] : [last[0], null, ""]
+
+        container.values.push([last[0], primitiveToJsonValue(value), last[2]])
+        last[0] = secondLast[0]
+        last[2] = secondLast[2]
+      }
+    } else {
+      throw new Error(`specified object not found (${container?.type})`)
+    }
+  }
+
+  get(keys: JsonKey[]): JsonPrimitiveValue | undefined {
+    const found = this.getObject(keys)
+    if (found == null)
+      return undefined
+
+    switch (found.type) {
+      case "string":
+        return parseString(found)
+      case "number":
+        return found.parsed
+      case "true":
+      case "false":
+      case "null":
+        return found.value
+      default:
+        throw new Error(`the value of ${keys} is not primitive`)
+    }
+  }
+
+  private getObject(keys: JsonKey[]): JsonValue | undefined {
+    let current = this.value
+    for (const key of keys) {
+      if (current.type === "object") {
+        const keyString = `${key}`
+        if (typeof current.values == "string")
+          return undefined
+        const found = current.values.find(v => parseString(v.key) === keyString)?.value
+        if (found == null)
+          return undefined
+        current = found
+      } else if (current.type === "array") {
+        if (typeof key !== "number" || typeof current.values === "string")
+          return undefined
+        const found = current.values[key]
+        if (found == null)
+          return undefined
+        current = found[1]
+      } else {
+        // non container
+        return undefined
+      }
+    }
+    return current
+  }
 }
 
+function primitiveToJsonValue(value: string): JsonString
+function primitiveToJsonValue(value: JsonPrimitiveValue): JsonString | JsonNumber | JsonLiteral
+function primitiveToJsonValue(value: JsonPrimitiveValue): JsonString | JsonNumber | JsonLiteral {
+  switch (typeof value) {
+    case "string":
+      return {type: "string", literal: JSON.stringify(value), parsed: value}
+    case "number":
+      return {type: "number", literal: JSON.stringify(value), parsed: value}
+    case "boolean":
+      return {type: `${value}`, value}
+    case "object":
+      if (value == null)
+        return { type: "null", value: null }
+      //fallthrough
+    default:
+      logicFailre(`type of value: ${value}`)
+  }
+}
+
+function parseString(string: JsonString): string {
+  if (string.parsed != null)
+    return string.parsed
+  const literal = string.literal
+  let builder = ""
+
+  let since = 1
+  let i: number
+  while ((i = literal.indexOf("\\", since)) !== -1) {
+    builder += literal.substring(since, i)
+    const c = literal.charAt(i + 1)
+    if (c === 'u') {
+      builder += String.fromCharCode(Number.parseInt(literal.substring(i + 2, i + 2 + 4), 16))
+      i += 2 + 4
+    } else {
+      i += 2
+      builder += '"\\/\b\f\n\r\t'['"\\/bfnrt'.indexOf(c)]
+    }
+    since = i
+  }
+
+  if (since < literal.length - 1)
+    builder += literal.substring(since, literal.length - 1)
+
+  string.parsed = builder
+  return builder
+}
+
+type JsonKey = string | number
+type JsonPrimitiveValue = string | number | boolean | null
 
 type JsonValue = JsonObject | JsonArray | JsonString | JsonNumber | JsonLiteral
 
 interface JsonObject {
   readonly type: "object",
-  readonly values: JsonKVP[] | string
+  values: JsonKVP[] | string
 }
 
 interface JsonKVP {
-  readonly headingSpace: string,
-  readonly key: JsonString,
-  readonly separator: string,
-  readonly value: JsonValue,
-  readonly tailingSpace: string,
+  headingSpace: string,
+  key: JsonString,
+  separator: string,
+  value: JsonValue,
+  tailingSpace: string,
 }
 
 interface JsonArray {
@@ -479,4 +626,8 @@ class Tokenizer {
     throw new ParsingError(`unexpected token: ${type}, expected ${expected}`,
       ...this.computeLineNumberAt(tokenBegin))
   }
+}
+
+export const __test__ = {
+  parseString,
 }

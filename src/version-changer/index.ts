@@ -1,4 +1,5 @@
 import {GradleProperties} from './gradle-properties'
+import {NpmPackageJson} from "./npm-package-json"
 import {RegexPattern} from './regex-pattern'
 
 export interface VersionChanger {
@@ -74,6 +75,9 @@ export function createChanger(descriptor: ChangerDescriptor): VersionChanger {
       return GradleProperties.createFromDesc(descriptor)
     case 'regex-pattern':
       return RegexPattern.createFromDesc(descriptor)
+    case 'npm':
+    case 'npm-package-json':
+      return NpmPackageJson.createFromDesc(descriptor)
     default:
       throw new Error(`unknown changer: ${descriptor.changer}`)
   }

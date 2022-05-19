@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
 jobs:
   release:
-    environment: development
+    environment: deployment
     name: Do Release
     runs-on: ubuntu-latest
     steps:

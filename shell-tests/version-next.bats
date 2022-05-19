@@ -29,3 +29,23 @@
   output="$(version-next 1.0.0-SNAPSHOT)"
   [ "$output" = 1.0.1-SNAPSHOT ]
 }
+
+@test 'version-next prerelease major.minor.patch-beta' {
+  output="$(version-next 1.0.0-beta0 prerelease)"
+  [ "$output" = 1.0.0-beta1 ]
+}
+
+@test 'version-next patch major.minor.patch-beta' {
+  output="$(version-next 1.0.0-beta0 patch)"
+  [ "$output" = 1.0.1-beta0 ]
+}
+
+@test 'version-next minor major.minor.patch-beta' {
+  output="$(version-next 1.0.0-beta0 minor)"
+  [ "$output" = 1.1.0-beta0 ]
+}
+
+@test 'version-next major major.minor.patch-beta' {
+  output="$(version-next 1.0.0-beta0 major)"
+  [ "$output" = 2.0.0-beta0 ]
+}

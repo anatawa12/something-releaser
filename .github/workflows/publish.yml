@@ -31,7 +31,7 @@ jobs:
           set-git-user anatawa12-bot
 
           # create version commit on master
-          VERSION="$(version-stable "$(version-minor $(get-version))")"
+          VERSION="$(version-stable "$(version-minor "$(get-version)")")"
           set-version "$VERSION"
           MAJOR_VERSION="$(version-major "$VERSION")"
 

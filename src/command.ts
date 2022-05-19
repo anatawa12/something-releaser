@@ -29,7 +29,7 @@ type Command =
   | ['version-patch', string]
   | ['version-get-channel', string]
   | ['version-set-channel', ...([ver: string, channel: string, num: string] | [ver: string, channel: string])]
-  | ['version-next', string]
+  | ['version-next', ...([ver: string] | [ver: string, channel: string])]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', string, ...string[]]
   | ['prepare-gradle-signing', string, ...string[]]
@@ -210,9 +210,43 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     case 'version-next': {
+      let target: "prerelease" | "patch" | "minor" | "major" | null
+      switch (args[2]) {
+        case null:
+        case undefined:
+          target = null
+          break
+        case "pre":
+        case "prerelease":
+        case 'a':
+        case 'alpha':
+        case 'α':
+        case 'b':
+        case 'beta':
+        case 'β':
+        case 'rc':
+        case 'candidate':
+        case 'snapshot':
+          target = "prerelease"
+          break
+        case "pat":
+        case "patch":
+          target = "patch"
+          break
+        case "min":
+        case "minor":
+          target = "minor"
+          break
+        case "maj":
+        case "major":
+          target = "major"
+          break
+        default:
+          throw new Error(`unknown next version target: ${args[2]}`)
+      }
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
-        .next()
+        .next(target)
         .toString())
       break
     }

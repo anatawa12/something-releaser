@@ -149,13 +149,34 @@ export class Version {
     return new Version({major: this.major, minor: this.minor ?? 0, patch: this.patch ?? 0, release: this.release})
   }
 
-  next(): Version {
-    if (this.release[1] != null)
-      return new Version({...this, release: [this.release[0], this.release[1] + 1]})
-    if (this.patch != null)
-      return new Version({...this, patch: this.patch + 1})
-    if (this.minor != null)
-      return new Version({...this, minor: this.minor + 1})
-    return new Version({...this, major: this.major + 1})
+  next(channel?: "prerelease" | "patch" | "minor" | "major" | undefined | null): Version {
+    if (channel == null) {
+      if (this.release[1] != null)
+        channel = "prerelease"
+      else if (this.patch != null)
+        channel = "patch"
+      else if (this.minor != null)
+        channel = "minor"
+      else
+        channel = "major"
+    }
+    switch (channel) {
+      case "prerelease":
+        if (this.release[1] == null)
+          throw new Error("requested to update prerelease version but not found")
+        return new Version({...this, release: [this.release[0], this.release[1] + 1]})
+      case "patch":
+        if (this.patch == null)
+          throw new Error("requested to update patch version but not found")
+        return new Version({...this, patch: this.patch + 1})
+      case "minor":
+        if (this.minor == null)
+          throw new Error("requested to update minor version but not found")
+        return new Version({...this, minor: this.minor + 1})
+      case "major":
+        return new Version({...this, major: this.major + 1})
+      default:
+        logicFailre("unknown channel", channel)
+    }
   }
 }

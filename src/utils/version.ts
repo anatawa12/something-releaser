@@ -137,6 +137,18 @@ export class Version {
     return new Version({...this, release: ['snapshot']})
   }
 
+  makeMajorOnly(): Version {
+    return new Version({major: this.major, minor: undefined, patch: undefined, release: this.release})
+  }
+
+  makeMajorMinor(): Version {
+    return new Version({major: this.major, minor: this.minor ?? 0, patch: undefined, release: this.release})
+  }
+
+  makeMajorMinorPatch(): Version {
+    return new Version({major: this.major, minor: this.minor ?? 0, patch: this.patch ?? 0, release: this.release})
+  }
+
   next(): Version {
     if (this.release[1] != null)
       return new Version({...this, release: [this.release[0], this.release[1] + 1]})

@@ -24,6 +24,9 @@ type Command =
   | ['version-alpha', ...([ver: string, num: string] | [ver: string])]
   | ['version-beta', ...([ver: string, num: string] | [ver: string])]
   | ['version-candidate', ...([ver: string, num: string] | [ver: string])]
+  | ['version-major', string]
+  | ['version-minor', string]
+  | ['version-patch', string]
   | ['version-get-channel', string]
   | ['version-set-channel', ...([ver: string, channel: string, num: string] | [ver: string, channel: string])]
   | ['version-next', string]
@@ -146,6 +149,27 @@ async function mainImpl(...args: Command): Promise<void> {
       println(Version.parse(args[1]
         ?? throws(new Error('version name required')))
         .makeCandidate(parseInt(args[2] ?? '1'))
+        .toString())
+      break
+    }
+    case 'version-major': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeMajorOnly()
+        .toString())
+      break
+    }
+    case 'version-minor': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeMajorMinor()
+        .toString())
+      break
+    }
+    case 'version-patch': {
+      println(Version.parse(args[1]
+        ?? throws(new Error('version name required')))
+        .makeMajorMinorPatch()
         .toString())
       break
     }

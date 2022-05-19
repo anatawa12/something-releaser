@@ -1,6 +1,6 @@
 {
   "name": "something-releaser",
-  "version": "2.13",
+  "version": "2.14.0-SNAPSHOT",
   "private": true,
   "description": "releases somethings",
   "main": "lib/main.js",

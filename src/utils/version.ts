@@ -138,15 +138,15 @@ export class Version {
   }
 
   makeMajorOnly(): Version {
-    return new Version({major: this.major, minor: undefined, patch: undefined, release: ["stable"]})
+    return new Version({major: this.major, minor: undefined, patch: undefined, release: this.release})
   }
 
   makeMajorMinor(): Version {
-    return new Version({major: this.major, minor: this.minor ?? 0, patch: undefined, release: ["stable"]})
+    return new Version({major: this.major, minor: this.minor ?? 0, patch: undefined, release: this.release})
   }
 
   makeMajorMinorPatch(): Version {
-    return new Version({major: this.major, minor: this.minor ?? 0, patch: this.patch ?? 0, release: ["stable"]})
+    return new Version({major: this.major, minor: this.minor ?? 0, patch: this.patch ?? 0, release: this.release})
   }
 
   next(): Version {

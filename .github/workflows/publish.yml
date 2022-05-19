@@ -1,38 +1,19 @@
 name: Publish
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: name of version. requires matches `v[0-9]+\.[0-9]+`
-        required: true
+  workflow_dispatch: {}
 jobs:
   release:
     name: Do Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: anatawa12/something-releaser@v2
       - name: fix fetch
         run: |
           # fetch the branch to be published
           git remote set-branches --add origin releases
           # fetch tags to verify the tag is not exists
           git fetch origin --tags
-      - name: Verify Inputs
-        id: verify
-        run: |
-          set -eu
-          if ! [[ "$VERSION" =~ ^v([0-9]+)\.([0-9]+)$ ]]; then 
-            echo "invalid version name: $VERSION" >&2
-            exit -1
-          fi
-
-          if git tag | grep "$VERSION" >/dev/null; then 
-            echo "version name duplicated" >&2
-            exit -1
-          fi
-          echo "::set-output name=major_version::v${BASH_REMATCH[1]}"
-        env:
-          VERSION: ${{ github.event.inputs.version }}
         shell: bash
       - uses: actions/setup-node@v2
         with:
@@ -47,8 +28,16 @@ jobs:
         run: |
           set -eu
           # set user name
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          set-git-user anatawa12-bot
+
+          # create version commit on master
+          VERSION="$(version-stable "$(version-minor "$(get-version)")")"
+          set-version "$VERSION"
+          MAJOR_VERSION="$(version-major "$VERSION")"
+
+          git add package*.json
+          git commit -m "v$VERSION"
+
           HASH="$(git rev-parse HEAD)"
           # checkout releases at origin/releases witout chanigng local tree
           git branch releases origin/releases
@@ -76,13 +65,22 @@ jobs:
           
           # add modified files and commit
           git add .
-          git reset --soft $(git commit-tree -p HEAD -p $HASH -m "$VERSION at $HASH" $(git write-tree))
-          # create tag & push
-          git tag -f "$VERSION"
-          git tag -f "$MAJOR_VERSION"
+          git reset --soft $(git commit-tree -p HEAD -p $HASH -m "v$VERSION at $HASH" $(git write-tree))
+          # create tag
+          git tag -f "v$VERSION"
+          git tag -f "v$MAJOR_VERSION"
+
+          # create pre-next version commit
+          git checkout master
+          
+          next_version="$(version-next "$VERSION" minor)"
+          set-version "$(version-patch $(version-snapshot "$next_version"))"
+
+          git add package*.json
+          git commit -m "prepare for v$next_version"
+
+          # push
           git push
+          git push origin master
           git push --tags -f
         shell: bash
-        env:
-          VERSION: ${{ github.event.inputs.version }}
-          MAJOR_VERSION: ${{ steps.verify.outputs.major_version }}

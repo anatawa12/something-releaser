@@ -44,3 +44,17 @@ it("default save and write", async () => {
     .resolves
     .toBe(packageLockJsonGen("1"))
 })
+
+it("no lock file", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test"))
+  process.chdir(tempDir)
+  await fs.writeFile("package.json", packageJsonGen("1.0.0-SNAPSHOT"))
+  const desc = NpmPackageJson.createFromDesc(create())
+  await expect(desc.loadVersion())
+    .resolves
+    .toBe("1.0.0-SNAPSHOT")
+  await desc.setVersion("1")
+  await expect(fs.readFile("package.json", {encoding: 'utf8'}))
+    .resolves
+    .toBe(packageJsonGen("1"))
+})

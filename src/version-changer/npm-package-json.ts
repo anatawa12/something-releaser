@@ -30,10 +30,18 @@ export class NpmPackageJson implements VersionChanger {
 
   async setVersion(version: string): Promise<void> {
     for (const path of this.paths) {
-      const source = await fs.promises.readFile(path, {encoding: 'utf-8'})
-      const properties = JsonFile.parse(source)
-      properties.set([this.property], version)
-      await fs.promises.writeFile(path, properties.toSource(), {encoding: 'utf-8'})
+      try {
+        const source = await fs.promises.readFile(path, {encoding: 'utf-8'})
+        const properties = JsonFile.parse(source)
+        properties.set([this.property], version)
+        await fs.promises.writeFile(path, properties.toSource(), {encoding: 'utf-8'})
+      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (path === "package-lock.json" && (e as any).code === "ENOENT") {
+          continue
+        }
+        throw e
+      }
     }
   }
 

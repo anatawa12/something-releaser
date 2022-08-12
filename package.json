@@ -50,7 +50,7 @@
     "@types/js-yaml": "^4.0.5",
     "@types/jsdom": "^16.2.14",
     "@types/mime-types": "^2.1.1",
-    "@types/node": "^12.20.37",
+    "@types/node": "^18.7.2",
     "@types/node-fetch": "^2.6.1",
     "@types/oauth": "^0.9.1",
     "@typescript-eslint/parser": "^4.33.0",

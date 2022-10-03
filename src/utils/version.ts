@@ -73,7 +73,7 @@ export class Version {
   }
 
   static parse(value: string): Version {
-    const regex = /^v?(?<maj>\d+)(\.(?<min>\d+))?(\.(?<pat>\d+))?(-(?<snap>SNAPSHOT)|-((?<alpha>alpha)|(?<beta>beta)|(?<rc>rc))(?<n>\d+))?$/i
+    const regex = /^v?(?<maj>\d+)(\.(?<min>\d+))?(\.(?<pat>\d+))?(-(?<snap>SNAPSHOT)|-((?<alpha>alpha)|(?<beta>beta)|(?<rc>rc))\.?(?<n>\d+))?$/i
     const match = value.match(regex)
     if (match == null)
       throw new Error(`the version name doesn't match ${regex}`)

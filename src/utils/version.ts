@@ -19,6 +19,10 @@ export type Release =
   // -rcN
   | readonly [kind: 'candidate', number: number]
 
+function useSemverCompatible(): boolean {
+  return process.env.SOMETHING_RELEASER_SEMVER === "1"
+}
+
 export class Version {
   readonly major: number
   readonly minor: number | undefined
@@ -103,13 +107,22 @@ export class Version {
         r += '-SNAPSHOT'
         break
       case 'alpha':
-        r += `-alpha${this.release[1]}`
+        r += '-alpha'
+        if (useSemverCompatible())
+          r += '.'
+        r += this.release[1]
         break
       case 'beta':
-        r += `-beta${this.release[1]}`
+        r += '-beta'
+        if (useSemverCompatible())
+          r += '.'
+        r += this.release[1]
         break
       case 'candidate':
-        r += `-rc${this.release[1]}`
+        r += '-rc'
+        if (useSemverCompatible())
+          r += '.'
+        r += this.release[1]
         break
       default:
         logicFailre("release type", this.release[0])

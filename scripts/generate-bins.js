@@ -27,6 +27,7 @@ const commands = [
   'version-set-channel',
   'version-snapshot',
   'version-next',
+  'version-format',
   'publish-to-curse-forge',
   'publish-to-maven',
   'send-tweet',

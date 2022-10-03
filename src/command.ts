@@ -30,6 +30,7 @@ type Command =
   | ['version-get-channel', string]
   | ['version-set-channel', ...([ver: string, channel: string, num: string] | [ver: string, channel: string])]
   | ['version-next', ...([ver: string] | [ver: string, channel: string])]
+  | ['version-format', string]
   | ['generate-changelog', ...string[]]
   | ['prepare-gradle-maven', string, ...string[]]
   | ['prepare-gradle-signing', string, ...string[]]
@@ -248,6 +249,10 @@ async function mainImpl(...args: Command): Promise<void> {
         ?? throws(new Error('version name required')))
         .next(target)
         .toString())
+      break
+    }
+    case "version-format": {
+      println(Version.parse(args[1] ?? throws(new Error('version name required'))).toString())
       break
     }
     case 'generate-changelog': {

@@ -29,3 +29,8 @@
   result="$(version-snapshot 1.0.0-SNAPSHOT)"
   [ "$result" = 1.0.0-SNAPSHOT ]
 }
+
+@test 'version-snapshot pipe mode' {
+  result="$(echo 1.0.0-SNAPSHOT | version-snapshot)"
+  [ "$result" = 1.0.0-SNAPSHOT ]
+}

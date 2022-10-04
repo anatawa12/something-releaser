@@ -29,3 +29,8 @@
   result="$(version-candidate 1.0-SNAPSHOT 6)"
   [ "$result" = 1.0-rc6 ]
 }
+
+@test 'version-candidate pipe mode' {
+  result="$(echo 1.0-SNAPSHOT | version-candidate - 6)"
+  [ "$result" = 1.0-rc6 ]
+}

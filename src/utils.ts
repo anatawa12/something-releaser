@@ -75,3 +75,7 @@ export function asPair(str: string, sep: string | RegExp, laterIfNotFound: boole
 export function includes<T, Values extends T[]>(values: Values, value: T): value is Values[number] {
   return values.includes(value)
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function checkNever(never: never): void {
+}

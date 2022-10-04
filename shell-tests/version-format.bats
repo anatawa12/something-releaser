@@ -44,3 +44,8 @@
   result="$(version-format 1.0-rc.6)"
   [ "$result" = 1.0-rc6 ]
 }
+
+@test 'version-format pipe mode' {
+  result="$(echo 1.0-rc.6 | version-format)"
+  [ "$result" = 1.0-rc6 ]
+}

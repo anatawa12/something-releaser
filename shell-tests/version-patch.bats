@@ -39,3 +39,8 @@
   result="$(version-patch 1.2.3)"
   [ "$result" = 1.2.3 ]
 }
+
+@test 'version-patch pipe mode' {
+  result="$(echo 1.2.3 | version-patch)"
+  [ "$result" = 1.2.3 ]
+}

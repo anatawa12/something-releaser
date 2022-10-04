@@ -1,4 +1,5 @@
-import {throws, logicFailre} from "../utils"
+import * as fs from "fs"
+import {logicFailre} from "../utils"
 import {Version} from "../utils/version"
 
 function eprintln(body: string): void {
@@ -29,7 +30,11 @@ export type VersionCommandArgs = DropVersion<VersionCommand>
 
 export async function runVersionCommands(args: VersionCommand): Promise<void> {
   const [versionName, cmdArgs] = sliceVersion(args)
-  const version = Version.parse(versionName ?? throws(new Error('version name required')))
+  let version
+  if (!versionName || versionName === '-')
+    version = Version.parse(fs.readFileSync(process.stdin.fd, 'utf-8'))
+  else
+    version = Version.parse(versionName)
   const result = doVersionCommand(version, cmdArgs)
   // eslint-disable-next-line no-console
   console.log(result.toString())

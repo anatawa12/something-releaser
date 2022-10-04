@@ -79,5 +79,13 @@
       "node": true,
       "es6": true,
       "jest/globals": true
-    }
+    },
+    "overrides": [
+      {
+        "files": ["*.ts", "*.mts", "*.cts", "*.tsx"],
+        "rules": {
+          "no-undef": "off"
+        }
+      }
+    ]
   }

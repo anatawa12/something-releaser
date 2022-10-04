@@ -32,7 +32,7 @@ export async function runVersionCommands(args: VersionCommand): Promise<void> {
   const [versionName, cmdArgs] = sliceVersion(args)
   let version
   if (!versionName || versionName === '-')
-    version = Version.parse(fs.readFileSync(process.stdin.fd, 'utf-8'))
+    version = Version.parse(fs.readFileSync(process.stdin.fd, 'utf-8').trim())
   else
     version = Version.parse(versionName)
   const result = doVersionCommand(version, cmdArgs)

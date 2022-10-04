@@ -1,6 +1,6 @@
 import * as path from 'path'
 import env from './env'
-import {throws, Version} from './utils'
+import {checkNever, throws, Version} from './utils'
 
 function println(body: string): void {
   // eslint-disable-next-line no-console
@@ -345,6 +345,7 @@ async function mainImpl(...args: Command): Promise<void> {
       break
     }
     default:
+      checkNever(args[0])
       throw new Error(`unknown command: ${args[0]}`)
   }
 }

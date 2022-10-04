@@ -1,17 +1,12 @@
-import {throws, checkNever} from "../utils"
+import {throws, logicFailre} from "../utils"
 import {Version} from "../utils/version"
-
-type Command<Name, Args extends string[] = []> = [cmd: Name, ver: string, ...args: Args]
-
-function println(body: string): void {
-  // eslint-disable-next-line no-console
-  console.log(body)
-}
 
 function eprintln(body: string): void {
   // eslint-disable-next-line no-console
   console.warn(body)
 }
+
+type Command<Name, Args extends string[] = []> = [cmd: Name, ver: string, ...args: Args]
 
 export type VersionCommand =
   | Command<'version-unsnapshot'> // deprecated
@@ -28,95 +23,56 @@ export type VersionCommand =
   | Command<'version-next', [] | [channel: string]>
   | Command<'version-format'>
 
+type DropVersion<Ary extends unknown[]> = Ary extends [infer Name, unknown, ...infer Args] ? [Name, ...Args] : never
+
+export type VersionCommandArgs = DropVersion<VersionCommand>
+
 export async function runVersionCommands(args: VersionCommand): Promise<void> {
+  const [versionName, cmdArgs] = sliceVersion(args)
+  const version = Version.parse(versionName ?? throws(new Error('version name required')))
+  const result = doVersionCommand(version, cmdArgs)
+  // eslint-disable-next-line no-console
+  console.log(result.toString())
+}
+
+export function doVersionCommand(version: Version, args: VersionCommandArgs): Version | string {
   switch (args[0]) {
-    case 'version-unsnapshot': {
+    case 'version-unsnapshot':
       eprintln("version-unsnapshot is deprecated. use version-stable")
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeStable()
-        .toString())
-      break
-    }
-    case 'version-stable': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeStable()
-        .toString())
-      break
-    }
-    case 'version-snapshot': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeSnapshot()
-        .toString())
-      break
-    }
-    case 'version-alpha': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeAlpha(parseInt(args[2] ?? '1'))
-        .toString())
-      break
-    }
-    case 'version-beta': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeBeta(parseInt(args[2] ?? '1'))
-        .toString())
-      break
-    }
-    case 'version-candidate': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeCandidate(parseInt(args[2] ?? '1'))
-        .toString())
-      break
-    }
-    case 'version-major': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeMajorOnly()
-        .toString())
-      break
-    }
-    case 'version-minor': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeMajorMinor()
-        .toString())
-      break
-    }
-    case 'version-patch': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .makeMajorMinorPatch()
-        .toString())
-      break
-    }
-    case 'version-get-channel': {
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .release[0])
-      break
-    }
+      return version.makeStable()
+    case 'version-stable':
+      return version.makeStable()
+    case 'version-snapshot':
+      return version.makeSnapshot()
+    case 'version-alpha':
+      return version.makeAlpha(parseInt(args[1] ?? '1'))
+    case 'version-beta':
+      return version.makeBeta(parseInt(args[1] ?? '1'))
+    case 'version-candidate':
+      return version.makeCandidate(parseInt(args[1] ?? '1'))
+    case 'version-major':
+      return version.makeMajorOnly()
+    case 'version-minor':
+      return version.makeMajorMinor()
+    case 'version-patch':
+      return version.makeMajorMinorPatch()
+    case 'version-get-channel':
+      return version.release[0]
     case 'version-set-channel': {
-      let version = Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-      switch (args[2].toLowerCase()) {
+      switch (args[1].toLowerCase()) {
         case 'a':
         case 'alpha':
         case 'α':
-          version = version.makeAlpha(parseInt(args[3] ?? '1'))
+          version = version.makeAlpha(parseInt(args[2] ?? '1'))
           break
         case 'b':
         case 'beta':
         case 'β':
-          version = version.makeBeta(parseInt(args[3] ?? '1'))
+          version = version.makeBeta(parseInt(args[2] ?? '1'))
           break
         case 'rc':
         case 'candidate':
-          version = version.makeCandidate(parseInt(args[3] ?? '1'))
+          version = version.makeCandidate(parseInt(args[2] ?? '1'))
           break
         case 'snapshot':
           version = version.makeSnapshot()
@@ -125,14 +81,13 @@ export async function runVersionCommands(args: VersionCommand): Promise<void> {
           version = version.makeStable()
           break
         default:
-          throw new Error(`unknown release channel: ${args[2]}`)
+          throw new Error(`unknown release channel: ${args[1]}`)
       }
-      println(version.toString())
-      break
+      return version
     }
     case 'version-next': {
       let target: "prerelease" | "patch" | "minor" | "major" | null
-      switch (args[2]) {
+      switch (args[1]) {
         case null:
         case undefined:
           target = null
@@ -163,20 +118,17 @@ export async function runVersionCommands(args: VersionCommand): Promise<void> {
           target = "major"
           break
         default:
-          throw new Error(`unknown next version target: ${args[2]}`)
+          throw new Error(`unknown next version target: ${args[1]}`)
       }
-      println(Version.parse(args[1]
-        ?? throws(new Error('version name required')))
-        .next(target)
-        .toString())
-      break
+      return version.next(target)
     }
-    case "version-format": {
-      println(Version.parse(args[1] ?? throws(new Error('version name required'))).toString())
-      break
-    }
+    case "version-format":
+      return version
     default:
-      checkNever(args[0])
-      throw new Error(`unknown command: ${args[0]}`)
+      logicFailre("invalid version command", args[0])
   }
+}
+
+function sliceVersion<Ary extends unknown[]>(args: Ary): [Ary[1], DropVersion<Ary>] {
+  return [args[1], [args[0], ...args.slice(2)] as DropVersion<Ary>]
 }

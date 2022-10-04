@@ -19,7 +19,7 @@ export async function findGitUser(
   if (res.data.type === 'Organization')
     throw new Error("You can't commit as a Organization")
 
-  const login = res.data.login as string
+  const login = res.data.login
   const id = res.data.id
   const mail = `${id}+${login}@users.noreply.github.com`
 

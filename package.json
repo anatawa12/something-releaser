@@ -37,7 +37,7 @@
     "form-data": "^4.0.0",
     "isomorphic-git": "^1.17.2",
     "js-yaml": "^4.1.0",
-    "jsdom": "^19.0.0",
+    "jsdom": "^20.0.1",
     "json5": "^2.2.1",
     "node-fetch": "^2.6.7",
     "oauth": "^0.9.15",
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/http-auth": "^4.1.1",
     "@types/js-yaml": "^4.0.5",
-    "@types/jsdom": "^16.2.14",
+    "@types/jsdom": "^20.0.0",
     "@types/mime-types": "^2.1.1",
     "@types/node": "^16.11.7",
     "@types/node-fetch": "^2.6.1",

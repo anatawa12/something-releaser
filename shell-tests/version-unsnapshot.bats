@@ -25,7 +25,7 @@
   [ "$result" = 1.0.0 ]
 }
 
-@test 'version-unsnapshot snapshot major.minor.patch' {
-  result="$(version-unsnapshot 1.0.0-SNAPSHOT)"
+@test 'version-unsnapshot pipe mode' {
+  result="$(echo 1.0.0-SNAPSHOT | version-unsnapshot)"
   [ "$result" = 1.0.0 ]
 }

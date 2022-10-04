@@ -39,3 +39,8 @@
   result="$(version-major 1.2.3)"
   [ "$result" = 1 ]
 }
+
+@test 'version-major pipe mode' {
+  result="$(echo 1.2.3 | version-major)"
+  [ "$result" = 1 ]
+}

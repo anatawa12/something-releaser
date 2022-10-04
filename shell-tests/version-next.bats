@@ -49,3 +49,8 @@
   output="$(version-next 1.0.0-beta0 major)"
   [ "$output" = 2.0.0-beta0 ]
 }
+
+@test 'version-next pipe mode' {
+  output="$(echo 1.0.0-beta0 | version-next - major)"
+  [ "$output" = 2.0.0-beta0 ]
+}

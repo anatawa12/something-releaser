@@ -24,3 +24,8 @@
   result="$(version-get-channel 1.0-SNAPSHOT)"
   [ "$result" = snapshot ]
 }
+
+@test 'version-get-channel pipe mode' {
+  result="$(echo 1.0-SNAPSHOT | version-get-channel)"
+  [ "$result" = snapshot ]
+}

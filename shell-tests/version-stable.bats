@@ -24,3 +24,8 @@
   result="$(version-stable 1.0-SNAPSHOT)"
   [ "$result" = 1.0 ]
 }
+
+@test 'version-stable pipe mode' {
+  result="$(echo 1.0-SNAPSHOT | version-stable)"
+  [ "$result" = 1.0 ]
+}

@@ -24,3 +24,8 @@
   result="$(version-beta 1.0-SNAPSHOT 6)"
   [ "$result" = 1.0-beta6 ]
 }
+
+@test 'version-beta pipe mode' {
+  result="$(echo 1.0-SNAPSHOT | version-beta - 6)"
+  [ "$result" = 1.0-beta6 ]
+}

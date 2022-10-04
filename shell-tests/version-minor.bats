@@ -39,3 +39,8 @@
   result="$(version-minor 1.2.3)"
   [ "$result" = 1.2 ]
 }
+
+@test 'version-minor pipe mode' {
+  result="$(echo 1.2.3 | version-minor)"
+  [ "$result" = 1.2 ]
+}

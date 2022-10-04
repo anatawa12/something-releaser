@@ -69,8 +69,8 @@ export class SimpleHttp {
     const handle = fsSync.createReadStream(targetFile)
     res.setHeader('Content-Type', contentType || "application/octet-stream")
     handle.pipe(res)
-    handle.on('error', (e) => {
-      res.writeHead(httpCodeByCommonSystemError[e.code] || 500, {
+    handle.on('error', (e: NodeJS.ErrnoException) => {
+      res.writeHead(e.code && httpCodeByCommonSystemError[e.code] || 500, {
         'Content-Type': 'text/plain',
       })
       res.end(`error: ${e.code}`)
@@ -95,8 +95,8 @@ export class SimpleHttp {
       res.writeHead(201)
       res.end()
     })
-    handle.on('error', (e) => {
-      res.writeHead(httpCodeByCommonSystemError[e.code] || 500)
+    handle.on('error', (e: NodeJS.ErrnoException) => {
+      res.writeHead(e.code && httpCodeByCommonSystemError[e.code] || 500)
       res.end()
     })
   }

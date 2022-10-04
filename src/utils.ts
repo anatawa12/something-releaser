@@ -32,7 +32,7 @@ export function processFormat<Map, P extends string>(
 ): string {
   const runFormat = <D extends keyof Map>(descriptor: D, value: unknown): string => {
     if (processor[descriptor] == null)
-      throw new Error(`invalid format descriptor: ${descriptor}`)
+      throw new Error(`invalid format descriptor: ${String(descriptor)}`)
     return processor[descriptor](value as Map[D])
   }
 

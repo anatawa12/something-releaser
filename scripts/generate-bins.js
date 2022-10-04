@@ -25,7 +25,6 @@ const commands = [
   'version-patch',
   'version-get-channel',
   'version-set-channel',
-  'version-snapshot',
   'version-next',
   'version-format',
   'publish-to-curse-forge',

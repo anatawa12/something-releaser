@@ -59,7 +59,7 @@
     "@vercel/ncc": "^0.34.0",
     "cmd-shim": "^5.0.0",
     "eslint": "^8.24.0",
-    "eslint-plugin-github": "^4.3.7",
+    "eslint-plugin-github": "^4.4.1",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^27.1.1",
     "http-auth": "^4.2.0",

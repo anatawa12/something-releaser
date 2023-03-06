@@ -33,7 +33,7 @@
     "auto-changelog": "git+https://github.com/anatawa12/auto-changelog.git",
     "clipanion": "^3.2.0-rc.12",
     "commander": "^9.4.1",
-    "fastpriorityqueue": "^0.7.2",
+    "fastpriorityqueue": "^0.7.3",
     "form-data": "^4.0.0",
     "isomorphic-git": "^1.21.0",
     "js-yaml": "^4.1.0",

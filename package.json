@@ -46,7 +46,7 @@
     "tslib": "^2.5.3"
   },
   "devDependencies": {
-    "@openpgp/web-stream-tools": "^0.0.12",
+    "@openpgp/web-stream-tools": "^0.0.13",
     "@types/http-auth": "^4.1.1",
     "@types/js-yaml": "^4.0.5",
     "@types/jsdom": "^20.0.0",

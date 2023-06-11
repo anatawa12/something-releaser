@@ -29,9 +29,10 @@ export class GradlePluginPortal {
       ge.line("if (proj.plugins.findPlugin(%s) == null) return", "com.gradle.plugin-publish")
 
       // configure publish repository
-      ge.block("if (proj.pluginBundle.mavenCoordinates.groupId == null) {", () => {
-        ge.line("throw new Exception(%s)", 
-          "mavenCoordinates.groupId is not specified!")
+      ge.block("if (proj.pluginBundle.metaClass.hasProperty(%s)) {", "mavenCoordinates", () => {
+        ge.block("if (proj.pluginBundle.mavenCoordinates.groupId == null) {", () => {
+          ge.line("throw new Exception(%s)", "mavenCoordinates.groupId is not specified!")
+        })
       })
     })
 

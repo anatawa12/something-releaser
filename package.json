@@ -43,7 +43,7 @@
     "oauth": "^0.10.0",
     "openpgp": "^5.9.0",
     "simple-git": "^3.19.0",
-    "tslib": "^2.5.3"
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@openpgp/web-stream-tools": "^0.0.13",

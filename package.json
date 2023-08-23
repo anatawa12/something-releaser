@@ -49,7 +49,7 @@
     "@openpgp/web-stream-tools": "^0.0.13",
     "@types/http-auth": "^4.1.1",
     "@types/js-yaml": "^4.0.5",
-    "@types/jsdom": "^20.0.0",
+    "@types/jsdom": "^21.1.2",
     "@types/mime-types": "^2.1.1",
     "@types/node": "^16.18.35",
     "@types/node-fetch": "^2.6.4",

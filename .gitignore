@@ -16,3 +16,8 @@
 /path-win/
 /bin/*
 !/bin/actions.js
+
+
+# Added by cargo
+
+/target

@@ -1,8 +1,7 @@
-
 macro_rules! ok {
-    () => {
+    () => {{
         return ::core::result::Result::Ok(());
-    };
+    }};
 }
 
 macro_rules! err {

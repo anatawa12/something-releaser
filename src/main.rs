@@ -1,10 +1,19 @@
+#[macro_use]
+mod macros;
+
 use std::env::Args;
+use std::num::NonZeroI32;
 use std::process::exit;
 
 #[tokio::main]
 async fn main() {
-    exit(do_main(std::env::args()).await)
+    exit(match do_main(std::env::args()).await {
+        Ok(()) => 0,
+        Err(e) => e.get(),
+    })
 }
+
+type CmdResult<T = ()> = Result<T, NonZeroI32>;
 
 fn sanitize_cmd(mut cmd: &str) -> &str {
     if cfg!(windows) {
@@ -16,18 +25,12 @@ fn sanitize_cmd(mut cmd: &str) -> &str {
     cmd
 }
 
-async fn do_main(mut args: Args) -> i32 {
+async fn do_main(mut args: Args) -> CmdResult<()> {
     loop {
-        return match args.next().as_deref().map(sanitize_cmd) {
-            None => {
-                eprintln!("No command specified");
-                1
-            }
+        match args.next().as_deref().map(sanitize_cmd) {
+            None => err!("No command specified"),
             Some("something-releaser") => continue,
-            Some(e) => {
-                eprintln!("unknown command: {e}");
-                1
-            }
+            Some(other) => err!("unknown command: {other}"),
         }
     }
 }

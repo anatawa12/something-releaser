@@ -4,7 +4,7 @@ use serde::Deserialize;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct NpmPackageJson {
     #[serde(default = "path_default")]
     path: PathBuf,
@@ -21,10 +21,9 @@ impl Display for NpmPackageJson {
 }
 
 impl VersionChanger for NpmPackageJson {
-    fn parse(parse: &str) -> Self {
-        let (info, path) = parse.split_once('@').unwrap_or((parse, ""));
+    fn parse(info: &str, path: &str) -> Self {
         if !info.is_empty() {
-            panic!("invalid npm package.json version changer: {}", parse);
+            panic!("invalid npm package.json version changer");
         }
         Self {
             path: if path.is_empty() {

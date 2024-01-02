@@ -4,9 +4,12 @@ mod utils;
 mod version_changer;
 mod version_commands;
 
+use std::collections::HashMap;
 use crate::utils::ArgsExt;
 use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
+use serde::Deserialize;
+use std::env;
 use std::env::Args;
 use std::iter::Peekable;
 use std::num::NonZeroI32;
@@ -39,19 +42,58 @@ fn version_channel(args: &mut Args, version: &mut semver::Version, channel: &str
     ok!()
 }
 
-fn version_changer(args: &mut Peekable<Args>) -> CmdResult<VersionChangers> {
+#[derive(Debug, Default, Deserialize)]
+struct ConfigFile {
+    #[serde(rename = "releaseChanger", default)]
+    release_changer: Option<VersionChangers>,
+    #[serde(rename = "target", default)]
+    targets: HashMap<String, TargetConfig>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TargetConfig {
+    #[serde(rename = "releaseChanger", default)]
+    release_changer: Option<VersionChangers>,
+}
+
+async fn env_file() -> ConfigFile {
+    if let Some(json) = read_or_none(".something-releaser.json").await {
+        return serde_json::from_str(&json).expect("parsing .something-releaser.json");
+    }
+
+    return Default::default();
+    // tokio::fs::read_to_string(".something-releaser.json")
+    async fn read_or_none(path: &str) -> Option<String> {
+        match tokio::fs::read_to_string(path).await {
+            Ok(s) => Some(s),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => panic!("reading {}: {}", path, e),
+        }
+    }
+}
+
+async fn version_changer(args: &mut Peekable<Args>) -> CmdResult<VersionChangers> {
+    let mut env = env_file().await;
+
     if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
         args.next();
         let name = args.next().expect("-t/--target requires an argument");
-        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
-        Ok(parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
-            panic!("environment variable {} not set", env_name)
-        })))
+        Ok(env.targets
+            .get_mut(&name)
+            .and_then(|x| x.release_changer.as_mut())
+            .map(std::mem::take)
+            .unwrap_or_else(|| {
+                let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
+                parse_version_changers(&env::var(&env_name).unwrap_or_else(
+                    |_| panic!("environment variable {} not set", env_name),
+                ))
+            }))
     } else {
-        Ok(parse_version_changers(
-            &std::env::var("RELEASE_CHANGER")
-                .expect("environment variable RELEASE_CHANGER not set"),
-        ))
+        Ok(env.release_changer.unwrap_or_else(|| {
+            parse_version_changers(
+                &env::var("RELEASE_CHANGER").expect("environment variable RELEASE_CHANGER not set"),
+            )
+        }))
     }
 }
 
@@ -160,7 +202,7 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
 
             Some("get-version") => {
                 let mut args = args.peekable();
-                let changers = version_changer(&mut args)?;
+                let changers = version_changer(&mut args).await?;
                 let version = changers.get_version().await;
                 println!("{}", version);
                 ok!()
@@ -168,7 +210,7 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
 
             Some("set-version") => {
                 let mut args = args.peekable();
-                let changers = version_changer(&mut args)?;
+                let changers = version_changer(&mut args).await?;
                 let version = args.next().expect("version name not found");
                 changers.set_version(version).await;
 

@@ -1,9 +1,11 @@
 #[macro_use]
 mod macros;
+mod commands;
 mod utils;
 mod version_changer;
 mod version_commands;
 
+use crate::commands::gradle_maven::GradleMaven;
 use crate::utils::ArgsExt;
 use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
@@ -19,6 +21,7 @@ use std::process::exit;
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init();
     exit(match do_main(std::env::args()).await {
         Ok(()) => 0,
         Err(e) => e.get(),
@@ -157,31 +160,11 @@ fn gh_issue_command(command: &str, options: &[(&str, String)], value: &str) -> C
     ok!();
 
     fn escape_property(value: &str) -> String {
-        use std::fmt::Write;
-        let mut builder = String::with_capacity(value.len());
-
-        for c in value.chars() {
-            match c {
-                '%' | '\r' | '\n' | ':' | ',' => write!(builder, "%{:02X}", c as u8).unwrap(),
-                _ => builder.push(c),
-            }
-        }
-
-        builder
+        escapes!(value, '%' => "%25", '\r' => "%0D", '\n' => "%0A", ':' => "%3A", ',' => "%2C")
     }
 
     fn escape_data(value: &str) -> String {
-        use std::fmt::Write;
-        let mut builder = String::with_capacity(value.len());
-
-        for c in value.chars() {
-            match c {
-                '%' | '\r' | '\n' => write!(builder, "%{:02X}", c as u8).unwrap(),
-                _ => builder.push(c),
-            }
-        }
-
-        builder
+        escapes!(value, '%' => "%25", '\r' => "%0D", '\n' => "%0A")
     }
 }
 
@@ -388,6 +371,39 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                 let changers = version_changer(&mut args).await?;
                 let version = arg_or_stdin(&mut args, "version")?;
                 changers.set_version(version).await;
+
+                ok!()
+            }
+
+            // configure utilities
+            Some("prepare-gradle-maven") => {
+                let mut url = None;
+                let mut user = None;
+                let mut pass = None;
+                while let Some(arg) = args.next() {
+                    match arg.as_str() {
+                        "--url" => {
+                            url = Some(args.next().expect("value for --url not found"));
+                        }
+                        "--user" => {
+                            user = Some(args.next().expect("value for --user not found"));
+                        }
+                        "--pass" => {
+                            pass = Some(args.next().expect("value for --pass not found"));
+                        }
+                        "--" => break,
+                        opt if opt.starts_with('-') => err!("unknown option: {opt}"),
+                        _ => url = Some(arg),
+                    }
+                }
+
+                GradleMaven {
+                    url: url.unwrap_or_else(|| args.next().expect("url not specified")),
+                    user: user.unwrap_or_default(),
+                    pass: pass.unwrap_or_default(),
+                }
+                .configure()
+                .await;
 
                 ok!()
             }

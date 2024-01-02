@@ -1,3 +1,4 @@
+pub(crate) mod gradle;
 pub(crate) mod json;
 
 use std::env::Args;

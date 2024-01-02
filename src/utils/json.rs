@@ -514,41 +514,9 @@ fn parse_value<'src>(tokenizer: &mut Tokenizer<'src>) -> Result<JsonValue<'src>,
 }
 
 pub(crate) fn quote_string(value: &str) -> String {
-    let mut length = 0;
-    for c in value.chars() {
-        match c {
-            '\x00'..='\x1F' => {
-                length += 6; // '\uXXXX'
-            }
-            '"' | '\\' => length += 2, // '\"' | '\\'
-            c => length += c.len_utf8(),
-        }
-    }
-
-    if length == value.len() {
-        return format!("\"{}\"", value);
-    }
-
-    let mut builder = String::with_capacity(length + 2);
-    builder.push('"');
-
-    for c in value.chars() {
-        match c {
-            '\x00'..='\x1F' => {
-                builder.push('\\');
-                builder.push('u');
-                builder.push('0');
-                builder.push('0');
-                builder.push(b"0123456789abcdef"[(c as u32 >> 4) as usize] as char);
-                builder.push(b"0123456789abcdef"[(c as u32 & 0xF) as usize] as char);
-            }
-            '"' | '\\' => {
-                builder.push('\\');
-                builder.push(c);
-            }
-            c @ '\x20'..='\u{10FFFF}' => builder.push(c),
-        }
-    }
-    builder.push('"');
-    builder
+    escapes!(
+        value,
+        c@'\x00'..='\x1F' => format_args!("\\u{:04x}", c as u32),
+        '"' => "\\\"", '\\' => "\\\\",
+    )
 }

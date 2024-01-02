@@ -1,4 +1,4 @@
-mod json;
+pub(crate) mod json;
 
 use std::env::Args;
 use std::str::FromStr;

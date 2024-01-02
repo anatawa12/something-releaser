@@ -1,9 +1,11 @@
 #[macro_use]
 mod macros;
 mod utils;
+mod version_changer;
 mod version_commands;
 
 use crate::utils::ArgsExt;
+use crate::version_changer::parse_version_changers;
 use crate::version_commands::*;
 use std::env::Args;
 use std::num::NonZeroI32;
@@ -75,14 +77,14 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                 let Some((ty, rest)) = version.pre.split_once('.') else {
                     err!("invalid prerelease name: {}", version.pre);
                 };
-                if !rest.as_bytes().iter().all(|x| matches!(x, b'0'..=b'9')) {
+                if !rest.as_bytes().iter().all(|x| x.is_ascii_digit()) {
                     err!("invalid prerelease name: {}", version.pre);
                 }
                 if !matches!(ty, "alpha" | "beta" | "rc") {
                     err!("invalid prerelease name: {}", version.pre);
                 }
 
-                Ok(format!("{}", ty))
+                Ok(ty.to_string())
             }),
 
             Some("version-set-channel") => {
@@ -138,6 +140,30 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                 }
                 ok!()
             }),
+
+            Some("set-version") => {
+                let mut args = args.peekable();
+                let changers =
+                    if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
+                        args.next();
+                        let name = args.next().expect("-t/--target requires an argument");
+                        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
+                        parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
+                            panic!("environment variable {} not set", env_name)
+                        }))
+                    } else {
+                        parse_version_changers(
+                            &std::env::var("RELEASE_CHANGER")
+                                .expect("environment variable RELEASE_CHANGER not set"),
+                        )
+                    };
+
+                let version = args.next().expect("version name not found");
+
+                changers.set_version(version).await;
+
+                ok!()
+            }
 
             Some(other) => err!("unknown command: {other}"),
         };

@@ -5,9 +5,10 @@ mod version_changer;
 mod version_commands;
 
 use crate::utils::ArgsExt;
-use crate::version_changer::parse_version_changers;
+use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
 use std::env::Args;
+use std::iter::Peekable;
 use std::num::NonZeroI32;
 use std::process::exit;
 
@@ -36,6 +37,22 @@ fn version_channel(args: &mut Args, version: &mut semver::Version, channel: &str
     version.pre = semver::Prerelease::new(&format!("{channel}.{num}")).unwrap();
     version.build = semver::BuildMetadata::EMPTY;
     ok!()
+}
+
+fn version_changer(args: &mut Peekable<Args>) -> CmdResult<VersionChangers> {
+    if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
+        args.next();
+        let name = args.next().expect("-t/--target requires an argument");
+        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
+        Ok(parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
+            panic!("environment variable {} not set", env_name)
+        })))
+    } else {
+        Ok(parse_version_changers(
+            &std::env::var("RELEASE_CHANGER")
+                .expect("environment variable RELEASE_CHANGER not set"),
+        ))
+    }
 }
 
 async fn do_main(mut args: Args) -> CmdResult<()> {
@@ -143,47 +160,16 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
 
             Some("get-version") => {
                 let mut args = args.peekable();
-                let changers =
-                    if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
-                        args.next();
-                        let name = args.next().expect("-t/--target requires an argument");
-                        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
-                        parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
-                            panic!("environment variable {} not set", env_name)
-                        }))
-                    } else {
-                        parse_version_changers(
-                            &std::env::var("RELEASE_CHANGER")
-                                .expect("environment variable RELEASE_CHANGER not set"),
-                        )
-                    };
-
+                let changers = version_changer(&mut args)?;
                 let version = changers.get_version().await;
-
                 println!("{}", version);
-
                 ok!()
             }
 
             Some("set-version") => {
                 let mut args = args.peekable();
-                let changers =
-                    if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
-                        args.next();
-                        let name = args.next().expect("-t/--target requires an argument");
-                        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
-                        parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
-                            panic!("environment variable {} not set", env_name)
-                        }))
-                    } else {
-                        parse_version_changers(
-                            &std::env::var("RELEASE_CHANGER")
-                                .expect("environment variable RELEASE_CHANGER not set"),
-                        )
-                    };
-
+                let changers = version_changer(&mut args)?;
                 let version = args.next().expect("version name not found");
-
                 changers.set_version(version).await;
 
                 ok!()

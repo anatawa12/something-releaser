@@ -6,6 +6,7 @@ mod version_changer;
 mod version_commands;
 
 use crate::commands::gradle_maven::GradleMaven;
+use crate::commands::gradle_signing::GradleSigning;
 use crate::utils::ArgsExt;
 use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
@@ -405,6 +406,14 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                 .configure()
                 .await;
 
+                ok!()
+            }
+            Some("prepare-gradle-signing") => {
+                let key = args.next().expect("no key specified");
+                let pass = args
+                    .next()
+                    .expect("no GPG pass specified. if not exists, pass empty");
+                GradleSigning { key, pass }.configure().await;
                 ok!()
             }
 

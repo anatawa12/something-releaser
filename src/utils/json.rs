@@ -194,7 +194,7 @@ impl<'src> Tokenizer<'src> {
                     Some(c) => return Err(JsonError::InvalidEscape(self.pos - c.len_utf8())),
                     None => return Err(JsonError::UnexpectedEof),
                 },
-                Some(c) => {}
+                Some(_) => {}
                 None => return Err(JsonError::UnexpectedEof),
             }
         }

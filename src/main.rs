@@ -141,6 +141,30 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                 ok!()
             }),
 
+            Some("get-version") => {
+                let mut args = args.peekable();
+                let changers =
+                    if let Some("-t" | "--target") = args.peek().map(|x| x.as_str()) {
+                        args.next();
+                        let name = args.next().expect("-t/--target requires an argument");
+                        let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
+                        parse_version_changers(&std::env::var(&env_name).unwrap_or_else(|_| {
+                            panic!("environment variable {} not set", env_name)
+                        }))
+                    } else {
+                        parse_version_changers(
+                            &std::env::var("RELEASE_CHANGER")
+                                .expect("environment variable RELEASE_CHANGER not set"),
+                        )
+                    };
+
+                let version = changers.get_version().await;
+
+                println!("{}", version);
+
+                ok!()
+            }
+
             Some("set-version") => {
                 let mut args = args.peekable();
                 let changers =

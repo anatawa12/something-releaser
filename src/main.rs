@@ -12,6 +12,7 @@ use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
 use serde::Deserialize;
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::env;
 use std::env::Args;
 use std::io::{IsTerminal, Write};
@@ -19,6 +20,8 @@ use std::iter::Peekable;
 use std::num::NonZeroI32;
 use std::path::Path;
 use std::process::exit;
+use std::str::FromStr;
+use clap::Parser;
 
 #[tokio::main]
 async fn main() {
@@ -194,66 +197,76 @@ fn gh_file_command(path: &Path, value: &str) -> CmdResult {
 }
 
 fn gh_annotation_command(kind: &str, args: &mut Args) -> CmdResult {
-    let mut title = None;
-    let mut file = None;
-    let mut line = None;
-    let mut end_line = None;
-    let mut col = None;
-    let mut end_column = None;
-    let mut value = vec![];
-    while let Some(arg) = args.next() {
-        match arg.as_str() {
-            "-t" | "--title" => title = Some(args.next().expect("value for --title not found")),
-            "-f" | "--file" => file = Some(args.next().expect("value for --file not found")),
-            "-p" | "--position" => {
-                let value = args.next().expect("value for --position not found");
+    #[derive(Debug, Parser)]
+    #[command(no_binary_name = true)]
+    struct GhAnnotationCommand {
+        #[arg(short, long)]
+        title: Option<String>,
+        #[arg(short, long)]
+        file: Option<String>,
+        #[arg(short, long)]
+        position: Option<PositionInfo>,
+        value: Vec<String>,
+    }
 
-                if let Some((first, rest)) = value.split_once(':') {
-                    if let Some((second, third)) = rest.split_once(':') {
-                        line = Some(first.to_string());
-                        end_line = None;
-                        col = Some(second.to_string());
-                        end_column = Some(third.to_string());
-                    } else {
-                        line = Some(first.to_string());
-                        end_line = Some(rest.to_string());
-                        col = None;
-                        end_column = None;
-                    }
+    #[derive(Debug, Clone)]
+    struct PositionInfo {
+        line: Option<String>,
+        end_line: Option<String>,
+        col: Option<String>,
+        end_column: Option<String>,
+    }
+
+    impl FromStr for PositionInfo {
+        type Err = Infallible;
+
+        fn from_str(value: &str) -> Result<Self, Self::Err> {
+            if let Some((first, rest)) = value.split_once(':') {
+                if let Some((second, third)) = rest.split_once(':') {
+                    Ok(Self {
+                        line: Some(first.to_string()),
+                        end_line: None,
+                        col: Some(second.to_string()),
+                        end_column: Some(third.to_string()),
+                    })
                 } else {
-                    line = Some(value);
-                    end_line = None;
-                    col = None;
-                    end_column = None;
+                    Ok(Self {
+                        line: Some(first.to_string()),
+                        end_line: Some(rest.to_string()),
+                        col: None,
+                        end_column: None,
+                    })
                 }
-            }
-            "-" => {
-                value.push(read_stdin()?);
-            }
-            opt if opt.starts_with('-') => err!("unknown option: {opt}"),
-            _ => {
-                value.push(arg);
+            } else {
+                Ok(Self {
+                    line: Some(value.to_string()),
+                    end_line: None,
+                    col: None,
+                    end_column: None,
+                })
             }
         }
     }
 
+    let args = GhAnnotationCommand::parse_from(args);
+    
     fn add_option(options: &mut Vec<(&str, String)>, name: &'static str, value: Option<String>) {
         if let Some(value) = value {
             options.push((name, value));
         }
     }
 
-    let value = value.join(" ");
-
     let mut options = vec![];
-    add_option(&mut options, "title", title);
-    add_option(&mut options, "file", file);
-    add_option(&mut options, "line", line);
-    add_option(&mut options, "endLine", end_line);
-    add_option(&mut options, "col", col);
-    add_option(&mut options, "endColumn", end_column);
+    add_option(&mut options, "title", args.title);
+    add_option(&mut options, "file", args.file);
+    if let Some(position) = args.position {
+        add_option(&mut options, "line", position.line);
+        add_option(&mut options, "endLine", position.end_line);
+        add_option(&mut options, "col", position.col);
+        add_option(&mut options, "endColumn", position.end_column);
+    }
 
-    gh_issue_command(kind, &options, &value)
+    gh_issue_command(kind, &options, &args.value.join(" "))
 }
 
 async fn do_main(mut args: Args) -> CmdResult<()> {

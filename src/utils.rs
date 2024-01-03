@@ -1,5 +1,6 @@
 pub(crate) mod gradle;
 pub(crate) mod json;
+pub(crate) mod properties;
 
 use std::env::Args;
 use std::str::FromStr;

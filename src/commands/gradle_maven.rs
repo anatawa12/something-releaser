@@ -1,5 +1,5 @@
 use crate::utils::gradle::{escape_groovy_string, gradle_home_dir};
-use tokio::io::AsyncWriteExt;
+use crate::utils::write_to_new_file;
 
 pub(crate) struct GradleMaven {
     pub url: String,
@@ -44,19 +44,9 @@ impl GradleMaven {
         path.push(format!("gradle-maven.{}.gradle", uuid::Uuid::new_v4()));
         let path = path;
 
-        tokio::fs::create_dir_all(path.parent().unwrap())
-            .await
-            .expect("failed to create init.d directory");
-        let mut file = tokio::fs::OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(&path)
+        write_to_new_file(path, self.generate_init_script().as_bytes())
             .await
             .expect("failed to create init script");
-        file.write_all(self.generate_init_script().as_bytes())
-            .await
-            .expect("failed to write init script");
-        file.flush().await.expect("failed to flush init script");
     }
 }
 
@@ -139,7 +129,7 @@ async fn test_with_project() {
 
     // test run
     let result = tokio::process::Command::new("./gradlew")
-        .args(&["--no-daemon", "publish"])
+        .args(["--no-daemon", "publish"])
         .current_dir("__tests__resources/publish-environment/gradle-maven.test.project")
         .envs(std::env::vars())
         .stdin(std::process::Stdio::null())

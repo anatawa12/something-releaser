@@ -6,10 +6,12 @@ mod version_changer;
 mod version_commands;
 
 use crate::commands::gradle_maven::GradleMaven;
+use crate::commands::gradle_plugin_portal::GradlePluginPortal;
 use crate::commands::gradle_signing::GradleSigning;
 use crate::utils::ArgsExt;
 use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
+use clap::Parser;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::Infallible;
@@ -21,7 +23,6 @@ use std::num::NonZeroI32;
 use std::path::Path;
 use std::process::exit;
 use std::str::FromStr;
-use clap::Parser;
 
 #[tokio::main]
 async fn main() {
@@ -249,7 +250,7 @@ fn gh_annotation_command(kind: &str, args: &mut Args) -> CmdResult {
     }
 
     let args = GhAnnotationCommand::parse_from(args);
-    
+
     fn add_option(options: &mut Vec<(&str, String)>, name: &'static str, value: Option<String>) {
         if let Some(value) = value {
             options.push((name, value));
@@ -427,6 +428,10 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
                     .next()
                     .expect("no GPG pass specified. if not exists, pass empty");
                 GradleSigning { key, pass }.configure().await;
+                ok!()
+            }
+            Some("prepare-gradle-plugin-portal") => {
+                GradlePluginPortal::parse_from(args).configure().await;
                 ok!()
             }
 

@@ -1,5 +1,5 @@
 use crate::utils::gradle::{escape_groovy_string, gradle_home_dir};
-use tokio::io::AsyncWriteExt;
+use crate::utils::write_to_new_file;
 
 pub(crate) struct GradleSigning {
     pub key: String,
@@ -43,20 +43,9 @@ impl GradleSigning {
         path.push("init.d");
         path.push("gradle-signing.gradle");
         let path = path;
-
-        tokio::fs::create_dir_all(path.parent().unwrap())
+        write_to_new_file(path, self.generate_init_script().as_bytes())
             .await
-            .expect("failed to create init.d directory");
-        let mut file = tokio::fs::OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(&path)
-            .await
-            .expect("failed to create init script (might be already configured)");
-        file.write_all(self.generate_init_script().as_bytes())
-            .await
-            .expect("failed to write init script");
-        file.flush().await.expect("failed to flush init script");
+            .expect("failed to create init script")
     }
 }
 
@@ -82,7 +71,7 @@ async fn generated_init_script() {
   }}
 }}
 "##,
-            key = key.replace("'", "\\'").replace("\n", "\\n")
+            key = key.replace('\'', "\\'").replace('\n', "\\n")
         )
     )
 }
@@ -163,7 +152,7 @@ async fn test_with_project() {
 
     // test run
     let result = tokio::process::Command::new("./gradlew")
-        .args(&["--no-daemon", "publish"])
+        .args(["--no-daemon", "publish"])
         .current_dir("__tests__resources/publish-environment/gradle-maven.test.project")
         .envs(std::env::vars())
         .stdin(std::process::Stdio::null())

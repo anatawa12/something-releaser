@@ -167,6 +167,13 @@ impl VersionUtilities {
             VersionNext { version, target } => {
                 let mut version = version.get("version").await?;
 
+                fn can_bump_pre(pre: Prerelease) -> bool {
+                    matches!(
+                        pre,
+                        Prerelease::Alpha(_) | Prerelease::Beta(_) | Prerelease::Candidate(_)
+                    )
+                }
+
                 fn bump_pre(version: &mut Version) -> CmdResult {
                     match &mut version.pre {
                         Prerelease::None => {
@@ -191,7 +198,7 @@ impl VersionUtilities {
                 }
 
                 match target {
-                    None if version.pre != Prerelease::None => bump_pre(&mut version)?,
+                    None if can_bump_pre(version.pre) => bump_pre(&mut version)?,
                     Some(VersionNextChannel::Prerelease) => bump_pre(&mut version)?,
                     None if version.patch.is_some() => bump_optional(&mut version.patch, "patch")?,
                     Some(VersionNextChannel::Patch) => bump_optional(&mut version.patch, "patch")?,

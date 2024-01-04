@@ -10,7 +10,6 @@ on:
 
 jobs:
   prepare-release:
-    environment: deployment
     name: Prepare Release
     runs-on: ubuntu-latest
     outputs: 
@@ -18,9 +17,6 @@ jobs:
       major-version: ${{ env.MAJOR_VERSION }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACTIONS_PAT }}
-
       - uses: snow-actions/git-config-user@v1.0.0
 
       - uses: dtolnay/rust-toolchain@stable
@@ -89,6 +85,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: releasing
+          token: ${{ github.event.inputs.dry-run && github.token || secrets.ACTIONS_PAT }}
       - name: fix fetch
         run: |
           # fetch the branch to be published
@@ -163,7 +160,7 @@ jobs:
           git commit -m "prepare for v$next_version"
 
           # push
-          git push origin HEAD:releases
           git push origin master
+          git push origin releasing:releases
           git push --tags -f
         shell: bash

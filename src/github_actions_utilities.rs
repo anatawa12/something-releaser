@@ -138,11 +138,11 @@ impl GithubActionsUtilities {
             }
             GhAddSecret { value } => issue_command("add-mask", &[], &value.get("secret").await?),
             GhAddPath { path } => {
-                let path = path.get("path").await?;
+                let value = path.get("path").await?;
                 if let Ok(path) = env::var("GITHUB_PATH") {
-                    file_command(path.as_ref(), &path)
+                    file_command(path.as_ref(), &value)
                 } else {
-                    issue_command("add-path", &[], &path)
+                    issue_command("add-path", &[], &value)
                 }
             }
             GhGroupStart { name } => {

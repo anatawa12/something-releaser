@@ -6,18 +6,18 @@
 }
 
 @test 'version-patch from alpha' {
-  result="$(version-patch 1.2.3-alpha1)"
-  [ "$result" = 1.2.3-alpha1 ]
+  result="$(version-patch 1.2.3-alpha.1)"
+  [ "$result" = 1.2.3-alpha.1 ]
 }
 
 @test 'version-patch from beta' {
-  result="$(version-patch 1.2.3-beta1)"
-  [ "$result" = 1.2.3-beta1 ]
+  result="$(version-patch 1.2.3-beta.1)"
+  [ "$result" = 1.2.3-beta.1 ]
 }
 
 @test 'version-patch from candidate' {
-  result="$(version-patch 1.2.3-rc1)"
-  [ "$result" = 1.2.3-rc1 ]
+  result="$(version-patch 1.2.3-rc.1)"
+  [ "$result" = 1.2.3-rc.1 ]
 }
 
 @test 'version-patch from snapshot' {

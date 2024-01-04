@@ -1,80 +1,145 @@
 name: Publish
 on:
-  workflow_dispatch: {}
+  workflow_dispatch: 
+    inputs: 
+      dry-run:
+        type: boolean
+        description: 'whether if dry-run'
+        required: false
+        default: false
+
 jobs:
-  release:
-    environment: deployment
-    name: Do Release
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs: 
+      version: ${{ env.VERSION }}
+      major-version: ${{ env.MAJOR_VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snow-actions/git-config-user@v1.0.0
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: ./ # using the current version of this action
+        with:
+          build-on-install: true
+
+      - name: Move to releasing branch
+        run: git switch -c releasing
+
+      - name: Update Version Name
+        run: |
+          get-version | version-stable | set-version
+          VERSION="$(get-version)"
+
+          MAJOR_VERSION="$(version-major "$VERSION")"
+
+          git commit -am "v$VERSION"
+          git push -f origin releasing
+
+          gh-export-variable -- VERSION "$VERSION"
+          gh-export-variable -- MAJOR_VERSION "$MAJOR_VERSION"
+
+  build-release:
+    name: Build Release
+    needs: [ prepare-release ]
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        arch: [ x86_64, aarch64 ]
+        include:
+          - os: ubuntu-latest
+            target-suffix: unknown-linux-gnu
+          - os: macos-latest
+            target-suffix: apple-darwin
+          - os: windows-latest
+            target-suffix: pc-windows-msvc
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTIONS_PAT }}
-      - uses: anatawa12/something-releaser@v2
+          ref: releasing
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.arch }}-${{ matrix.target-suffix }}
+      - name: Build
+        shell: bash
+        run: node ./scripts/build.js "$TARGET"
+        env: 
+          TARGET: ${{ matrix.arch }}-${{ matrix.target-suffix }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-${{ matrix.arch }}-${{ matrix.target-suffix }}
+          path: build/${{ matrix.arch }}-${{ matrix.target-suffix }}
+
+  release:
+    environment: deployment
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [ prepare-release, build-release ]
+    env:
+      VERSION: ${{ needs.prepare-release.outputs.version }}
+      MAJOR_VERSION: ${{ needs.prepare-release.outputs.major-version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: releasing
+          token: ${{ github.event.inputs.dry-run && github.token || secrets.ACTIONS_PAT }}
       - name: fix fetch
         run: |
           # fetch the branch to be published
           git remote set-branches --add origin releases
+          git remote set-branches --add origin master
           # fetch tags to verify the tag is not exists
           git fetch origin --tags
         shell: bash
-      - uses: actions/setup-node@v2
+
+      - name: Download Built binary
+        uses: actions/download-artifact@v4
         with:
-          node-version: '16'
-          cache: 'npm'
-
-      # building
-      - run: npm ci
-      - run: npm run all
-
-      - name: Publish
+          path: build
+          pattern: built-*
+          merge-multiple: true
+      - run: ls -R build
+      - uses: ./ # using the current version of this action with prebuilt binary
+      - name: Execute Basic commands
         run: |
-          set -eu
-          # set user name
-          set-git-user anatawa12-bot
+          # check if the binary is valid
+          something-releaser --help
+          get-version | set-version
+          version-stable 1.0.0-beta.0
 
-          # create version commit on master
-          VERSION="$(version-stable "$(version-minor "$(get-version)")")"
-          set-version "$VERSION"
-          MAJOR_VERSION="$(version-major "$VERSION")"
-
-          git add package*.json
-          git commit -m "v$VERSION"
-
-          HASH="$(git rev-parse HEAD)"
-          # checkout releases at origin/releases witout chanigng local tree
+      - name: Create Release Commit
+        run: |
           git branch releases origin/releases
-          git symbolic-ref HEAD refs/heads/releases
+
+          SOURCE_COMMIT="$(git rev-parse HEAD)"
+          RELEASES_COMMIT="$(git rev-parse origin/releases)"
           # remove unused files
           rm -rf \
             .github \
-            __tests__ \
-            __tests__resources \
-            lib \
-            node_modules \
-            scripts \
             shell-tests \
             src \
-            .eslintignore \
-            .eslintrc.json \
-            jest.config.js \
-            package.json \
-            package-lock.json \
-            tsconfig.eslint.json \
-            tsconfig.json \
           
           # edit gitignore
           sed -n '/#### PUBLISH DELETE MARKER ####/q;p' -i .gitignore
           
           # add modified files and commit
           git add .
-          git reset --soft $(git commit-tree -p HEAD -p $HASH -m "v$VERSION at $HASH" $(git write-tree))
+          MERGE_COMMIT="$(git commit-tree -p $RELEASES_COMMIT -p $SOURCE_COMMIT -m "v$VERSION at $SOURCE_COMMIT" $(git write-tree))"
+          git reset --soft $MERGE_COMMIT
+          git push -f origin HEAD:releasing
+
+      - name: Push release to branch
+        if: ${{ !github.event.inputs.dry-run }}
+        run: |
           # create tag
-          git tag -f "v$VERSION"
+          git tag "v$VERSION"
           git tag -f "v$MAJOR_VERSION"
 
           # create pre-next version commit
-          git checkout master
+          git checkout -f master
           
           next_version="$(version-next "$VERSION" minor)"
           set-version "$(version-patch $(version-snapshot "$next_version"))"
@@ -83,7 +148,8 @@ jobs:
           git commit -m "prepare for v$next_version"
 
           # push
-          git push
           git push origin master
+          git push origin releasing:releases
           git push --tags -f
+          git push -d origin releasing
         shell: bash

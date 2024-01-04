@@ -1,0 +1,32 @@
+[package]
+name = "something-releaser"
+version = "3.0.0-SNAPSHOT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.35.1", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std"] }
+regex = "1.10.2"
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.109"
+uuid = { version = "1.6.1", features = ["v4"] }
+home = "0.5.9"
+pretty_env_logger = "0.5.0"
+clap = { version = "4.4.12", features = ["derive"] }
+reqwest = { version = "0.11.23", features = ["multipart", "stream", "rustls-tls-native-roots", "json"], default-features = false }
+url = { version = "2.5.0", features = ["serde"] }
+cargo-edit = { version = "0.12.2", default-features = false, features = ["set-version"] }
+cargo_metadata = "0.15.4"
+log = { version = "0.4.20", features = [] }
+toml_edit = "0.19.0"
+dunce = "1.0.4"
+toml = "0.7.8"
+
+[dev-dependencies]
+httptest = "0.15.5"
+tempfile = "3.9.0"
+tokio = { version = "1.35.1", features = ["process"] }
+
+[patch.crates-io]
+cargo-edit = { git = "https://github.com/anatawa12/cargo-edit.git", rev = "4a69e9f" }

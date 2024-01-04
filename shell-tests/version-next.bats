@@ -31,26 +31,26 @@
 }
 
 @test 'version-next prerelease major.minor.patch-beta' {
-  output="$(version-next 1.0.0-beta0 prerelease)"
-  [ "$output" = 1.0.0-beta1 ]
+  output="$(version-next 1.0.0-beta.0 prerelease)"
+  [ "$output" = 1.0.0-beta.1 ]
 }
 
 @test 'version-next patch major.minor.patch-beta' {
-  output="$(version-next 1.0.0-beta0 patch)"
-  [ "$output" = 1.0.1-beta0 ]
+  output="$(version-next 1.0.0-beta.0 patch)"
+  [ "$output" = 1.0.1-beta.0 ]
 }
 
 @test 'version-next minor major.minor.patch-beta' {
-  output="$(version-next 1.0.0-beta0 minor)"
-  [ "$output" = 1.1.0-beta0 ]
+  output="$(version-next 1.0.0-beta.0 minor)"
+  [ "$output" = 1.1.0-beta.0 ]
 }
 
 @test 'version-next major major.minor.patch-beta' {
-  output="$(version-next 1.0.0-beta0 major)"
-  [ "$output" = 2.0.0-beta0 ]
+  output="$(version-next 1.0.0-beta.0 major)"
+  [ "$output" = 2.0.0-beta.0 ]
 }
 
 @test 'version-next pipe mode' {
-  output="$(echo 1.0.0-beta0 | version-next - major)"
-  [ "$output" = 2.0.0-beta0 ]
+  output="$(echo 1.0.0-beta.0 | version-next - major)"
+  [ "$output" = 2.0.0-beta.0 ]
 }

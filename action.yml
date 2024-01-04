@@ -6,6 +6,13 @@ inputs:
     description: github token
     required: true
     default: ${{ github.token }}
+  target:
+    description: the binary target to install
+    required: false
+  build-on-install:
+    description: whether if build on install. this doesn't work with released version. use with master branch.
+    required: false
+    default: 'false'
 runs:
-  using: 'node16'
-  main: 'bin/actions.js'
+  using: 'node20'
+  main: './scripts/install.js'

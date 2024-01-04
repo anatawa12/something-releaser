@@ -1,18 +1,7 @@
-/command/target
-/.idea
-*.iml
-
-/node_modules
-/lib
-/src/generated
-
+/target
+/paths
 #### PUBLISH DELETE MARKER ####
 # the lines below will be removed in release.
 # files should be added in release but not on master
 # should be listed below.
-
-/dist
-/path-posix/
-/path-win/
-/bin/*
-!/bin/actions.js
+/build

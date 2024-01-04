@@ -14,38 +14,38 @@
 
 @test 'version-format semver compatible mode alpha' {
   export SOMETHING_RELEASER_SEMVER=1
-  result="$(version-format 1.0-alpha6)"
+  result="$(version-format 1.0-alpha.6)"
   [ "$result" = 1.0-alpha.6 ]
 }
 
 @test 'version-format semver compatible mode beta' {
   export SOMETHING_RELEASER_SEMVER=1
-  result="$(version-format 1.0-beta6)"
+  result="$(version-format 1.0-beta.6)"
   [ "$result" = 1.0-beta.6 ]
 }
 
 @test 'version-format semver compatible mode rc' {
   export SOMETHING_RELEASER_SEMVER=1
-  result="$(version-format 1.0-rc6)"
+  result="$(version-format 1.0-rc.6)"
   [ "$result" = 1.0-rc.6 ]
 }
 
 @test 'version-format traditional mode alpha' {
   result="$(version-format 1.0-alpha.6)"
-  [ "$result" = 1.0-alpha6 ]
+  [ "$result" = 1.0-alpha.6 ]
 }
 
 @test 'version-format traditional mode beta' {
   result="$(version-format 1.0-beta.6)"
-  [ "$result" = 1.0-beta6 ]
+  [ "$result" = 1.0-beta.6 ]
 }
 
 @test 'version-format traditional mode rc' {
   result="$(version-format 1.0-rc.6)"
-  [ "$result" = 1.0-rc6 ]
+  [ "$result" = 1.0-rc.6 ]
 }
 
 @test 'version-format pipe mode' {
   result="$(echo 1.0-rc.6 | version-format)"
-  [ "$result" = 1.0-rc6 ]
+  [ "$result" = 1.0-rc.6 ]
 }

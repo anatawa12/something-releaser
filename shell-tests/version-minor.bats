@@ -6,18 +6,18 @@
 }
 
 @test 'version-minor from alpha' {
-  result="$(version-minor 1.2.3-alpha1)"
-  [ "$result" = 1.2-alpha1 ]
+  result="$(version-minor 1.2.3-alpha.1)"
+  [ "$result" = 1.2-alpha.1 ]
 }
 
 @test 'version-minor from beta' {
-  result="$(version-minor 1.2.3-beta1)"
-  [ "$result" = 1.2-beta1 ]
+  result="$(version-minor 1.2.3-beta.1)"
+  [ "$result" = 1.2-beta.1 ]
 }
 
 @test 'version-minor from candidate' {
-  result="$(version-minor 1.2.3-rc1)"
-  [ "$result" = 1.2-rc1 ]
+  result="$(version-minor 1.2.3-rc.1)"
+  [ "$result" = 1.2-rc.1 ]
 }
 
 @test 'version-minor from snapshot' {

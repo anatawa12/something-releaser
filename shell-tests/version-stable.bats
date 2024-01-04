@@ -6,17 +6,17 @@
 }
 
 @test 'version-stable from alpha' {
-  result="$(version-stable 1.0-alpha1)"
+  result="$(version-stable 1.0-alpha.1)"
   [ "$result" = 1.0 ]
 }
 
 @test 'version-stable from beta' {
-  result="$(version-stable 1.0-beta1)"
+  result="$(version-stable 1.0-beta.1)"
   [ "$result" = 1.0 ]
 }
 
 @test 'version-stable from candidate' {
-  result="$(version-stable 1.0-rc1)"
+  result="$(version-stable 1.0-rc.1)"
   [ "$result" = 1.0 ]
 }
 

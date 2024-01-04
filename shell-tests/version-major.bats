@@ -6,18 +6,18 @@
 }
 
 @test 'version-major from alpha' {
-  result="$(version-major 1.2.3-alpha1)"
-  [ "$result" = 1-alpha1 ]
+  result="$(version-major 1.2.3-alpha.1)"
+  [ "$result" = 1-alpha.1 ]
 }
 
 @test 'version-major from beta' {
-  result="$(version-major 1.2.3-beta1)"
-  [ "$result" = 1-beta1 ]
+  result="$(version-major 1.2.3-beta.1)"
+  [ "$result" = 1-beta.1 ]
 }
 
 @test 'version-major from candidate' {
-  result="$(version-major 1.2.3-rc1)"
-  [ "$result" = 1-rc1 ]
+  result="$(version-major 1.2.3-rc.1)"
+  [ "$result" = 1-rc.1 ]
 }
 
 @test 'version-major from snapshot' {

@@ -2,6 +2,7 @@ mod command;
 mod gradle_properties;
 mod npm_package_json;
 mod regex_pattern;
+mod cargo;
 
 use serde::de::value::SeqAccessDeserializer;
 use serde::de::SeqAccess;
@@ -123,6 +124,8 @@ impl<'de> Deserialize<'de> for Box<dyn DynVersionChanger> {
             GradleProperties(gradle_properties::GradleProperties),
             #[serde(rename = "regex-pattern")]
             RegexPattern(regex_pattern::RegexPattern),
+            #[serde(rename = "cargo")]
+            Cargo(cargo::Cargo),
         }
 
         let repr: Reprs = Deserialize::deserialize(deserializer)?;
@@ -135,6 +138,7 @@ impl<'de> Deserialize<'de> for Box<dyn DynVersionChanger> {
             AsStruct(NpmPackageJson(changer)) => Box::new(changer),
             AsStruct(GradleProperties(changer)) => Box::new(changer),
             AsStruct(RegexPattern(changer)) => Box::new(changer),
+            AsStruct(Cargo(changer)) => Box::new(changer),
         })
     }
 }
@@ -173,6 +177,7 @@ fn create_single_changer(
         "npm" | "npm-package-json" => Box::new(npm_package_json::NpmPackageJson::parse(info, path)),
         "gradle-properties" => Box::new(gradle_properties::GradleProperties::parse(info, path)),
         "regex-pattern" => Box::new(regex_pattern::RegexPattern::parse(info, path)),
+        "cargo" => Box::new(cargo::Cargo::parse(info, path)),
         unknown => panic!("unknown version changer kind: {}", unknown),
     }
 }

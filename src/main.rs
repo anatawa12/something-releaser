@@ -24,6 +24,7 @@ use std::path::Path;
 use std::process::exit;
 use std::str::FromStr;
 use crate::commands::gradle_intellij::GradleIntellij;
+use crate::commands::publish_to_curse_forge::PublishToCurseForge;
 
 #[tokio::main]
 async fn main() {
@@ -438,6 +439,11 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
             Some("prepare-gradle-intellij") => {
                 GradleIntellij::parse_from(args).configure().await;
                 ok!()
+            }
+
+            // api utilities
+            Some("publish-to-curse-forge") => {
+                PublishToCurseForge::parse_from(args).run().await
             }
 
             // github utils

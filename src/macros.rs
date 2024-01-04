@@ -5,6 +5,11 @@ macro_rules! ok {
 }
 
 macro_rules! err {
+    () => {
+        {
+            return ::core::result::Result::Err(::core::num::NonZeroI32::new(1).unwrap());
+        }
+    };
     ($($tt:tt)*) => {
         {
             eprintln!($($tt)*);

@@ -11,25 +11,25 @@ use std::str::FromStr;
 pub enum GithubActionsUtilities {
     GhSetOutput {
         name: String,
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         value: MaybeStdin<String>,
     },
     GhExportVariable {
         name: String,
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         value: MaybeStdin<String>,
     },
     #[command(alias = "gh-set-secret")]
     GhAddSecret {
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         value: MaybeStdin<String>,
     },
     GhAddPath {
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         path: MaybeStdin<String>,
     },
     GhGroupStart {
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         name: MaybeStdin<String>,
     },
     GhGroupEnd,

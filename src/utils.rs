@@ -3,6 +3,7 @@ pub(crate) mod json;
 pub(crate) mod properties;
 
 use crate::CmdResult;
+use std::fmt::{Display, Formatter};
 use std::io;
 use std::io::IsTerminal;
 use std::path::Path;
@@ -26,10 +27,21 @@ pub async fn write_to_new_file(path: impl AsRef<Path>, content: &[u8]) -> io::Re
     inner(path.as_ref(), content).await
 }
 
-#[derive(Debug, Clone)]
-pub(crate) enum MaybeStdin<T: FromStr> {
+#[derive(Debug, Clone, Default)]
+pub(crate) enum MaybeStdin<T> {
+    #[default]
+    DefaultStdin,
     Stdin,
     Value(T),
+}
+
+impl<T: Display> Display for MaybeStdin<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MaybeStdin::DefaultStdin | MaybeStdin::Stdin => f.write_str("-"),
+            MaybeStdin::Value(v) => Display::fmt(v, f),
+        }
+    }
 }
 
 impl<T: FromStr> FromStr for MaybeStdin<T> {
@@ -47,14 +59,14 @@ impl<T: FromStr> FromStr for MaybeStdin<T> {
 impl<T> MaybeStdin<T>
 where
     T: FromStr,
-    <T as FromStr>::Err: std::fmt::Display,
+    <T as FromStr>::Err: Display,
 {
     pub async fn get(self, kind: &str) -> CmdResult<T> {
         match self {
-            Self::Stdin if io::stdin().is_terminal() => {
-                err!("No {} specified. if you actually want to pass from stdin, pass '-' as the version", kind);
+            Self::DefaultStdin if io::stdin().is_terminal() => {
+                err!("No {} specified. if you actually want to pass from console, pass '-' as the version", kind);
             }
-            Self::Stdin => match Self::read_stdin().await?.parse() {
+            Self::Stdin | MaybeStdin::DefaultStdin => match Self::read_stdin().await?.parse() {
                 Ok(value) => Ok(value),
                 Err(e) => {
                     err!("invalid {}: {}", kind, e);

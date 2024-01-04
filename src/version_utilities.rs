@@ -21,7 +21,7 @@ pub enum VersionUtilities {
         num: u64,
     },
     VersionNext {
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         version: MaybeStdin<Version>,
         target: Option<VersionNextChannel>,
     },
@@ -29,13 +29,13 @@ pub enum VersionUtilities {
 
 #[derive(Debug, Parser)]
 struct SimpleVersionCommand {
-    #[clap(default_value = "-")]
+    #[arg(default_value_t = Default::default())]
     version: MaybeStdin<Version>,
 }
 
 #[derive(Debug, Parser)]
 struct ChannelCommand {
-    #[clap(default_value = "-")]
+    #[arg(default_value_t = Default::default())]
     version: MaybeStdin<Version>,
     #[arg(default_value = "1")]
     num: u64,

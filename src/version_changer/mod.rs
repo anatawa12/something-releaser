@@ -53,7 +53,7 @@ pub enum VersionChangerCommand {
     SetVersion {
         #[command(flatten)]
         changer: ChangerCommand,
-        #[clap(default_value = "-")]
+        #[arg(default_value_t = Default::default())]
         version: MaybeStdin<String>,
     },
 }

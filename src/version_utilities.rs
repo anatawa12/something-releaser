@@ -12,6 +12,7 @@ pub enum VersionUtilities {
     VersionCandidate(ChannelCommand),
     VersionMajor(SimpleVersionCommand),
     VersionMinor(SimpleVersionCommand),
+    VersionPatch(SimpleVersionCommand),
     VersionGetChannel(SimpleVersionCommand),
     VersionSetChannel {
         version: MaybeStdin<Version>,
@@ -119,6 +120,13 @@ impl VersionUtilities {
                 let mut version = cmd.version.get("version").await?;
                 version.minor.get_or_insert(0);
                 version.patch = None;
+                println!("{}", version);
+                ok!()
+            }
+            VersionPatch(cmd) => {
+                let mut version = cmd.version.get("version").await?;
+                version.minor.get_or_insert(0);
+                version.patch.get_or_insert(0);
                 println!("{}", version);
                 ok!()
             }

@@ -1,5 +1,6 @@
 mod npm_package_json;
 mod command;
+mod gradle_properties;
 
 use serde::de::value::SeqAccessDeserializer;
 use serde::de::SeqAccess;
@@ -117,6 +118,8 @@ impl<'de> Deserialize<'de> for Box<dyn DynVersionChanger> {
             #[serde(rename = "npm-package-json")]
             #[serde(alias = "npm")]
             NpmPackageJson(npm_package_json::NpmPackageJson),
+            #[serde(rename = "gradle-properties")]
+            GradleProperties(gradle_properties::GradleProperties),
         }
 
         let repr: Reprs = Deserialize::deserialize(deserializer)?;
@@ -127,6 +130,7 @@ impl<'de> Deserialize<'de> for Box<dyn DynVersionChanger> {
             Tuple2((kind, info)) => create_single_changer(&kind, &info, ""),
             Tuple3((kind, info, path)) => create_single_changer(&kind, &info, &path),
             AsStruct(NpmPackageJson(changer)) => Box::new(changer),
+            AsStruct(GradleProperties(changer)) => Box::new(changer),
         })
     }
 }
@@ -156,6 +160,7 @@ fn parse_single_changer(parse: &str) -> Box<dyn DynVersionChanger> {
 fn create_single_changer(kind: &str, info: &str, path: &str) -> Box<dyn DynVersionChanger> {
     match kind {
         "npm" | "npm-package-json" => Box::new(npm_package_json::NpmPackageJson::parse(info, path)),
+        "gradle-properties" => Box::new(gradle_properties::GradleProperties::parse(info, path)),
         unknown => panic!("unknown version changer kind: {}", unknown),
     }
 }

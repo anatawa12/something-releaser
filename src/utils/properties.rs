@@ -35,7 +35,6 @@ impl PropertiesFile {
         }
     }
 
-    #[cfg_attr(not(test), allow(dead_code))]
     pub fn get(&self, key: &str) -> Option<String> {
         self.elements
             .iter()

@@ -91,6 +91,7 @@ jobs:
         with:
           ref: releasing
           token: ${{ github.event.inputs.dry-run && github.token || secrets.ACTIONS_PAT }}
+      - uses: snow-actions/git-config-user@v1.0.0
       - name: fix fetch
         run: |
           # fetch the branch to be published

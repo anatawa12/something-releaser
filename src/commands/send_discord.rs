@@ -8,6 +8,7 @@ use tokio::io::AsyncReadExt;
 #[command(name = "send-discord")]
 #[command(no_binary_name = true)]
 #[clap(disable_help_flag = true)]
+/// Send a message to discord
 pub(crate) struct SendDiscord {
     /// The ID of webhook
     #[arg(short = 'i', long = "webhook-id")]

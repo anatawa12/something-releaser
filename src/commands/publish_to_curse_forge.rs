@@ -9,6 +9,7 @@ use tokio::fs;
 #[derive(Debug, Parser)]
 #[command(name = "publish-to-curse-forge")]
 #[command(no_binary_name = true)]
+/// Publish a file to curse forge
 pub(crate) struct PublishToCurseForge {
     // required options
     /// The path to the jar file to upload

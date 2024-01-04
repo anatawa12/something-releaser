@@ -1,11 +1,13 @@
 use crate::utils::gradle::gradle_home_dir;
 use crate::utils::properties::PropertiesFile;
 use crate::utils::write_to_new_file;
+use crate::CmdResult;
 use clap::Parser;
 
 #[derive(Debug, Parser)]
 #[clap(no_binary_name = true)]
 #[clap(name = "prepare-gradle-plugin-portal")]
+/// Configure gradle globally to publish to gradle plugin portal
 pub(crate) struct GradlePluginPortal {
     pub key: String,
     pub secret: String,
@@ -30,7 +32,7 @@ impl GradlePluginPortal {
         )
     }
 
-    pub async fn configure(&self) {
+    pub async fn configure(&self) -> CmdResult {
         let gradle_home = gradle_home_dir();
 
         // properties
@@ -50,6 +52,8 @@ impl GradlePluginPortal {
         )
         .await
         .expect("failed to create init script");
+
+        ok!()
     }
 }
 
@@ -82,7 +86,7 @@ async fn test_with_file_system() {
         secret: "gradle-portal-secret".into(),
     };
 
-    portal.configure().await;
+    portal.configure().await.unwrap();
 
     let properties_file =
         std::fs::read_to_string(new_home.path().join("gradle.properties")).unwrap();

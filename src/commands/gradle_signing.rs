@@ -1,6 +1,12 @@
 use crate::utils::gradle::{escape_groovy_string, gradle_home_dir};
 use crate::utils::write_to_new_file;
+use crate::CmdResult;
+use clap::Parser;
 
+#[derive(Debug, Parser)]
+#[command(name = "prepare-gradle-signing")]
+#[command(no_binary_name = true)]
+/// Configure gradle globally to sign artifacts with signing plugin
 pub(crate) struct GradleSigning {
     pub key: String,
     pub pass: String,
@@ -38,14 +44,16 @@ impl GradleSigning {
         s
     }
 
-    pub async fn configure(&self) {
+    pub async fn configure(&self) -> CmdResult {
         let mut path = gradle_home_dir();
         path.push("init.d");
         path.push("gradle-signing.gradle");
         let path = path;
         write_to_new_file(path, self.generate_init_script().as_bytes())
             .await
-            .expect("failed to create init script")
+            .expect("failed to create init script");
+
+        ok!()
     }
 }
 
@@ -138,7 +146,8 @@ async fn test_with_project() {
 
     // execute our code
     let maven = GradleMaven {
-        url: server.url("/").to_string(),
+        url: server.url("/").to_string().into(),
+        url_positional: None,
         user: "sonatype-test".into(),
         pass: "sonatype-password".into(),
     };
@@ -147,8 +156,8 @@ async fn test_with_project() {
         pass: "".to_owned(),
     };
 
-    maven.configure().await;
-    sign.configure().await;
+    maven.configure().await.unwrap();
+    sign.configure().await.unwrap();
 
     // test run
     let result = tokio::process::Command::new("./gradlew")

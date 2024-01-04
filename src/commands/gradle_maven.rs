@@ -1,14 +1,25 @@
 use crate::utils::gradle::{escape_groovy_string, gradle_home_dir};
 use crate::utils::write_to_new_file;
+use crate::CmdResult;
+use clap::Parser;
 
+#[derive(Debug, Parser)]
+#[command(name = "gradle-maven")]
+#[command(no_binary_name = true)]
+/// Configure gradle globally to publish to maven repository
 pub(crate) struct GradleMaven {
-    pub url: String,
+    #[arg(long = "url")]
+    pub url: Option<String>,
+    #[arg(long)]
     pub user: String,
+    #[arg(long)]
     pub pass: String,
+    #[arg(value_name = "URL")]
+    pub url_positional: Option<String>,
 }
 
 impl GradleMaven {
-    fn generate_init_script(&self) -> String {
+    fn generate_init_script(&self, url: &str) -> String {
         use std::fmt::Write;
         let mut init_script = String::new();
         writeln!(init_script, "afterProject {{ proj ->").unwrap();
@@ -21,7 +32,7 @@ impl GradleMaven {
         writeln!(
             init_script,
             "    url = uri(\"{}\")",
-            escape_groovy_string(&self.url)
+            escape_groovy_string(url)
         )
         .unwrap();
         writeln!(init_script, "    // gradle may disallow insecure protocol").unwrap();
@@ -38,28 +49,37 @@ impl GradleMaven {
         init_script
     }
 
-    pub async fn configure(&self) {
+    pub async fn configure(self) -> CmdResult {
+        let url = self
+            .url
+            .as_ref()
+            .or(self.url_positional.as_ref())
+            .expect("no url specified");
+
         let mut path = gradle_home_dir();
         path.push("init.d");
         path.push(format!("gradle-maven.{}.gradle", uuid::Uuid::new_v4()));
         let path = path;
 
-        write_to_new_file(path, self.generate_init_script().as_bytes())
+        write_to_new_file(path, self.generate_init_script(url).as_bytes())
             .await
             .expect("failed to create init script");
+
+        ok!()
     }
 }
 
 #[test]
 fn generated_init_script() {
     let maven = GradleMaven {
-        url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/".into(),
+        url: None,
+        url_positional: None,
         user: "sonatype-test".into(),
         pass: "sonatype-password".into(),
     };
 
     assert_eq!(
-        maven.generate_init_script(),
+        maven.generate_init_script("https://oss.sonatype.org/service/local/staging/deploy/maven2/"),
         r##"afterProject { proj ->
   if (proj.plugins.findPlugin("org.gradle.maven-publish") == null) return
   proj.publishing.repositories.maven {
@@ -120,12 +140,13 @@ async fn test_with_project() {
 
     // execute our code
     let maven = GradleMaven {
-        url: server.url("/").to_string(),
+        url: server.url("/").to_string().into(),
         user: "sonatype-test".into(),
         pass: "sonatype-password".into(),
+        url_positional: None,
     };
 
-    maven.configure().await;
+    maven.configure().await.unwrap();
 
     // test run
     let result = tokio::process::Command::new("./gradlew")

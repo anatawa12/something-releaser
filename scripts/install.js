@@ -20,6 +20,7 @@ function installForTarget(target) {
 	mkdirSync(pathFolder, {recursive: true});
 
 	const commands = execFileSync(sourceExePath, ["internal-list"], {encoding: "utf-8"}).split("\n").filter((line) => line !== "");
+	commands.push("something-releaser");
 
 	let installer
 	if (target.includes("windows")) {

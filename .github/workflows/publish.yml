@@ -54,6 +54,11 @@ jobs:
             target-suffix: apple-darwin
           - os: windows-latest
             target-suffix: pc-windows-msvc
+        exclude:
+          # linux arm64 is not supported by GitHub Actions
+          # https://github.com/actions/runner/blob/main/docs/start/envlinux.md
+          - os: ubuntu-latest
+            arch: aarch64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

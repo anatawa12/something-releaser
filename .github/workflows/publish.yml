@@ -54,7 +54,7 @@ jobs:
             target-suffix: apple-darwin
           - os: windows-latest
             target-suffix: pc-windows-msvc
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -14,7 +14,7 @@ use crate::commands::gradle_signing::GradleSigning;
 use crate::commands::publish_to_curse_forge::PublishToCurseForge;
 use crate::commands::send_discord::SendDiscord;
 use crate::version_changer::VersionChangerCommand;
-use clap::Parser;
+use clap::{Command, CommandFactory, Parser};
 use std::num::NonZeroI32;
 use std::process::exit;
 use crate::github_actions_utilities::GithubActionsUtilities;
@@ -73,7 +73,10 @@ enum Commands {
 
     // github actions utils
     #[command(flatten)]
-    GithubActionsUtilities(GithubActionsUtilities)
+    GithubActionsUtilities(GithubActionsUtilities),
+
+    // install commands: they are internal
+    InternalList,
 }
 
 impl Commands {
@@ -98,6 +101,17 @@ impl Commands {
 
             // github actions utils
             GithubActionsUtilities(cmd) => cmd.execute().await,
+
+            // install commands: they are internal
+            InternalList => {
+                let command = Commands::command();
+                command.get_subcommands()
+                    .map(Command::get_name)
+                    .filter(|x| !x.starts_with("internal-"))
+                    .for_each(|x| println!("{}", x));
+
+                ok!();
+            }
         }
     }
 }

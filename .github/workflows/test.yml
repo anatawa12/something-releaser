@@ -13,12 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions: read-all
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: ./scripts/build.js
 
       # check if this action is valid
       - uses: ./
+        with:
+          build-on-install: true
 
       # prepare bats for tests and run tests
       - run: npm install -g bats

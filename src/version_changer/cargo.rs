@@ -80,6 +80,7 @@ impl VersionChanger for Cargo {
 
             debug!("upgrading {} from {} to {}", the_package.name, the_package.version, version);
             manifest.set_package_version(&version);
+            manifest.write().expect("writing manifest");
 
             // with single package, there's no need to update dependents
 
@@ -97,6 +98,7 @@ impl VersionChanger for Cargo {
 
             debug!("upgrading {} from {} to {}", the_package.name, the_package.version, version);
             manifest.set_package_version(&version);
+            manifest.write().expect("writing manifest");
 
             let crate_root =
                 dunce::canonicalize(the_package.manifest_path.parent().expect("at least a parent"))

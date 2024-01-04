@@ -10,7 +10,7 @@ function installForTarget(target) {
 	console.log(`installing for ${target}`);
 
 	const sourceExePath = exePath(target);
-	const pathFolder = normalize(__dirname + `/../paths/${target}`);
+	const pathFolder = normalize(`${__dirname}/../paths/${target}`);
 
 	if (existsSync(pathFolder)) {
 		console.log("Already installed");

@@ -19,7 +19,7 @@ function targetExt(target) {
 }
 
 function exeFolder(target) {
-	return normalize(__dirname + `/../build/${target}/something-releaser${targetExt(target)}`);
+	return normalize(`${__dirname}/../build/${target}`);
 }
 
 function exeName(target) {

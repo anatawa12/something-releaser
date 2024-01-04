@@ -8,6 +8,7 @@ const { mkdirSync, existsSync, cpSync, linkSync, chmodSync, symlinkSync} = requi
 
 const target = process.env.INPUT_TARGET_NAME || detectTarget();
 
+console.log(`installing for ${target}`);
 
 const sourceExePath = exePath(target);
 const pathFolder = normalize(__dirname + `/../paths/${target}`);
@@ -23,8 +24,10 @@ const commands = execFileSync(sourceExePath, ["internal-list"], { encoding: "utf
 
 let installer
 if (target.includes("windows")) {
+	console.log(`using copy to create multicall binaries`);
 	installer = cpSync
 } else {
+	console.log(`using symlink to create multicall binaries`);
 	installer = (source, dst) => {
 		symlinkSync(source, dst);
 		chmodSync(dst, 0o755);
@@ -32,7 +35,9 @@ if (target.includes("windows")) {
 }
 
 for (const command of commands) {
-	installer(sourceExePath, `${pathFolder}/${command}`)
+	const path = `${pathFolder}/${command}`;
+	installer(sourceExePath, path)
+	console.log(`::debug::installed to ${path}`);
 }
 
 execFileSync(sourceExePath, ["gh-add-path", "--", pathFolder], { stdio: "inherit" })

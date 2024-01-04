@@ -26,3 +26,6 @@ dunce = "1.0.4"
 httptest = "0.15.5"
 tempfile = "3.9.0"
 tokio = { version = "1.35.1", features = ["process"] }
+
+[patch.crates-io]
+cargo-edit = { git = "https://github.com/anatawa12/cargo-edit.git", rev = "4a69e9f" }

@@ -107,6 +107,7 @@ jobs:
           pattern: built-*
           merge-multiple: true
       - run: ls -R build
+      - run: chmod -R +x build
       - uses: ./ # using the current version of this action with prebuilt binary
       - name: Execute Basic commands
         run: |

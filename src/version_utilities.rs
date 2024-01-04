@@ -4,6 +4,7 @@ use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Parser)]
 #[allow(private_interfaces)]
+#[allow(clippy::enum_variant_names)]
 pub enum VersionUtilities {
     VersionStable(SimpleVersionCommand),
     VersionSnapshot(SimpleVersionCommand),
@@ -204,8 +205,8 @@ impl VersionUtilities {
                     Some(VersionNextChannel::Patch) => bump_optional(&mut version.patch, "patch")?,
                     None if version.minor.is_some() => bump_optional(&mut version.minor, "minor")?,
                     Some(VersionNextChannel::Minor) => bump_optional(&mut version.minor, "minor")?,
-                    None => version.major = version.major + 1,
-                    Some(VersionNextChannel::Major) => version.major = version.major + 1,
+                    None => version.major += 1,
+                    Some(VersionNextChannel::Major) => version.major += 1,
                 }
 
                 println!("{}", version);

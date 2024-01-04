@@ -8,6 +8,7 @@ use std::str::FromStr;
 
 #[derive(Debug, Parser)]
 #[allow(private_interfaces)]
+#[allow(clippy::enum_variant_names)]
 pub enum GithubActionsUtilities {
     GhSetOutput {
         name: String,

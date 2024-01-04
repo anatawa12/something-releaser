@@ -113,9 +113,9 @@ jobs:
       - name: Execute Basic commands
         run: |
           # check if the binary is valid
-          something-releaser --help
-          get-version | set-version
-          version-stable 1.0.0-beta.0
+          time something-releaser --help
+          time get-version
+          time version-stable 1.0.0-beta.0
 
       - name: Create Release Commit
         run: |

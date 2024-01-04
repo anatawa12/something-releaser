@@ -1,11 +1,82 @@
 mod npm_package_json;
 
+use std::env;
 use serde::de::value::SeqAccessDeserializer;
 use serde::de::SeqAccess;
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Debug, Display};
 use std::future::Future;
 use std::pin::Pin;
+use clap::Parser;
+use crate::{CmdResult, MaybeStdin};
+use crate::env::env_file;
+
+#[derive(Debug, Parser)]
+struct ChangerCommand {
+    #[arg(short, long)]
+    target: Option<String>,
+}
+
+impl ChangerCommand {
+    pub async fn get_changer(&self) -> CmdResult<VersionChangers> {
+        let mut env = env_file().await;
+
+        if let Some(name) = &self.target {
+            Ok(env
+                .targets
+                .get_mut(name)
+                .and_then(|x| x.release_changer.as_mut())
+                .map(std::mem::take)
+                .unwrap_or_else(|| {
+                    let env_name = format!("RELEASE_CHANGER_{}", name.to_ascii_uppercase());
+                    parse_version_changers(
+                        &env::var(&env_name).unwrap_or_else(|_| {
+                            panic!("environment variable {} not set", env_name)
+                        }),
+                    )
+                }))
+        } else {
+            Ok(env.release_changer.unwrap_or_else(|| {
+                parse_version_changers(
+                    &env::var("RELEASE_CHANGER")
+                        .expect("environment variable RELEASE_CHANGER not set"),
+                )
+            }))
+        }
+    }
+}
+
+#[derive(Debug, Parser)]
+#[allow(private_interfaces)]
+pub enum VersionChangerCommand {
+    GetVersion(ChangerCommand),
+    SetVersion {
+        #[command(flatten)]
+        changer: ChangerCommand,
+        #[clap(default_value = "-")]
+        version: MaybeStdin<String>,
+    },
+}
+
+impl VersionChangerCommand {
+    pub async fn execute(self) -> CmdResult {
+        use VersionChangerCommand::*;
+        match self {
+            GetVersion(changer) => {
+                println!("{}", changer.get_changer().await?.get_version().await);
+                ok!()
+            }
+            SetVersion { changer, version } => {
+                changer
+                    .get_changer()
+                    .await?
+                    .set_version(version.get("version").await?)
+                    .await;
+                ok!()
+            }
+        }
+    }
+}
 
 pub(crate) trait VersionChanger: Display + Debug {
     fn parse(info: &str, path: &str) -> Self;

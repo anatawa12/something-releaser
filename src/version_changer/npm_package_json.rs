@@ -21,16 +21,12 @@ impl Display for NpmPackageJson {
 }
 
 impl VersionChanger for NpmPackageJson {
-    fn parse(info: &str, path: &str) -> Self {
-        if !info.is_empty() {
+    fn parse(info: Option<&str>, path: Option<&str>) -> Self {
+        if info.is_none() {
             panic!("invalid npm package.json version changer");
         }
         Self {
-            path: if path.is_empty() {
-                path_default()
-            } else {
-                PathBuf::from(path)
-            },
+            path: path.map(Into::into).unwrap_or_else(path_default),
         }
     }
 

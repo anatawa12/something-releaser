@@ -1,14 +1,14 @@
-use std::fmt::{Display, Formatter};
-use std::path::PathBuf;
-use serde::Deserialize;
 use crate::utils::properties::PropertiesFile;
 use crate::version_changer::VersionChanger;
+use serde::Deserialize;
+use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 pub struct GradleProperties {
     #[serde(default = "path_default")]
     path: PathBuf,
-    #[serde(alias="info", default = "default_property")]
+    #[serde(alias = "info", default = "default_property")]
     property: String,
 }
 
@@ -22,23 +22,20 @@ fn default_property() -> String {
 
 impl Display for GradleProperties {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "gradle-properties(at {} prop {})", self.path.display(), self.property)
+        write!(
+            f,
+            "gradle-properties(at {} prop {})",
+            self.path.display(),
+            self.property
+        )
     }
 }
 
 impl VersionChanger for GradleProperties {
-    fn parse(info: &str, path: &str) -> Self {
+    fn parse(info: Option<&str>, path: Option<&str>) -> Self {
         Self {
-            path: if path.is_empty() {
-                path_default()
-            } else {
-                PathBuf::from(path)
-            },
-            property: if info.is_empty() {
-                default_property()
-            } else {
-                info.to_string()
-            },
+            path: path.map(Into::into).unwrap_or_else(path_default),
+            property: info.map(Into::into).unwrap_or_else(default_property),
         }
     }
 

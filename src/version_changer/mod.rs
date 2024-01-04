@@ -1,6 +1,6 @@
-mod npm_package_json;
 mod command;
 mod gradle_properties;
+mod npm_package_json;
 
 use serde::de::value::SeqAccessDeserializer;
 use serde::de::SeqAccess;
@@ -12,7 +12,7 @@ use std::pin::Pin;
 pub(crate) use command::VersionChangerCommand;
 
 pub(crate) trait VersionChanger: Display + Debug {
-    fn parse(info: &str, path: &str) -> Self;
+    fn parse(info: Option<&str>, path: Option<&str>) -> Self;
     async fn load_version(&self) -> String;
     async fn set_version(&self, version: &str);
 }
@@ -126,9 +126,9 @@ impl<'de> Deserialize<'de> for Box<dyn DynVersionChanger> {
 
         Ok(match repr {
             InString(str) => parse_single_changer(&str),
-            Tuple1((kind,)) => create_single_changer(&kind, "", ""),
-            Tuple2((kind, info)) => create_single_changer(&kind, &info, ""),
-            Tuple3((kind, info, path)) => create_single_changer(&kind, &info, &path),
+            Tuple1((kind,)) => create_single_changer(&kind, None, None),
+            Tuple2((kind, info)) => create_single_changer(&kind, Some(&info), None),
+            Tuple3((kind, info, path)) => create_single_changer(&kind, Some(&info), Some(&path)),
             AsStruct(NpmPackageJson(changer)) => Box::new(changer),
             AsStruct(GradleProperties(changer)) => Box::new(changer),
         })
@@ -154,10 +154,17 @@ fn parse_single_changer(parse: &str) -> Box<dyn DynVersionChanger> {
         (parse, "", "")
     };
 
+    let info = if info.is_empty() { None } else { Some(info) };
+    let path = if path.is_empty() { None } else { Some(path) };
+
     create_single_changer(kind, info, path)
 }
 
-fn create_single_changer(kind: &str, info: &str, path: &str) -> Box<dyn DynVersionChanger> {
+fn create_single_changer(
+    kind: &str,
+    info: Option<&str>,
+    path: Option<&str>,
+) -> Box<dyn DynVersionChanger> {
     match kind {
         "npm" | "npm-package-json" => Box::new(npm_package_json::NpmPackageJson::parse(info, path)),
         "gradle-properties" => Box::new(gradle_properties::GradleProperties::parse(info, path)),

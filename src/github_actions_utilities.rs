@@ -1,10 +1,10 @@
+use crate::{CmdResult, MaybeStdin};
+use clap::Parser;
 use std::convert::Infallible;
 use std::env;
 use std::io::Write;
 use std::path::Path;
 use std::str::FromStr;
-use clap::Parser;
-use crate::{CmdResult, MaybeStdin};
 
 #[derive(Debug, Parser)]
 #[allow(private_interfaces)]

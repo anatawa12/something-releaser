@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use serde::Deserialize;
 use crate::version_changer::VersionChangers;
+use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Debug, Default, Deserialize)]
 pub(crate) struct ConfigFile {

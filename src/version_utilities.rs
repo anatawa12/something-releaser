@@ -1,6 +1,6 @@
-use clap::{Parser, ValueEnum};
-use semver::Version;
+use crate::version::{Prerelease, Version};
 use crate::{CmdResult, MaybeStdin};
+use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Parser)]
 #[allow(private_interfaces)]
@@ -21,8 +21,8 @@ pub enum VersionUtilities {
         num: u64,
     },
     VersionNext {
-        #[command(flatten)]
-        version: SimpleVersionCommand,
+        #[clap(default_value = "-")]
+        version: MaybeStdin<Version>,
         target: Option<VersionNextChannel>,
     },
 }
@@ -33,40 +33,20 @@ struct SimpleVersionCommand {
     version: MaybeStdin<Version>,
 }
 
-impl SimpleVersionCommand {
-    async fn v2v(self, f: impl FnOnce(&mut Version) -> CmdResult) -> CmdResult {
-        let mut version = self.version.get("version").await?;
-        f(&mut version)?;
-        println!("{}", version);
-        ok!()
-    }
-
-    async fn v2str(self, f: impl FnOnce(&mut Version) -> CmdResult<String>) -> CmdResult {
-        let mut version = self.version.get("version").await?;
-        f(&mut version)?;
-        println!("{}", version);
-        ok!()
-    }
-}
-
 #[derive(Debug, Parser)]
 struct ChannelCommand {
-    #[command(flatten)]
-    version: SimpleVersionCommand,
+    #[clap(default_value = "-")]
+    version: MaybeStdin<Version>,
     #[arg(default_value = "1")]
     num: u64,
 }
 
 impl ChannelCommand {
-    async fn run(self, channel: &str) -> CmdResult {
-        self.version
-            .v2v(|version| Self::exec(version, channel, self.num))
-            .await
-    }
+    async fn run(self, channel: impl FnOnce(u64) -> Prerelease) -> CmdResult {
+        let mut version = self.version.get("version").await?;
+        version.pre = channel(self.num);
+        println!("{}", version);
 
-    fn exec(version: &mut Version, channel: &str, num: u64) -> CmdResult {
-        version.pre = semver::Prerelease::new(&format!("{channel}.{num}")).unwrap();
-        version.build = semver::BuildMetadata::EMPTY;
         ok!()
     }
 }
@@ -108,52 +88,54 @@ enum VersionNextChannel {
     Major,
 }
 
-fn set_channel_stable(version: &mut Version) -> CmdResult {
-    version.pre = semver::Prerelease::EMPTY;
-    version.build = semver::BuildMetadata::EMPTY;
-    ok!()
-}
-
-fn set_channel_snapshot(version: &mut Version) -> CmdResult {
-    version.pre = semver::Prerelease::new("SNAPSHOT").unwrap();
-    version.build = semver::BuildMetadata::EMPTY;
-    ok!()
-}
-
 impl VersionUtilities {
     pub async fn execute(self) -> CmdResult {
         use VersionUtilities::*;
 
         match self {
-            VersionStable(v) => v.v2v(set_channel_stable).await,
-            VersionSnapshot(v) => v.v2v(set_channel_snapshot).await,
-            VersionAlpha(v) => v.run("alpha").await,
-            VersionBeta(v) => v.run("beta").await,
-            VersionCandidate(v) => v.run("rc").await,
-            VersionMajor(v) => v.v2str(|version| Ok(format!("{}", version.major))).await,
-            VersionMinor(v) => {
-                v.v2str(|version| Ok(format!("{}.{}", version.major, version.minor)))
-                    .await
+            VersionStable(cmd) => {
+                let mut version = cmd.version.get("version").await?;
+                version.pre = Prerelease::None;
+                println!("{}", version);
+                ok!();
             }
-            VersionGetChannel(v) => {
-                v.v2str(|version| {
-                    if version.pre.is_empty() {
-                        return Ok("stable".to_string());
-                    }
+            VersionSnapshot(cmd) => {
+                let mut version = cmd.version.get("version").await?;
+                version.pre = Prerelease::Snapshot;
+                println!("{}", version);
+                ok!()
+            }
+            VersionAlpha(v) => v.run(Prerelease::Alpha).await,
+            VersionBeta(v) => v.run(Prerelease::Beta).await,
+            VersionCandidate(v) => v.run(Prerelease::Candidate).await,
+            VersionMajor(cmd) => {
+                let mut version = cmd.version.get("version").await?;
+                version.minor = None;
+                version.patch = None;
+                println!("{}", version);
+                ok!()
+            }
+            VersionMinor(cmd) => {
+                let mut version = cmd.version.get("version").await?;
+                version.minor.get_or_insert(0);
+                version.patch = None;
+                println!("{}", version);
+                ok!()
+            }
+            VersionGetChannel(cmd) => {
+                let version = cmd.version.get("version").await?;
 
-                    let Some((ty, rest)) = version.pre.split_once('.') else {
-                        err!("invalid prerelease name: {}", version.pre);
-                    };
-                    if !rest.as_bytes().iter().all(|x| x.is_ascii_digit()) {
-                        err!("invalid prerelease name: {}", version.pre);
-                    }
-                    if !matches!(ty, "alpha" | "beta" | "rc") {
-                        err!("invalid prerelease name: {}", version.pre);
-                    }
+                let channel = match version.pre {
+                    Prerelease::None => "stable",
+                    Prerelease::Alpha(_) => "alpha",
+                    Prerelease::Beta(_) => "beta",
+                    Prerelease::Candidate(_) => "candidate",
+                    Prerelease::Snapshot => "snapshot",
+                };
 
-                    Ok(ty.to_string())
-                })
-                    .await
+                println!("{}", channel);
+
+                ok!()
             }
             VersionSetChannel {
                 version,
@@ -164,53 +146,55 @@ impl VersionUtilities {
 
                 use SetChannelTarget::*;
                 match target {
-                    Alpha => ChannelCommand::exec(&mut version, "alpha", num)?,
-                    Beta => ChannelCommand::exec(&mut version, "beta", num)?,
-                    Rc => ChannelCommand::exec(&mut version, "rc", num)?,
-                    Snapshot => set_channel_snapshot(&mut version)?,
-                    Stable => set_channel_stable(&mut version)?,
+                    Alpha => version.pre = Prerelease::Alpha(num),
+                    Beta => version.pre = Prerelease::Beta(num),
+                    Rc => version.pre = Prerelease::Candidate(num),
+                    Snapshot => version.pre = Prerelease::Snapshot,
+                    Stable => version.pre = Prerelease::None,
                 }
 
                 println!("{}", version);
                 ok!()
             }
             VersionNext { version, target } => {
-                version
-                    .v2v(|version| {
-                        use VersionNextChannel::*;
-                        fn bump_pre(version: &mut Version) -> CmdResult {
-                            let Some((before, rest)) = version.pre.rsplit_once('.') else {
-                                err!("invalid prerelease name: {}", version.pre);
-                            };
-                            let number = rest.parse::<u64>().expect("invalid prerelease number");
-                            let number = number.checked_add(1).expect("prerelease number overflow");
-                            version.pre =
-                                semver::Prerelease::new(&format!("{}.{}", before, number)).unwrap();
-                            ok!()
+                let mut version = version.get("version").await?;
+
+                fn bump_pre(version: &mut Version) -> CmdResult {
+                    match &mut version.pre {
+                        Prerelease::None => {
+                            err!("cannot bump prerelease number on stable version")
                         }
-                        match target {
-                            None if !version.pre.is_empty() => bump_pre(version)?,
-                            None => {
-                                version.patch =
-                                    version.patch.checked_add(1).expect("patch number overflow")
-                            }
-                            Some(Prerelease) => bump_pre(version)?,
-                            Some(Patch) => {
-                                version.patch =
-                                    version.patch.checked_add(1).expect("patch number overflow")
-                            }
-                            Some(Minor) => {
-                                version.minor =
-                                    version.minor.checked_add(1).expect("minor number overflow")
-                            }
-                            Some(Major) => {
-                                version.major =
-                                    version.major.checked_add(1).expect("major number overflow")
-                            }
+                        Prerelease::Snapshot => {
+                            err!("cannot bump prerelease number on snapshot version")
                         }
-                        ok!()
-                    })
-                    .await
+                        Prerelease::Alpha(num) => *num += 1,
+                        Prerelease::Beta(num) => *num += 1,
+                        Prerelease::Candidate(num) => *num += 1,
+                    }
+                    ok!()
+                }
+
+                fn bump_optional(portion: &mut Option<u64>, name: &str) -> CmdResult {
+                    let Some(portion) = portion else {
+                        err!("{name} number not found while updating {name} number");
+                    };
+                    *portion += 1;
+                    ok!()
+                }
+
+                match target {
+                    None if version.pre != Prerelease::None => bump_pre(&mut version)?,
+                    Some(VersionNextChannel::Prerelease) => bump_pre(&mut version)?,
+                    None if version.patch.is_some() => bump_optional(&mut version.patch, "patch")?,
+                    Some(VersionNextChannel::Patch) => bump_optional(&mut version.patch, "patch")?,
+                    None if version.minor.is_some() => bump_optional(&mut version.minor, "minor")?,
+                    Some(VersionNextChannel::Minor) => bump_optional(&mut version.minor, "minor")?,
+                    None => version.major = version.major + 1,
+                    Some(VersionNextChannel::Major) => version.major = version.major + 1,
+                }
+
+                println!("{}", version);
+                ok!()
             }
         }
     }

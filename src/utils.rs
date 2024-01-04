@@ -2,12 +2,12 @@ pub(crate) mod gradle;
 pub(crate) mod json;
 pub(crate) mod properties;
 
+use crate::CmdResult;
 use std::io;
 use std::io::IsTerminal;
 use std::path::Path;
 use std::str::FromStr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use crate::CmdResult;
 
 #[inline]
 pub async fn write_to_new_file(path: impl AsRef<Path>, content: &[u8]) -> io::Result<()> {
@@ -45,9 +45,9 @@ impl<T: FromStr> FromStr for MaybeStdin<T> {
 }
 
 impl<T> MaybeStdin<T>
-    where
-        T: FromStr,
-        <T as FromStr>::Err: std::fmt::Display,
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     pub async fn get(self, kind: &str) -> CmdResult<T> {
         match self {

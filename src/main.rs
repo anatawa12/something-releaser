@@ -1,11 +1,12 @@
 #[macro_use]
 mod macros;
 mod commands;
+mod env;
+mod github_actions_utilities;
 mod utils;
+mod version;
 mod version_changer;
 mod version_utilities;
-mod github_actions_utilities;
-mod env;
 
 use crate::commands::gradle_intellij::GradleIntellij;
 use crate::commands::gradle_maven::GradleMaven;
@@ -13,12 +14,12 @@ use crate::commands::gradle_plugin_portal::GradlePluginPortal;
 use crate::commands::gradle_signing::GradleSigning;
 use crate::commands::publish_to_curse_forge::PublishToCurseForge;
 use crate::commands::send_discord::SendDiscord;
+use crate::github_actions_utilities::GithubActionsUtilities;
 use crate::version_changer::VersionChangerCommand;
+use crate::version_utilities::VersionUtilities;
 use clap::{Command, CommandFactory, Parser};
 use std::num::NonZeroI32;
 use std::process::exit;
-use crate::github_actions_utilities::GithubActionsUtilities;
-use crate::version_utilities::VersionUtilities;
 use utils::MaybeStdin;
 
 type CmdResult<T = ()> = Result<T, NonZeroI32>;
@@ -105,7 +106,8 @@ impl Commands {
             // install commands: they are internal
             InternalList => {
                 let command = Commands::command();
-                command.get_subcommands()
+                command
+                    .get_subcommands()
                     .map(Command::get_name)
                     .filter(|x| !x.starts_with("internal-"))
                     .for_each(|x| println!("{}", x));

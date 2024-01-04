@@ -175,13 +175,11 @@ pub(super) fn parse<'a>(lines: impl Iterator<Item = &'a str>) -> Result<Vec<Elem
         let mut parser = KvpLineParser::new(line, line_num);
         let ends_with_backslash = parser.do_parse()?;
 
-        let mut value_lines = vec![
-            ParsedValueLine {
-                blank: "".into(),
-                line: parser.value,
-                parsed: parser.value_parsed,
-            }
-        ];
+        let mut value_lines = vec![ParsedValueLine {
+            blank: "".into(),
+            line: parser.value,
+            parsed: parser.value_parsed,
+        }];
 
         macro_rules! kvp {
             () => {
@@ -243,10 +241,8 @@ pub(super) fn parse<'a>(lines: impl Iterator<Item = &'a str>) -> Result<Vec<Elem
 }
 
 pub(crate) fn parse_value(value: &Value) -> String {
-    match value  {
+    match value {
         Value::Provided { value } => value.to_owned(),
-        Value::Parsed { lines, .. } => {
-            lines.iter().map(|x| x.parsed.as_str()).collect()
-        }
+        Value::Parsed { lines, .. } => lines.iter().map(|x| x.parsed.as_str()).collect(),
     }
 }

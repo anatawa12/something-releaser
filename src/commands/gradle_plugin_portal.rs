@@ -1,7 +1,7 @@
-use clap::Parser;
 use crate::utils::gradle::gradle_home_dir;
 use crate::utils::properties::PropertiesFile;
 use crate::utils::write_to_new_file;
+use clap::Parser;
 
 #[derive(Debug, Parser)]
 #[clap(no_binary_name = true)]
@@ -62,8 +62,14 @@ fn properties_file() {
     };
     portal.set_properties(&mut properties);
 
-    assert_eq!(properties.get("gradle.publish.key"), Some("gradle-portal-key".into()));
-    assert_eq!(properties.get("gradle.publish.secret"), Some("gradle-portal-secret".into()));
+    assert_eq!(
+        properties.get("gradle.publish.key"),
+        Some("gradle-portal-key".into())
+    );
+    assert_eq!(
+        properties.get("gradle.publish.secret"),
+        Some("gradle-portal-secret".into())
+    );
 }
 
 #[tokio::test]
@@ -78,7 +84,8 @@ async fn test_with_file_system() {
 
     portal.configure().await;
 
-    let properties_file = std::fs::read_to_string(new_home.path().join("gradle.properties")).unwrap();
+    let properties_file =
+        std::fs::read_to_string(new_home.path().join("gradle.properties")).unwrap();
     assert!(properties_file.contains("gradle.publish.key=gradle-portal-key"));
     assert!(properties_file.contains("gradle.publish.secret=gradle-portal-secret"));
 }

@@ -5,9 +5,12 @@ mod utils;
 mod version_changer;
 mod version_commands;
 
+use crate::commands::gradle_intellij::GradleIntellij;
 use crate::commands::gradle_maven::GradleMaven;
 use crate::commands::gradle_plugin_portal::GradlePluginPortal;
 use crate::commands::gradle_signing::GradleSigning;
+use crate::commands::publish_to_curse_forge::PublishToCurseForge;
+use crate::commands::send_discord::SendDiscord;
 use crate::utils::ArgsExt;
 use crate::version_changer::{parse_version_changers, VersionChangers};
 use crate::version_commands::*;
@@ -23,9 +26,6 @@ use std::num::NonZeroI32;
 use std::path::Path;
 use std::process::exit;
 use std::str::FromStr;
-use crate::commands::gradle_intellij::GradleIntellij;
-use crate::commands::publish_to_curse_forge::PublishToCurseForge;
-use crate::commands::send_discord::SendDiscord;
 
 #[tokio::main]
 async fn main() {
@@ -443,12 +443,8 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
             }
 
             // api utilities
-            Some("publish-to-curse-forge") => {
-                PublishToCurseForge::parse_from(args).run().await
-            }
-            Some("send-discord") => {
-                SendDiscord::parse_from(args).run().await
-            }
+            Some("publish-to-curse-forge") => PublishToCurseForge::parse_from(args).run().await,
+            Some("send-discord") => SendDiscord::parse_from(args).run().await,
 
             // github utils
             Some("gh-set-output") => {

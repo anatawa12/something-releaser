@@ -35,6 +35,7 @@ impl PropertiesFile {
         }
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn get(&self, key: &str) -> Option<String> {
         self.elements
             .iter()
@@ -149,7 +150,12 @@ fn write_key_value_pair(f: &mut Formatter, pair: &KeyValuePair) -> fmt::Result {
         Value::Parsed { lines } => {
             let mut lines = lines.iter();
             write!(f, "{}", lines.next().unwrap().line)?;
-            for ParsedValueLine { blank, line, parsed: _ }in lines {
+            for ParsedValueLine {
+                blank,
+                line,
+                parsed: _,
+            } in lines
+            {
                 write!(f, "\\\n{}{}", blank, line)?;
             }
             writeln!(f)?;

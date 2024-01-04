@@ -1,8 +1,8 @@
-use std::num::NonZeroU64;
+use crate::CmdResult;
 use clap::Parser;
 use reqwest::Url;
+use std::num::NonZeroU64;
 use tokio::io::AsyncReadExt;
-use crate::CmdResult;
 
 #[derive(Debug, Parser)]
 #[command(name = "send-discord")]
@@ -42,20 +42,29 @@ struct WebhookContentJson<'a> {
 impl SendDiscord {
     pub async fn run(self) -> CmdResult {
         let mut content = String::new();
-        tokio::io::stdin().read_to_string(&mut content).await.expect("reading stdin");
-        
+        tokio::io::stdin()
+            .read_to_string(&mut content)
+            .await
+            .expect("reading stdin");
+
         let client = reqwest::Client::builder()
             .user_agent(concat!("something-releaser/", env!("CARGO_PKG_VERSION")))
-            .build().expect("building reqwest client");
+            .build()
+            .expect("building reqwest client");
 
-        let url = format!("https://discord.com/api/webhooks/{}/{}", self.webhook_id, self.webhook_token);
+        let url = format!(
+            "https://discord.com/api/webhooks/{}/{}",
+            self.webhook_id, self.webhook_token
+        );
         let url = if let Some(thread) = self.thread {
-            Url::parse_with_params(&url, &[("thread_id", thread.get().to_string())]).expect("creating webhook url")
+            Url::parse_with_params(&url, &[("thread_id", thread.get().to_string())])
+                .expect("creating webhook url")
         } else {
             Url::parse(&url).expect("creating webhook url")
         };
 
-        let response = client.post(url)
+        let response = client
+            .post(url)
             .header("Content-Type", "application/json")
             .json(&WebhookContentJson {
                 content: &content,

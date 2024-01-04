@@ -1,10 +1,10 @@
-use std::num::NonZeroU64;
-use std::path::PathBuf;
+use crate::CmdResult;
 use clap::{Args, Parser, ValueEnum};
 use reqwest::multipart::Part;
 use serde::Serialize;
+use std::num::NonZeroU64;
+use std::path::PathBuf;
 use tokio::fs;
-use crate::CmdResult;
 
 #[derive(Debug, Parser)]
 #[command(name = "publish-to-curse-forge")]
@@ -26,10 +26,10 @@ pub(crate) struct PublishToCurseForge {
 
     // metadata options
     /// The parent file id
-    #[arg(short='p', long)]
+    #[arg(short = 'p', long)]
     parent_file_id: Option<NonZeroU64>,
     /// The display name of the file
-    #[arg(short='n', long)]
+    #[arg(short = 'n', long)]
     name: Option<String>,
     #[command(flatten)]
     changelog: ChangelogGroup,
@@ -87,7 +87,10 @@ impl PublishToCurseForge {
         let client = reqwest::Client::new();
         let mut form = reqwest::multipart::Form::new();
         form = form.part("file", Part::stream(in_file));
-        form = form.text("metadata", serde_json::to_string(&self.metadata().await).unwrap());
+        form = form.text(
+            "metadata",
+            serde_json::to_string(&self.metadata().await).unwrap(),
+        );
 
         let response = client
             .post(format!(
@@ -112,9 +115,9 @@ impl PublishToCurseForge {
     async fn metadata(&self) -> CurseMetadata<'_> {
         let changelog = match (&self.changelog.changelog, &self.changelog.changelog_file) {
             (Some(changelog), None) => changelog.clone(),
-            (None, Some(changelog_file)) => {
-                fs::read_to_string(changelog_file).await.expect("reading changelog")
-            }
+            (None, Some(changelog_file)) => fs::read_to_string(changelog_file)
+                .await
+                .expect("reading changelog"),
             (None, None) => panic!("no changelog"),
             (Some(_), Some(_)) => panic!("both changelog and changelog_file"),
         };

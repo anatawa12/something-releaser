@@ -1,5 +1,5 @@
-use clap::Parser;
 use crate::utils::gradle::escape_groovy_string;
+use clap::Parser;
 
 #[derive(Debug, Parser)]
 #[command(no_binary_name = true)]

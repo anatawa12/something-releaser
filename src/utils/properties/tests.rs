@@ -35,13 +35,11 @@ mod parse_and_write {
                 key_parsed: "hello".into(),
                 separator: "=".into(),
                 value: Value::Parsed {
-                    lines: vec![
-                        ParsedValueLine {
-                            blank: "".into(),
-                            line: "world".into(),
-                            parsed: "world".into(),
-                        },
-                    ],
+                    lines: vec![ParsedValueLine {
+                        blank: "".into(),
+                        line: "world".into(),
+                        parsed: "world".into(),
+                    }],
                 },
             })],
         );
@@ -84,13 +82,11 @@ mod parse_and_write {
                 key_parsed: "hello".into(),
                 separator: " = ".into(),
                 value: Value::Parsed {
-                    lines: vec![
-                        ParsedValueLine {
-                            blank: "".into(),
-                            line: "world".into(),
-                            parsed: "world".into(),
-                        },
-                    ],
+                    lines: vec![ParsedValueLine {
+                        blank: "".into(),
+                        line: "world".into(),
+                        parsed: "world".into(),
+                    }],
                 },
             })],
         );
@@ -106,13 +102,11 @@ mod parse_and_write {
                 key_parsed: "hello".into(),
                 separator: ":".into(),
                 value: Value::Parsed {
-                    lines: vec![
-                        ParsedValueLine {
-                            blank: "".into(),
-                            line: "world".into(),
-                            parsed: "world".into(),
-                        },
-                    ],
+                    lines: vec![ParsedValueLine {
+                        blank: "".into(),
+                        line: "world".into(),
+                        parsed: "world".into(),
+                    }],
                 },
             })],
         );
@@ -163,13 +157,11 @@ ENABLE_\:OPTIFINE=false
                     key_parsed: "org.gradle.jvmargs".into(),
                     separator: "=".into(),
                     value: Value::Parsed {
-                        lines: vec![
-                            ParsedValueLine {
-                                blank: "".into(),
-                                line: "-Xmx1024m".into(),
-                                parsed: "-Xmx1024m".into(),
-                            },
-                        ],
+                        lines: vec![ParsedValueLine {
+                            blank: "".into(),
+                            line: "-Xmx1024m".into(),
+                            parsed: "-Xmx1024m".into(),
+                        }],
                     },
                 }),
                 Element::BlankOrComment("# channel".into()),
@@ -181,13 +173,11 @@ ENABLE_\:OPTIFINE=false
                     key_parsed: "CHANNEL".into(),
                     separator: "=".into(),
                     value: Value::Parsed {
-                        lines: vec![
-                            ParsedValueLine {
-                                blank: "".into(),
-                                line: "snapshot".into(),
-                                parsed: "snapshot".into(),
-                            },
-                        ],
+                        lines: vec![ParsedValueLine {
+                            blank: "".into(),
+                            line: "snapshot".into(),
+                            parsed: "snapshot".into(),
+                        }],
                     },
                 }),
                 Element::BlankOrComment("#".into()),
@@ -228,13 +218,11 @@ ENABLE_\:OPTIFINE=false
                     key_parsed: "ENABLE_:OPTIFINE".into(),
                     separator: "=".into(),
                     value: Value::Parsed {
-                        lines: vec![
-                            ParsedValueLine {
-                                blank: "".into(),
-                                line: "false".into(),
-                                parsed: "false".into(),
-                            },
-                        ],
+                        lines: vec![ParsedValueLine {
+                            blank: "".into(),
+                            line: "false".into(),
+                            parsed: "false".into(),
+                        }],
                     },
                 }),
             ],
@@ -263,55 +251,79 @@ mod parse_escape_sequence {
         tester("", false, &[]);
         tester("\\", true, &[]);
 
-        tester("hello", false, &[
-            (false, 'h', "h"),
-            (false, 'e', "e"),
-            (false, 'l', "l"),
-            (false, 'l', "l"),
-            (false, 'o', "o"),
-        ]);
+        tester(
+            "hello",
+            false,
+            &[
+                (false, 'h', "h"),
+                (false, 'e', "e"),
+                (false, 'l', "l"),
+                (false, 'l', "l"),
+                (false, 'o', "o"),
+            ],
+        );
 
-        tester("hello\\", true, &[
-            (false, 'h', "h"),
-            (false, 'e', "e"),
-            (false, 'l', "l"),
-            (false, 'l', "l"),
-            (false, 'o', "o"),
-        ]);
+        tester(
+            "hello\\",
+            true,
+            &[
+                (false, 'h', "h"),
+                (false, 'e', "e"),
+                (false, 'l', "l"),
+                (false, 'l', "l"),
+                (false, 'o', "o"),
+            ],
+        );
     }
 
     #[test]
     fn c_style_escape() {
-        tester("\\t\\r\\n\\f", false, &[
-            (true, '\t', "\\t"),
-            (true, '\r', "\\r"),
-            (true, '\n', "\\n"),
-            (true, '\x0C', "\\f"),
-        ]);
-        tester("\\t\\r\\n\\f\\", true, &[
-            (true, '\t', "\\t"),
-            (true, '\r', "\\r"),
-            (true, '\n', "\\n"),
-            (true, '\x0C', "\\f"),
-        ]);
+        tester(
+            "\\t\\r\\n\\f",
+            false,
+            &[
+                (true, '\t', "\\t"),
+                (true, '\r', "\\r"),
+                (true, '\n', "\\n"),
+                (true, '\x0C', "\\f"),
+            ],
+        );
+        tester(
+            "\\t\\r\\n\\f\\",
+            true,
+            &[
+                (true, '\t', "\\t"),
+                (true, '\r', "\\r"),
+                (true, '\n', "\\n"),
+                (true, '\x0C', "\\f"),
+            ],
+        );
     }
 
     #[test]
     fn same_char_escape() {
-        tester("\\a\\b\\:\\!\\ ", false, &[
-            (true, 'a', "\\a"),
-            (true, 'b', "\\b"),
-            (true, ':', "\\:"),
-            (true, '!', "\\!"),
-            (true, ' ', "\\ "),
-        ]);
-        tester("\\a\\b\\:\\!\\ \\", true, &[
-            (true, 'a', "\\a"),
-            (true, 'b', "\\b"),
-            (true, ':', "\\:"),
-            (true, '!', "\\!"),
-            (true, ' ', "\\ "),
-        ]);
+        tester(
+            "\\a\\b\\:\\!\\ ",
+            false,
+            &[
+                (true, 'a', "\\a"),
+                (true, 'b', "\\b"),
+                (true, ':', "\\:"),
+                (true, '!', "\\!"),
+                (true, ' ', "\\ "),
+            ],
+        );
+        tester(
+            "\\a\\b\\:\\!\\ \\",
+            true,
+            &[
+                (true, 'a', "\\a"),
+                (true, 'b', "\\b"),
+                (true, ':', "\\:"),
+                (true, '!', "\\!"),
+                (true, ' ', "\\ "),
+            ],
+        );
     }
 }
 

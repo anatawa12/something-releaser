@@ -119,20 +119,8 @@ jobs:
           # remove unused files
           rm -rf \
             .github \
-            __tests__ \
-            __tests__resources \
-            lib \
-            node_modules \
-            scripts \
             shell-tests \
             src \
-            .eslintignore \
-            .eslintrc.json \
-            jest.config.js \
-            package.json \
-            package-lock.json \
-            tsconfig.eslint.json \
-            tsconfig.json \
           
           # edit gitignore
           sed -n '/#### PUBLISH DELETE MARKER ####/q;p' -i .gitignore
@@ -141,7 +129,7 @@ jobs:
           git add .
           MERGE_COMMIT="$(git commit-tree -p $RELEASES_COMMIT -p $SOURCE_COMMIT -m "v$VERSION at $SOURCE_COMMIT" $(git write-tree))"
           git reset --soft $MERGE_COMMIT
-          git push -f origin releasing
+          git push -f origin HEAD:releasing
 
       - name: Push release to branch
         if: ${{ !github.event.inputs.dry-run }}

@@ -1,7 +1,7 @@
 /target
+/paths
 #### PUBLISH DELETE MARKER ####
 # the lines below will be removed in release.
 # files should be added in release but not on master
 # should be listed below.
-/paths
 /build

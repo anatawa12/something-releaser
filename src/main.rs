@@ -23,6 +23,7 @@ use std::num::NonZeroI32;
 use std::path::Path;
 use std::process::exit;
 use std::str::FromStr;
+use crate::commands::gradle_intellij::GradleIntellij;
 
 #[tokio::main]
 async fn main() {
@@ -432,6 +433,10 @@ async fn do_main(mut args: Args) -> CmdResult<()> {
             }
             Some("prepare-gradle-plugin-portal") => {
                 GradlePluginPortal::parse_from(args).configure().await;
+                ok!()
+            }
+            Some("prepare-gradle-intellij") => {
+                GradleIntellij::parse_from(args).configure().await;
                 ok!()
             }
 

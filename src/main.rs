@@ -40,6 +40,7 @@ enum Frontend {
     Direct(Commands),
     #[clap(subcommand)]
     #[command(name = "something-releaser")]
+    #[command(version)]
     AsArgument(Commands),
 }
 

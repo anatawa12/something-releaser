@@ -6,18 +6,16 @@
 /lib
 /src/generated
 
+/paths
+/target
+
 #### PUBLISH DELETE MARKER ####
 # the lines below will be removed in release.
 # files should be added in release but not on master
 # should be listed below.
-
+/build
 /dist
 /path-posix/
 /path-win/
 /bin/*
 !/bin/actions.js
-
-
-# Added by cargo
-
-/target

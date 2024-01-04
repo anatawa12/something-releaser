@@ -14,14 +14,9 @@ jobs:
     permissions: read-all
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run all
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: dtolnay/rust-toolchain@stable
+      - run: ./scripts/build.js
+
       # check if this action is valid
       - uses: ./
 

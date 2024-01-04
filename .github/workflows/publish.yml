@@ -163,4 +163,5 @@ jobs:
           git push origin master
           git push origin releasing:releases
           git push --tags -f
+          git push -d origin releasing
         shell: bash

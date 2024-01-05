@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: releasing
-          token: ${{ github.event.inputs.dry-run && github.token || secrets.ACTIONS_PAT }}
+          token: ${{ inputs.dry-run && github.token || secrets.ACTIONS_PAT }}
       - uses: snow-actions/git-config-user@v1.0.0
       - name: fix fetch
         run: |
@@ -105,7 +105,10 @@ jobs:
 
       - name: Create Release Commit
         run: |
+          set -o pipefail
           git branch releases origin/releases
+          VERSION="$(get-version)"
+          gh-export-variable VERSION "$VERSION"
 
           SOURCE_COMMIT="$(git rev-parse HEAD)"
           RELEASES_COMMIT="$(git rev-parse origin/releases)"
@@ -122,7 +125,7 @@ jobs:
           
           # add modified files and commit
           git add .
-          MERGE_COMMIT="$(git commit-tree -p $RELEASES_COMMIT -p $SOURCE_COMMIT -m "v$(get-version) at $SOURCE_COMMIT" $(git write-tree))"
+          MERGE_COMMIT="$(git commit-tree -p $RELEASES_COMMIT -p $SOURCE_COMMIT -m "v$VERSION at $SOURCE_COMMIT" $(git write-tree))"
           git reset --soft $MERGE_COMMIT
           git push -f origin HEAD:releasing
 
@@ -131,9 +134,10 @@ jobs:
       - name: Push release to branch
         if: ${{ !inputs.dry-run }}
         run: |
+          set -o pipefail
           # create tag
-          git tag "v$(get-version)"
-          git tag -f "v$(get-version | version-major)"
+          git tag "v$VERSION"
+          git tag -f "v$(version-major $VERSION)"
 
           # create pre-next version commit
           git checkout -f master

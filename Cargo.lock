@@ -1186,7 +1186,7 @@ dependencies = [
 
 [[package]]
 name = "something-releaser"
-version = "3.0.0-SNAPSHOT"
+version = "3.0.0"
 dependencies = [
  "cargo-edit",
  "cargo_metadata",

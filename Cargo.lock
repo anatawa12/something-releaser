@@ -168,7 +168,7 @@ version = "0.12.2"
 source = "git+https://github.com/anatawa12/cargo-edit.git?rev=4a69e9f#4a69e9f4abc5ade2c489fc3cc505d094e77b4eeb"
 dependencies = [
  "anyhow",
- "cargo_metadata",
+ "cargo_metadata 0.15.4",
  "clap",
  "clap-cargo",
  "concolor-control",
@@ -204,6 +204,20 @@ name = "cargo_metadata"
 version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eee4243f1f26fc7a42710e7439c149e2b10b05472f88090acce52632f231a73a"
+dependencies = [
+ "camino",
+ "cargo-platform",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "cargo_metadata"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d886547e41f740c616ae73108f6eb70afe6d940c7bc697cb30f13daec073037"
 dependencies = [
  "camino",
  "cargo-platform",
@@ -1189,7 +1203,7 @@ name = "something-releaser"
 version = "3.0.1-SNAPSHOT"
 dependencies = [
  "cargo-edit",
- "cargo_metadata",
+ "cargo_metadata 0.18.1",
  "clap",
  "dunce",
  "home",

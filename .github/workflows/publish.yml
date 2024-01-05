@@ -141,7 +141,7 @@ jobs:
           git push -f origin HEAD:releasing
 
       - name: Push release to branch
-        if: ${{ !github.event.inputs.dry-run }}
+        if: ${{ !inputs.dry-run }}
         run: |
           # create tag
           git tag "v$VERSION"

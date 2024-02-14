@@ -186,7 +186,7 @@ dependencies = [
  "subprocess",
  "termcolor",
  "toml",
- "toml_edit",
+ "toml_edit 0.19.15",
  "url",
 ]
 
@@ -1203,7 +1203,7 @@ dependencies = [
  "tempfile",
  "tokio",
  "toml",
- "toml_edit",
+ "toml_edit 0.22.5",
  "url",
  "uuid",
 ]
@@ -1391,7 +1391,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "toml_edit",
+ "toml_edit 0.19.15",
 ]
 
 [[package]]
@@ -1413,7 +1413,18 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow",
+ "winnow 0.5.32",
+]
+
+[[package]]
+name = "toml_edit"
+version = "0.22.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99e68c159e8f5ba8a28c4eb7b0c0c190d77bb479047ca713270048145a9ad28a"
+dependencies = [
+ "indexmap 2.1.0",
+ "toml_datetime",
+ "winnow 0.6.0",
 ]
 
 [[package]]
@@ -1788,6 +1799,15 @@ name = "winnow"
 version = "0.5.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8434aeec7b290e8da5c3f0d628cb0eac6cabcb31d14bb74f779a08109a5914d6"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "winnow"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b1dbce9e90e5404c5a52ed82b1d13fc8cfbdad85033b6f57546ffd1265f8451"
 dependencies = [
  "memchr",
 ]

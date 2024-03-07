@@ -1209,7 +1209,7 @@ dependencies = [
  "tempfile",
  "tokio",
  "toml 0.8.10",
- "toml_edit 0.19.15",
+ "toml_edit 0.22.4",
  "url",
  "uuid",
 ]

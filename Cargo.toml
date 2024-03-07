@@ -17,7 +17,7 @@ clap = { version = "4.5.2", features = ["derive"] }
 reqwest = { version = "0.11.23", features = ["multipart", "stream", "rustls-tls-native-roots", "json"], default-features = false }
 url = { version = "2.5.0", features = ["serde"] }
 cargo-edit = { version = "0.12.2", default-features = false, features = ["set-version"] }
-cargo_metadata = "0.15.4"
+cargo_metadata = "0.18.1"
 log = { version = "0.4.20", features = [] }
 toml_edit = "0.19.0"
 dunce = "1.0.4"

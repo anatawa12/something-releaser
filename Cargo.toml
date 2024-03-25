@@ -14,7 +14,7 @@ uuid = { version = "1.7.0", features = ["v4"] }
 home = "0.5.9"
 pretty_env_logger = "0.5.0"
 clap = { version = "4.5.2", features = ["derive"] }
-reqwest = { version = "0.11.24", features = ["multipart", "stream", "rustls-tls-native-roots", "json"], default-features = false }
+reqwest = { version = "0.12.1", features = ["multipart", "stream", "rustls-tls-native-roots", "json"], default-features = false }
 url = { version = "2.5.0", features = ["serde"] }
 cargo-edit = { version = "0.12.2", default-features = false, features = ["set-version"] }
 cargo_metadata = "0.18.1"

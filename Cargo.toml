@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std"] }
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std"] }
 regex = "1.10.3"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
@@ -26,7 +26,7 @@ toml = "0.8.10"
 [dev-dependencies]
 httptest = "0.15.5"
 tempfile = "3.10.1"
-tokio = { version = "1.36.0", features = ["process"] }
+tokio = { version = "1.37.0", features = ["process"] }
 
 [patch.crates-io]
 cargo-edit = { git = "https://github.com/anatawa12/cargo-edit.git", rev = "4a69e9f" }

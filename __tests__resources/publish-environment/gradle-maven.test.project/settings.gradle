@@ -1,0 +1,3 @@
+rootProject.name = 'gradle-maven'
+include('publish')
+include('private')

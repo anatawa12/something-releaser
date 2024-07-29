@@ -22,5 +22,5 @@ jobs:
           build-on-install: true
 
       # prepare bats for tests and run tests
-      - run: npm install -g bats
+      - run: sudo npm install -g bats
       - run: bats shell-tests/*

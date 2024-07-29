@@ -522,3 +522,13 @@ pub(crate) fn quote_string(value: &str) -> String {
         '"' => "\\\"", '\\' => "\\\\",
     )
 }
+
+#[test]
+fn quote_string_test() {
+    assert_eq!(quote_string("hello"), "\"hello\"");
+    assert_eq!(quote_string("hello\nworld"), "\"hello\\u000aworld\"");
+    assert_eq!(quote_string("hello\\world"), "\"hello\\\\world\"");
+    assert_eq!(quote_string("hello\"world"), "\"hello\\\"world\"");
+    assert_eq!(quote_string("hello\x00world"), "\"hello\\u0000world\"");
+    assert_eq!(quote_string("hello\x1Fworld"), "\"hello\\u001fworld\"");
+}

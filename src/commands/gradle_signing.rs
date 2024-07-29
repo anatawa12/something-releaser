@@ -85,6 +85,7 @@ async fn generated_init_script() {
 }
 
 #[tokio::test]
+#[ignore = "slow and must be run individually"]
 async fn test_with_project() {
     use crate::commands::gradle_maven::GradleMaven;
     use httptest::matchers::*;

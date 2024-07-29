@@ -95,6 +95,7 @@ fn generated_init_script() {
 }
 
 #[tokio::test]
+#[ignore = "slow and must be run individually"]
 async fn test_with_project() {
     use httptest::matchers::*;
     use httptest::responders::*;
@@ -157,6 +158,8 @@ async fn test_with_project() {
         .status()
         .await
         .expect("failed to run gradlew");
+
+    drop(server);
 
     if !result.success() {
         panic!("gradle exited with success");

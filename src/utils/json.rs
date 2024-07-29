@@ -516,6 +516,8 @@ fn parse_value<'src>(tokenizer: &mut Tokenizer<'src>) -> Result<JsonValue<'src>,
 pub(crate) fn quote_string(value: &str) -> String {
     escapes!(
         value,
+        @prefix = "\"",
+        @suffix = "\"",
         c@'\x00'..='\x1F' => format_args!("\\u{:04x}", c as u32),
         '"' => "\\\"", '\\' => "\\\\",
     )

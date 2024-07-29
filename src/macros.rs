@@ -19,11 +19,24 @@ macro_rules! err {
 }
 
 macro_rules! escapes {
-    ($value: expr, $( $pattern: pat => $replacement: expr ),+ $(,)?) => {
+    (
+        $value: expr,
+        $( @prefix = $prefix: expr, )?
+        $( @suffix = $suffix: expr, )?
+        $( $pattern: pat => $replacement: expr ),+ $(,)?
+    ) => {
         {
             use std::fmt::Write;
             let value = $value;
-            let mut builder = String::with_capacity(value.len());
+            $(let prefix = $prefix;)?
+            $(let suffix = $suffix;)?
+            let mut builder = ::std::string::String::with_capacity(
+                value.len()
+                + escapes!(@zero [$($prefix)?] [prefix.len()] [0])
+                + escapes!(@zero [$($suffix)?] [suffix.len()] [0]) 
+            );
+
+            escapes!(@zero [$($prefix)?] [builder.push_str(prefix)] []);
 
             for c in value.chars() {
                 match c {
@@ -32,7 +45,16 @@ macro_rules! escapes {
                 }
             }
 
+            escapes!(@zero [$($suffix)?] [builder.push_str(suffix)] []);
+
             builder
         }
+    };
+
+    (@zero [] [$($_t:tt)*] [$($tt:tt)*]) => {
+        $($tt)*
+    };
+    (@zero [$($_t:tt)*] [$($tt:tt)*] [$($_2:tt)*]) => {
+        $($tt)*
     };
 }

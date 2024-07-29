@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "something-releaser"
-version = "3.0.2-SNAPSHOT"
+version = "3.0.3-SNAPSHOT"
 dependencies = [
  "cargo-edit",
  "cargo_metadata 0.18.1",

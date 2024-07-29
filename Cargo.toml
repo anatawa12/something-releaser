@@ -1,6 +1,6 @@
 [package]
 name = "something-releaser"
-version = "3.0.2-SNAPSHOT"
+version = "3.0.3-SNAPSHOT"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

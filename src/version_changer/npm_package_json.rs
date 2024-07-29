@@ -22,7 +22,7 @@ impl Display for NpmPackageJson {
 
 impl VersionChanger for NpmPackageJson {
     fn parse(info: Option<&str>, path: Option<&str>) -> Self {
-        if info.is_none() {
+        if info.is_some() {
             panic!("invalid npm package.json version changer");
         }
         Self {

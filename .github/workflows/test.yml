@@ -24,3 +24,11 @@ jobs:
       # prepare bats for tests and run tests
       - run: sudo npm install -g bats
       - run: bats shell-tests/*
+
+  rust-test:
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test

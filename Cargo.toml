@@ -20,8 +20,8 @@ cargo-edit = { version = "0.13.9", default-features = false, features = ["set-ve
 cargo_metadata = "0.23.1"
 log = { version = "0.4.29", features = [] }
 dunce = "1.0.4"
-toml_edit = "0.23.10+spec-1.0.0"
-toml = "0.9.12+spec-1.1.0"
+toml_edit = "0.23.10"
+toml = "0.9.12"
 
 [dev-dependencies]
 httptest = "0.15.5"

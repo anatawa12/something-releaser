@@ -3,6 +3,7 @@
 use std::fmt::Display;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub(crate) enum JsonError {
     UnexpectedEof,
     LeadingZero(usize),

@@ -6,7 +6,7 @@
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 use cargo_edit::{LocalManifest, upgrade_requirement};
-use cargo_metadata::{semver, PackageName};
+use cargo_metadata::semver;
 use serde::Deserialize;
 use log::{debug};
 use crate::version_changer::VersionChanger;

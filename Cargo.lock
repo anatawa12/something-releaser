@@ -2015,7 +2015,7 @@ dependencies = [
 
 [[package]]
 name = "something-releaser"
-version = "3.0.3-SNAPSHOT"
+version = "3.0.3"
 dependencies = [
  "cargo-edit",
  "cargo_metadata 0.23.1",

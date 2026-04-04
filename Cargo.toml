@@ -6,27 +6,24 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std"] }
-regex = "1.10.3"
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.114"
-uuid = { version = "1.7.0", features = ["v4"] }
-home = "0.5.9"
+tokio = { version = "1.51.0", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std"] }
+regex = "1.12.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+uuid = { version = "1.23.0", features = ["v4"] }
+home = "0.5.12"
 pretty_env_logger = "0.5.0"
-clap = { version = "4.5.2", features = ["derive"] }
-reqwest = { version = "0.11.24", features = ["multipart", "stream", "rustls-tls-native-roots", "json"], default-features = false }
+clap = { version = "4.6.0", features = ["derive"] }
+reqwest = { version = "0.13.2", features = ["multipart", "stream", "rustls", "json"], default-features = false }
 url = { version = "2.5.0", features = ["serde"] }
-cargo-edit = { version = "0.12.2", default-features = false, features = ["set-version"] }
-cargo_metadata = "0.18.1"
-log = { version = "0.4.21", features = [] }
-toml_edit = "0.19.0"
+cargo-edit = { version = "0.13.9", default-features = false, features = ["set-version"] }
+cargo_metadata = "0.23.1"
+log = { version = "0.4.29", features = [] }
 dunce = "1.0.4"
-toml = "0.8.10"
+toml_edit = "0.23.10+spec-1.0.0"
+toml = "0.9.12+spec-1.1.0"
 
 [dev-dependencies]
 httptest = "0.15.5"
 tempfile = "3.10.1"
 tokio = { version = "1.36.0", features = ["process"] }
-
-[patch.crates-io]
-cargo-edit = { git = "https://github.com/anatawa12/cargo-edit.git", rev = "4a69e9f" }

@@ -6,7 +6,7 @@
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 use cargo_edit::{LocalManifest, upgrade_requirement};
-use cargo_metadata::semver;
+use cargo_metadata::{semver, PackageName};
 use serde::Deserialize;
 use log::{debug};
 use crate::version_changer::VersionChanger;
@@ -45,7 +45,7 @@ impl VersionChanger for Cargo {
             ws_metadata.packages[0].version.to_string()
         } else if let Some(name) = self.package.as_deref() {
             // name specified: get version of specified package in workspace
-            let package = ws_metadata.packages.iter().find(|p| name == &p.name)
+            let package = ws_metadata.packages.iter().find(|p| name == p.name.as_ref())
                 .expect("no package with specified name found");
             package.version.to_string()
         } else {
@@ -87,7 +87,7 @@ impl VersionChanger for Cargo {
             cargo_metadata(self.manifest_path.as_deref(), false);
         } else if let Some(name) = self.package.as_deref() {
             // name specified: set version of specified package in workspace
-            let the_package = ws_metadata.packages.iter().find(|p| name == &p.name)
+            let the_package = ws_metadata.packages.iter().find(|p| name == p.name.as_ref())
                 .expect("no package with specified name found");
 
             let mut manifest = LocalManifest::try_new(Path::new(&the_package.manifest_path))

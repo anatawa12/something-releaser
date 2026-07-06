@@ -5,3 +5,8 @@ updates:
     open-pull-requests-limit: 100
     schedule:
       interval: 'daily'
+    groups:
+      cargo-toml:
+        patterns:
+          - "toml_edit"
+          - "cargo-edit"

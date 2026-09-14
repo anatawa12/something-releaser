@@ -195,9 +195,9 @@ dependencies = [
 
 [[package]]
 name = "cargo-edit"
-version = "0.13.11"
+version = "0.13.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7e1b56c3e75909142cb9c4a949d65bab0859f7bac07792b6db982e886ea95ea"
+checksum = "25efd7ccc9c2e8a2183664f1ef12cb0148e94f43cc344e686b3b13f5a74e5b06"
 dependencies = [
  "anyhow",
  "cargo_metadata",
